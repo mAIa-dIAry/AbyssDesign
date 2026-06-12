@@ -1,0 +1,97 @@
+{
+  "name": "@maia/abyss-design",
+  "version": "0.1.0",
+  "description": "Abyss Design System — komponenty UI dla Quasar / Vue 3",
+  "author": "Marcin Kalinowski <marcin36k@outlook.com>",
+  "license": "UNLICENSED",
+  "type": "module",
+  "files": [
+    "dist",
+    "src/components",
+    "src/scss",
+    "src/stories",
+    "src/assets"
+  ],
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./scss": "./src/scss/app.scss",
+    "./scss/*": "./src/scss/*",
+    "./components/*": "./src/components/ui/*/*.vue",
+    "./vite/inject-gradient-presets": {
+      "types": "./dist/vite/inject-gradient-presets.d.ts",
+      "import": "./dist/vite/inject-gradient-presets.js"
+    },
+    "./i18n": {
+      "types": "./dist/i18n/index.d.ts",
+      "import": "./dist/i18n/index.js"
+    },
+    "./styles/fonts": "./src/styles/fonts.ts"
+  },
+  "scripts": {
+    "build": "vite build && vue-tsc --emitDeclarationOnly -p tsconfig.build.json",
+    "lint": "eslint \"./src/**/*.ts\" \".storybook/*.ts\"",
+    "typecheck": "vue-tsc --noEmit --skipLibCheck -p tsconfig.json",
+    "storybook": "storybook dev -p 6006 --no-open",
+    "build-storybook": "storybook build"
+  },
+  "dependencies": {
+    "@fontsource/roboto-mono": "^5.2.9"
+  },
+  "peerDependencies": {
+    "@quasar/extras": "^1.16.0",
+    "apexcharts": "^5.0.0",
+    "quasar": "^2.16.0",
+    "vue": "^3.5.0",
+    "vue-i18n": "^11.0.0",
+    "vue3-apexcharts": "^1.11.0"
+  },
+  "peerDependenciesMeta": {
+    "apexcharts": {
+      "optional": true
+    },
+    "vue3-apexcharts": {
+      "optional": true
+    }
+  },
+  "devDependencies": {
+    "@chromatic-com/storybook": "^5.0.0",
+    "@eslint/js": "^9.14.0",
+    "@storybook/addon-a11y": "^10.2.1",
+    "@storybook/addon-docs": "^10.2.1",
+    "@storybook/addon-vitest": "^10.2.1",
+    "@storybook/vue3-vite": "^10.2.1",
+    "@types/node": "^20.5.9",
+    "@vitejs/plugin-vue": "^6.0.3",
+    "@vue/eslint-config-prettier": "^10.1.0",
+    "@vue/eslint-config-typescript": "^14.4.0",
+    "@quasar/extras": "^1.16.4",
+    "apexcharts": "^5.13.0",
+    "eslint": "^9.14.0",
+    "eslint-plugin-storybook": "^10.2.1",
+    "eslint-plugin-vue": "^10.4.0",
+    "globals": "^16.4.0",
+    "quasar": "^2.16.0",
+    "sass": "^1.89.0",
+    "storybook": "^10.2.1",
+    "typescript": "^5.9.2",
+    "vite": "^6.3.5",
+    "vite-plugin-dts": "^4.5.4",
+    "vue": "^3.5.22",
+    "vue-i18n": "^11.0.0",
+    "vue-tsc": "^3.0.7",
+    "vue3-apexcharts": "^1.11.1"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "engines": {
+    "node": "^28 || ^26 || ^24 || ^22",
+    "yarn": ">= 1.21.1"
+  }
+}

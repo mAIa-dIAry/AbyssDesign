@@ -1,0 +1,1 @@
+export const ABYSS_SETTINGS_MOBILE_MAX_WIDTH = 520;

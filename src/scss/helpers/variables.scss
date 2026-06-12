@@ -1,0 +1,73 @@
+// Typography
+$font-family-base: 'Roboto', sans-serif;
+$font-family-mono: 'Roboto Mono', monospace;
+
+// Colors
+$positive: hsl(134, 70%, 43%);
+$negative: hsl(0, 78%, 56%);
+$info: hsl(187, 72%, 57%);
+$warning: hsl(45, 100%, 50%);
+$shadow-color-100: rgba(black, 0.25);
+$shadow-color-200: rgba(black, 0.35);
+$shadow-color-300: rgba(black, 0.5);
+$shadow-color-400: rgba(black, 0.65);
+
+$gradient-gold-color-1: hsl(48, 100%, 77%);
+$gradient-gold-color-2: hsl(18, 100%, 69%);
+$font-cold-color: hsl(0, 33%, 17%);
+$gradient-sakura-color-1: hsl(291, 86%, 85%);
+$gradient-sakura-color-2: hsl(235, 100%, 72%);
+$font-sakura-color: hsl(246, 74%, 15%);
+$gradient-garden-color-1: hsl(85, 100%, 69%);
+$gradient-garden-color-2: hsl(133, 100%, 39%);
+$font-garden-color: hsl(125, 87%, 12%);
+
+$breakpoint-xs: 560px;
+$breakpoint-sm: 768px;
+$breakpoint-md: 1024px;
+$breakpoint-lg: 1300px;
+$breakpoint-xl: 1900px;
+
+// Box shadows
+$shadow-base: 0px 4px 8px 0px $shadow-color-100;
+$shadow-small: 0px 2px 4px 0px $shadow-color-100;
+$shadow-hover: 0px 5px 9px 0px $shadow-color-100;
+$shadow-active: 0px 3px 7px 0px $shadow-color-100;
+$shadow-disabled: 0px 2px 6px 0px $shadow-color-100;
+$shadow-zero: 0px 0px 0px 0px $shadow-color-100;
+$shadow-strong: 0px 4px 8px 0px $shadow-color-200;
+$shadow-card: 0px 8px 16px -4px $shadow-color-300;
+$shadow-sidebar: 0px 4px 12px 0px $shadow-color-200;
+$shadow-current: inset 0px 4px 8px -4px $shadow-color-100;
+$shadow-dialog: 0px 8px 32px 0px $shadow-color-400;
+$shadow-frame-soft:
+  inset 0px 1px 0px 0px rgba(white, 0.04),
+  inset 0px 0px 0px 1px rgba(white, 0.02);
+$shadow-frame-medium:
+  inset 0px 1px 0px 0px rgba(white, 0.09),
+  inset 0px 0px 0px 1px rgba(white, 0.04);
+
+// Glow (box shadow)
+$glow-base: 0px 0px 12px 0px
+  color-mix(in srgb, var(--glow-color) 25%, transparent);
+$glow-medium: 0px 0px 8px 1px
+  color-mix(in srgb, var(--glow-color) 50%, transparent);
+$glow-hard: 0px 0px 4px 2px
+  color-mix(in srgb, var(--glow-color) 75%, transparent);
+
+// Transitions
+$transition-medium-duration: 0.3s;
+$transition-fast-duration: 0.15s;
+
+$transition-medium: all $transition-medium-duration ease;
+$transition-fast: all $transition-fast-duration ease;
+
+:root {
+  --font-family-base: #{$font-family-base};
+  --font-family-mono: #{$font-family-mono};
+  --glow-color: white;
+  --q-negative: #{$negative};
+  --q-positive: #{$positive};
+  --q-info: #{$info};
+  --q-warning: #{$warning};
+}

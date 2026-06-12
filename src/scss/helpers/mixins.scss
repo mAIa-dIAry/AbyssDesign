@@ -1,0 +1,118 @@
+@use './variables.scss' as var;
+
+@mixin responsive($breakpoint, $container: false) {
+  $query-type: if(sass($container): container; else: media);
+
+  @if $breakpoint == 'xs' {
+    @#{$query-type} (max-width: #{var.$breakpoint-xs}) {
+      @content;
+    }
+  } @else if $breakpoint == 'sm' {
+    @#{$query-type} (max-width: #{var.$breakpoint-sm}) {
+      @content;
+    }
+  } @else if $breakpoint == 'md' {
+    @#{$query-type} (max-width: #{var.$breakpoint-md}) {
+      @content;
+    }
+  } @else if $breakpoint == 'lg' {
+    @#{$query-type} (max-width: #{var.$breakpoint-lg}) {
+      @content;
+    }
+  } @else if $breakpoint == 'xl' {
+    @#{$query-type} (min-width: #{var.$breakpoint-xl}) {
+      @content;
+    }
+  } @else {
+    @#{$query-type} (min-width: #{$breakpoint}) {
+      @content;
+    }
+  }
+}
+
+@mixin abyss-content-container {
+  font-size: var(--abyss-content-font-size, 16px);
+  line-height: var(--abyss-content-line-height, 24px);
+  color: var(--abyss-content-color, white);
+  overflow-wrap: break-word;
+  word-break: break-word;
+  min-width: 0;
+}
+
+@mixin abyss-content-block-spacing {
+  margin-top: 0;
+  margin-bottom: var(--abyss-content-block-gap, 12px);
+
+  &:last-child {
+    margin-bottom: 0;
+  }
+}
+
+@mixin abyss-content-elements {
+  p,
+  ul,
+  ol,
+  h1,
+  h2,
+  h3 {
+    @include abyss-content-block-spacing;
+  }
+
+  ul,
+  ol {
+    padding-left: var(--abyss-content-list-indent, 24px);
+  }
+
+  strong,
+  b {
+    font-weight: 600;
+  }
+
+  em,
+  i {
+    font-style: italic;
+  }
+
+  u {
+    text-decoration: underline;
+  }
+
+  s,
+  strike {
+    text-decoration: line-through;
+  }
+}
+
+@mixin scrollbar {
+  &::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: rgba(white, 0.15);
+    border-radius: 3px;
+    transition: background 0.2s ease;
+  }
+
+  &::-webkit-scrollbar-thumb:hover {
+    background: rgba(white, 0.3);
+  }
+
+  &::-webkit-scrollbar-thumb:active {
+    background: rgba(white, 0.45);
+  }
+
+  &::-webkit-scrollbar-corner {
+    background: transparent;
+  }
+
+  & {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(white, 0.15) transparent;
+  }
+}

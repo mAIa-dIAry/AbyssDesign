@@ -1,0 +1,18 @@
+@use 'sass:math';
+
+@function shimmer-gradient(
+  $light-color: white,
+  $shadow-color: transparent,
+  $shadow-width: 20%,
+  $softness-multiplier: 5
+) {
+  @return linear-gradient(
+    90deg,
+    $light-color,
+    $light-color #{50% - math.div($shadow-width, 2)},
+    $shadow-color #{50% - math.div($shadow-width, (2 * $softness-multiplier))},
+    $shadow-color #{50% + math.div($shadow-width, (2 * $softness-multiplier))},
+    $light-color #{50% + math.div($shadow-width, 2)},
+    $light-color
+  );
+}

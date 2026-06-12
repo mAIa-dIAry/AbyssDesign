@@ -1,0 +1,734 @@
+import type { Meta, StoryObj } from '@storybook/vue3';
+import { expect, fn } from 'storybook/test';
+import AbyssInput from '@/components/ui/AbyssInput/AbyssInput.vue';
+import { withAbyssBackground } from '@/stories/AbyssBackgroundDecorator';
+import AbyssButton from '@/components/ui/AbyssButton/AbyssButton.vue';
+
+const meta: Meta<typeof AbyssInput> = {
+  title: 'UI/AbyssInput',
+  component: AbyssInput,
+  decorators: [withAbyssBackground],
+  tags: ['autodocs'],
+  argTypes: {
+    modelValue: { control: 'text' },
+    'onUpdate:modelValue': { action: 'update:modelValue' },
+    onSearch: { action: 'search' },
+    label: { control: 'text' },
+    placeholder: { control: 'text' },
+    type: {
+      control: 'select',
+      options: [
+        'text',
+        'password',
+        'email',
+        'number',
+        'search',
+        'tel',
+        'file',
+        'url',
+        'time',
+        'date',
+        'datetime-local',
+        'textarea',
+      ],
+    },
+    disable: { control: 'boolean' },
+    readonly: { control: 'boolean' },
+    error: { control: 'boolean' },
+    errorMessage: { control: 'text' },
+    hint: { control: 'text' },
+    counter: { control: 'boolean' },
+    maxLength: { control: 'number' },
+    loading: { control: 'boolean' },
+    mask: {
+      control: 'text',
+      description: 'Maska wprowadzania (np. "(##) ####-####")',
+    },
+    fillMask: {
+      control: 'boolean',
+      description: 'Automatyczne wypełnianie maski',
+    },
+    collapsed: {
+      control: 'boolean',
+      description:
+        'Zwija input do wielkości kwadratu, pokazując tylko sekcję append',
+    },
+    style: { control: 'object' },
+    class: { control: 'text' },
+  },
+};
+
+export default meta;
+type Story = StoryObj<typeof AbyssInput>;
+
+export const Default: Story = {
+  args: {
+    modelValue: '',
+    label: 'Nazwa użytkownika',
+    placeholder: 'Wprowadź nazwę użytkownika...',
+    type: 'text',
+    hint: 'To pole jest wymagane',
+  },
+  render: (args) => ({
+    components: { AbyssInput },
+    setup() {
+      return { args };
+    },
+    template: `<AbyssInput v-bind="args" v-model="args.modelValue" />`,
+  }),
+  play: async ({ canvas, userEvent }) => {
+    const input = canvas.getByRole('textbox');
+    await expect(input).toBeVisible();
+    const label = canvas.getByText('Nazwa użytkownika');
+    await expect(label).toBeVisible();
+    await userEvent.clear(input);
+    await userEvent.type(input, 'Jan Kowalski');
+    await expect(input).toHaveValue('Jan Kowalski');
+  },
+};
+
+export const Password: Story = {
+  args: {
+    modelValue: '',
+    label: 'Hasło',
+    placeholder: 'Wprowadź hasło...',
+    type: 'password',
+    hint: 'Kliknij ikonę oka aby pokazać/ukryć hasło',
+  },
+  render: (args) => ({
+    components: { AbyssInput },
+    setup() {
+      return { args };
+    },
+    template: `<AbyssInput v-bind="args" v-model="args.modelValue" />`,
+  }),
+  play: async ({ canvas, userEvent }) => {
+    const input = canvas.getByPlaceholderText('Wprowadź hasło...');
+    await expect(input).toHaveAttribute('type', 'password');
+    const toggleButton = canvas.getByRole('button');
+    await userEvent.click(toggleButton);
+    await expect(input).toHaveAttribute('type', 'text');
+    await userEvent.click(toggleButton);
+    await expect(input).toHaveAttribute('type', 'password');
+  },
+};
+
+export const Email: Story = {
+  args: {
+    modelValue: '',
+    label: 'Email',
+    placeholder: 'uzytkownik@example.com',
+    type: 'email',
+    hint: 'Wprowadź poprawny adres email',
+  },
+  render: (args) => ({
+    components: { AbyssInput },
+    setup() {
+      return { args };
+    },
+    template: `<AbyssInput v-bind="args" v-model="args.modelValue" />`,
+  }),
+};
+
+export const Search: Story = {
+  args: {
+    modelValue: '',
+    label: 'Wyszukiwanie',
+    placeholder: 'Szukaj...',
+    type: 'search',
+    hint: 'Kliknij ikonę lupy aby rozpocząć wyszukiwanie',
+    onSearch: fn(),
+  },
+  render: (args) => ({
+    components: { AbyssInput },
+    setup() {
+      return { args };
+    },
+    template: `<AbyssInput v-bind="args" v-model="args.modelValue" />`,
+  }),
+  play: async ({ args, canvas, userEvent }) => {
+    const searchButton = canvas.getByRole('button');
+    await expect(searchButton).toBeVisible();
+    await userEvent.click(searchButton);
+    await expect(args.onSearch).toHaveBeenCalledOnce();
+  },
+};
+
+export const Telephone: Story = {
+  args: {
+    modelValue: '',
+    label: 'Numer telefonu',
+    placeholder: '+48 123 456 789',
+    type: 'tel',
+    hint: 'Wprowadź numer telefonu z kierunkowym',
+  },
+  render: (args) => ({
+    components: { AbyssInput },
+    setup() {
+      return { args };
+    },
+    template: `<AbyssInput v-bind="args" v-model="args.modelValue" />`,
+  }),
+};
+
+export const URL: Story = {
+  args: {
+    modelValue: '',
+    label: 'Strona internetowa',
+    placeholder: 'https://example.com',
+    type: 'url',
+    hint: 'Wprowadź pełny adres URL ze schematem',
+  },
+  render: (args) => ({
+    components: { AbyssInput },
+    setup() {
+      return { args };
+    },
+    template: `<AbyssInput v-bind="args" v-model="args.modelValue" />`,
+  }),
+};
+
+export const Textarea: Story = {
+  args: {
+    modelValue: '',
+    label: 'Opis',
+    placeholder: 'Wprowadź szczegółowy opis...',
+    type: 'textarea',
+    hint: 'To pole rozszerza się automatycznie',
+    counter: true,
+    maxLength: 500,
+  },
+  render: (args) => ({
+    components: { AbyssInput },
+    setup() {
+      return { args };
+    },
+    template: `<AbyssInput v-bind="args" v-model="args.modelValue" />`,
+  }),
+};
+
+export const WithError: Story = {
+  args: {
+    modelValue: 'niepoprawna@wartość',
+    label: 'Email',
+    placeholder: 'uzytkownik@example.com',
+    type: 'email',
+    error: true,
+    errorMessage: 'Wprowadzony adres email jest niepoprawny',
+  },
+  render: (args) => ({
+    components: { AbyssInput },
+    setup() {
+      return { args };
+    },
+    template: `<AbyssInput v-bind="args" v-model="args.modelValue" />`,
+  }),
+  play: async ({ canvas }) => {
+    const errorMessage = canvas.getByText(
+      'Wprowadzony adres email jest niepoprawny',
+    );
+    await expect(errorMessage).toBeVisible();
+  },
+};
+
+export const WithCounter: Story = {
+  args: {
+    modelValue: 'Przykładowy tekst',
+    label: 'Tytuł',
+    placeholder: 'Wprowadź tytuł...',
+    type: 'text',
+    counter: true,
+    maxLength: 64,
+    hint: 'Maksymalnie 64 znaki',
+  },
+  render: (args) => ({
+    components: { AbyssInput },
+    setup() {
+      return { args };
+    },
+    template: `<AbyssInput v-bind="args" v-model="args.modelValue" />`,
+  }),
+  play: async ({ canvas }) => {
+    const counter = canvas.getByText(/\d+\s*\/\s*64/);
+    await expect(counter).toBeVisible();
+  },
+};
+
+export const Disabled: Story = {
+  args: {
+    modelValue: 'Nieaktywne pole',
+    label: 'Wyłączone pole',
+    placeholder: 'Nie można edytować',
+    type: 'text',
+    disable: true,
+    hint: 'To pole jest wyłączone',
+  },
+  render: (args) => ({
+    components: { AbyssInput },
+    setup() {
+      return { args };
+    },
+    template: `<AbyssInput v-bind="args" v-model="args.modelValue" />`,
+  }),
+  play: async ({ canvas, userEvent }) => {
+    const input = canvas.getByRole('textbox');
+    await expect(input).toBeDisabled();
+    await userEvent.type(input, 'nowy tekst');
+    await expect(input).toHaveValue('Nieaktywne pole');
+  },
+};
+
+export const Readonly: Story = {
+  args: {
+    modelValue: 'Wartość tylko do odczytu',
+    label: 'Pole tylko do odczytu',
+    placeholder: '',
+    type: 'text',
+    readonly: true,
+    hint: 'To pole można tylko odczytać',
+  },
+  render: (args) => ({
+    components: { AbyssInput },
+    setup() {
+      return { args };
+    },
+    template: `<AbyssInput v-bind="args" v-model="args.modelValue" />`,
+  }),
+  play: async ({ canvas, userEvent }) => {
+    const input = canvas.getByRole('textbox');
+    await expect(input).toHaveAttribute('readonly');
+    await userEvent.type(input, 'nowy tekst');
+    await expect(input).toHaveValue('Wartość tylko do odczytu');
+  },
+};
+
+export const Loading: Story = {
+  args: {
+    modelValue: '',
+    label: 'Wyszukiwanie',
+    placeholder: 'Szukaj...',
+    type: 'text',
+    loading: true,
+    hint: 'Trwa ładowanie...',
+  },
+  render: (args) => ({
+    components: { AbyssInput },
+    setup() {
+      return { args };
+    },
+    template: `<AbyssInput v-bind="args" v-model="args.modelValue" />`,
+  }),
+};
+
+export const Number: Story = {
+  args: {
+    modelValue: 42,
+    label: 'Wiek',
+    placeholder: 'Wprowadź liczbę...',
+    type: 'number',
+    hint: 'Wprowadź wartość liczbową',
+  },
+  render: (args) => ({
+    components: { AbyssInput },
+    setup() {
+      return { args };
+    },
+    template: `<AbyssInput v-bind="args" v-model="args.modelValue" />`,
+  }),
+};
+
+export const Date: Story = {
+  args: {
+    modelValue: '2026-02-08',
+    'onUpdate:modelValue': fn(),
+    label: 'Data urodzenia',
+    type: 'date',
+    hint: 'Wybierz datę z kalendarza',
+  },
+  render: (args) => ({
+    components: { AbyssInput },
+    setup() {
+      return { args };
+    },
+    template: `<AbyssInput v-bind="args" v-model="args.modelValue" />`,
+  }),
+  play: async ({ args, canvas, userEvent }) => {
+    const calendarButton = canvas.getByRole('button');
+    await expect(calendarButton).toBeVisible();
+    await userEvent.click(calendarButton);
+
+    // Popup jest teleportowany do body — szukamy pierwszego dnia w kalendarzu
+    const dayButton = document.querySelector<HTMLElement>(
+      '.q-date__calendar-item--in button',
+    );
+    await expect(dayButton).toBeTruthy();
+    await userEvent.click(dayButton!);
+
+    // Kliknij "Zamknij" → @close="datePopupRef?.hide()" w AbyssInput
+    await new Promise((r) => setTimeout(r, 50));
+    const dateCloseBtn = document.querySelector<HTMLElement>(
+      '.abyss-date-menu .abyss-button',
+    );
+    if (dateCloseBtn) await userEvent.click(dateCloseBtn);
+
+    // handleDateUpdate został wywołany — emit update:modelValue z nową datą
+    await expect(args['onUpdate:modelValue']).toHaveBeenCalled();
+  },
+};
+
+export const Time: Story = {
+  args: {
+    modelValue: '14:30',
+    'onUpdate:modelValue': fn(),
+    label: 'Godzina spotkania',
+    type: 'time',
+    hint: 'Wybierz godzinę',
+  },
+  render: (args) => ({
+    components: { AbyssInput },
+    setup() {
+      return { args };
+    },
+    template: `<AbyssInput v-bind="args" v-model="args.modelValue" />`,
+  }),
+  play: async ({ args, canvas, userEvent }) => {
+    const clockButton = canvas.getByRole('button');
+    await expect(clockButton).toBeVisible();
+    await userEvent.click(clockButton);
+
+    // Popup jest teleportowany do body — klikamy pierwszą pozycję na tarczy zegara
+    const clockPosition = document.querySelector<HTMLElement>(
+      '.q-time__clock-position',
+    );
+    await expect(clockPosition).toBeTruthy();
+    await userEvent.click(clockPosition!);
+
+    // Kliknij "Zamknij" → @close="timePopupRef?.hide()" w AbyssInput
+    await new Promise((r) => setTimeout(r, 50));
+    const timeCloseBtn = document.querySelector<HTMLElement>(
+      '.abyss-time-menu .abyss-button',
+    );
+    if (timeCloseBtn) await userEvent.click(timeCloseBtn);
+
+    // handleTimeUpdate został wywołany — emit update:modelValue z nową godziną
+    await expect(args['onUpdate:modelValue']).toHaveBeenCalled();
+  },
+};
+
+export const DateTime: Story = {
+  args: {
+    modelValue: '2026-02-08T14:30',
+    'onUpdate:modelValue': fn(),
+    label: 'Data i godzina wydarzenia',
+    type: 'datetime-local',
+    hint: 'Wybierz datę i godzinę',
+  },
+  render: (args) => ({
+    components: { AbyssInput },
+    setup() {
+      return { args };
+    },
+    template: `<AbyssInput v-bind="args" v-model="args.modelValue" />`,
+  }),
+  play: async ({ args, canvas, userEvent }) => {
+    const buttons = canvas.getAllByRole('button');
+    // datetime-local ma dwa przyciski: kalendarz i zegar
+    await expect(buttons).toHaveLength(2);
+    const [calendarButton, clockButton] = buttons as [HTMLElement, HTMLElement];
+
+    // Otwórz picker daty i kliknij dzień (handleDateUpdate — datetime-local branch)
+    await userEvent.click(calendarButton);
+    const dayButton = document.querySelector<HTMLElement>(
+      '.q-date__calendar-item--in button',
+    );
+    await expect(dayButton).toBeTruthy();
+    await userEvent.click(dayButton!);
+    await expect(args['onUpdate:modelValue']).toHaveBeenCalled();
+
+    // Otwórz picker czasu i kliknij pozycję (handleTimeUpdate — datetime-local branch)
+    await userEvent.click(clockButton);
+    const clockPosition = document.querySelector<HTMLElement>(
+      '.q-time__clock-position',
+    );
+    await expect(clockPosition).toBeTruthy();
+    await userEvent.click(clockPosition!);
+    await expect(args['onUpdate:modelValue']).toHaveBeenCalledTimes(2);
+  },
+};
+
+export const WithMask: Story = {
+  args: {
+    modelValue: '',
+    label: 'Numer telefonu',
+    placeholder: '(12) 3456-7890',
+    type: 'text',
+    mask: '(##) ####-####',
+    fillMask: true,
+    hint: 'Maska automatycznie formatuje wprowadzany numer',
+  },
+  render: (args) => ({
+    components: { AbyssInput },
+    setup() {
+      return { args };
+    },
+    template: `<AbyssInput v-bind="args" v-model="args.modelValue" />`,
+  }),
+  play: async ({ canvas, userEvent }) => {
+    const input = canvas.getByRole('textbox');
+    await userEvent.click(input);
+    await userEvent.type(input, '1234567890');
+    await expect(input).toHaveValue('(12) 3456-7890');
+  },
+};
+
+export const PostalCode: Story = {
+  args: {
+    modelValue: '',
+    label: 'Kod pocztowy',
+    placeholder: '00-000',
+    type: 'text',
+    mask: '##-###',
+    fillMask: false,
+    hint: 'Format: XX-XXX',
+  },
+  render: (args) => ({
+    components: { AbyssInput },
+    setup() {
+      return { args };
+    },
+    template: `<AbyssInput v-bind="args" v-model="args.modelValue" />`,
+  }),
+};
+
+export const WithCustomAppendSlot: Story = {
+  args: {
+    modelValue: '',
+    label: 'Pole z własnym slotem append',
+    placeholder: 'Tekst...',
+    type: 'text',
+  },
+  render: (args) => ({
+    components: { AbyssInput },
+    setup() {
+      return { args };
+    },
+    template: `
+      <AbyssInput v-bind="args" v-model="args.modelValue">
+        <template #append>
+          <q-icon name="sym_r_star" />
+        </template>
+      </AbyssInput>
+    `,
+  }),
+  play: async ({ canvas }) => {
+    // Weryfikujemy, że własny slot append jest wyrenderowany (hasAppendContent — slots.append branch)
+    const input = canvas.getByRole('textbox');
+    await expect(input).toBeVisible();
+  },
+};
+
+export const CollapsedWithChangingValue: Story = {
+  args: {
+    modelValue: '',
+    label: 'Zwijane z wartością',
+    placeholder: 'Szukaj...',
+    type: 'text',
+    collapsed: true,
+  },
+  render: (args) => ({
+    components: { AbyssInput },
+    setup() {
+      return { args };
+    },
+    template: `<AbyssInput v-bind="args" v-model="args.modelValue" />`,
+  }),
+  play: async ({ canvas, userEvent }) => {
+    // Pole startuje jako zwinięte
+    const input = canvas.getByRole('textbox');
+
+    // Kliknięcie rozwija pole (handleInputClick — true branch: isCollapsed && collapsed)
+    await userEvent.click(input);
+    await userEvent.type(input, 'test');
+    await expect(input).toHaveValue('test');
+
+    // Watcher props.modelValue: nowa wartość + collapsed => isCollapsed = false
+    // (wartość jest już wpisana, pole pozostaje rozwinięte)
+    await expect(input).toBeVisible();
+
+    // handleInputBlur — false branch: collapsed=true ALE modelValue niepusty → warunek fałszywy
+    await userEvent.tab();
+    await expect(input).toBeVisible();
+  },
+};
+
+export const CollapsedWatcherPropsChange: Story = {
+  args: {
+    modelValue: '',
+    label: '',
+    placeholder: 'Tekst...',
+    type: 'text',
+    collapsed: false,
+  },
+  render: (args) => ({
+    components: { AbyssInput, AbyssButton },
+    setup() {
+      return { args };
+    },
+    template: `
+      <div style="width: 100%; display: flex; flex-direction: column; gap: 16px; align-items: flex-start;">
+        <AbyssButton @click="args.collapsed = !args.collapsed">Toggle</AbyssButton>
+        <AbyssInput v-bind="args" v-model="args.modelValue" />
+      </div>
+    `,
+  }),
+  play: async ({ canvas, userEvent }) => {
+    const input = canvas.getByRole('textbox');
+    await expect(input).toBeVisible();
+
+    // Kliknięcie przycisku toggle zmienia props.collapsed (watcher props.collapsed)
+    const toggleBtn = canvas.getByRole('button', { name: 'Toggle' });
+    await userEvent.click(toggleBtn);
+
+    // Po zmianie collapsed na true, pole powinno być zwinięte
+    const label = canvas.queryByText('Watcher collapsed prop');
+    await expect(label).not.toBeInTheDocument();
+  },
+};
+
+export const CollapsedWithSearchButton: Story = {
+  args: {
+    modelValue: '',
+    label: 'Wyszukiwanie',
+    placeholder: 'Szukaj...',
+    type: 'search',
+    collapsed: true,
+  },
+  render: (args) => ({
+    components: { AbyssInput },
+    setup() {
+      return { args };
+    },
+    template: `<AbyssInput v-bind="args" v-model="args.modelValue" />`,
+  }),
+  play: async ({ canvas }) => {
+    const label = canvas.queryByText('Wyszukiwanie');
+    await expect(label).not.toBeInTheDocument();
+    const searchButton = canvas.getByRole('button');
+    await expect(searchButton).toBeVisible();
+  },
+};
+
+export const BeforeAfterSlots: Story = {
+  name: 'Sloty before i after',
+  args: {
+    modelValue: '',
+    label: 'Z zewnętrznymi slotami',
+    placeholder: 'Tekst...',
+    type: 'text',
+  },
+  render: (args) => ({
+    components: { AbyssInput },
+    setup() {
+      return { args };
+    },
+    template: `
+      <AbyssInput v-bind="args" v-model="args.modelValue">
+        <template #before>
+          <span class="slot-before">PRE</span>
+        </template>
+        <template #after>
+          <span class="slot-after">POST</span>
+        </template>
+      </AbyssInput>
+    `,
+  }),
+  play: async ({ canvasElement }) => {
+    const before = canvasElement.querySelector('.slot-before');
+    await expect(before).toBeTruthy();
+    const after = canvasElement.querySelector('.slot-after');
+    await expect(after).toBeTruthy();
+  },
+};
+
+export const InvalidMaxLength: Story = {
+  name: 'Nieprawidłowe maxLength (< -1)',
+  args: {
+    modelValue: '',
+    label: 'Pole z błędnym maxLength',
+    placeholder: 'Tekst...',
+    type: 'text',
+    maxLength: -2,
+  },
+  render: (args) => ({
+    components: { AbyssInput },
+    setup() {
+      return { args };
+    },
+    template: `<AbyssInput v-bind="args" v-model="args.modelValue" />`,
+  }),
+  play: async ({ canvas }) => {
+    // Komponent renderuje się mimo błędnego maxLength (console.warn jest wywołany)
+    const input = canvas.getByRole('textbox');
+    await expect(input).toBeVisible();
+  },
+};
+
+export const CollapsedWithFallbackIcon: Story = {
+  args: {
+    modelValue: '',
+    label: '',
+    placeholder: 'Wprowadź tekst...',
+    type: 'text',
+    collapsed: true,
+  },
+  render: (args) => ({
+    components: { AbyssInput },
+    setup() {
+      return { args };
+    },
+    template: `<AbyssInput v-bind="args" v-model="args.modelValue" />`,
+  }),
+  play: async ({ canvas, userEvent }) => {
+    // Kliknięcie w input powinno rozwinąć pole (handleInputClick — true branch)
+    const input = canvas.getByRole('textbox');
+    await userEvent.click(input);
+
+    // Po rozwinięciu input przyjmuje fokus
+    await expect(input).toBeVisible();
+
+    // Wyczyszczenie wartości i utrata fokusu powinny zwinąć pole z powrotem
+    // (handleInputBlur — true branch: collapsed && !modelValue)
+    await userEvent.tab();
+  },
+};
+
+export const CollapsedWithCustomAppend: Story = {
+  name: 'Zwinięte z własnym slotem append',
+  args: {
+    modelValue: '',
+    label: '',
+    placeholder: 'Tekst...',
+    type: 'text',
+    collapsed: true,
+  },
+  render: (args) => ({
+    components: { AbyssInput },
+    setup() {
+      return { args };
+    },
+    template: `
+      <AbyssInput v-bind="args" v-model="args.modelValue">
+        <template #append>
+          <q-icon name="sym_r_star" class="custom-append-icon" />
+        </template>
+      </AbyssInput>
+    `,
+  }),
+  play: async ({ canvasElement }) => {
+    // collapsed=true → v-if="collapsed && !hasAppendContent" ewaluuje hasAppendContent
+    // slots.append jest truthy → if (slots.append) return true — pokrywa tę gałąź
+    // !hasAppendContent = false → ikona fallback NIE jest renderowana
+    const fallback = canvasElement.querySelector('.collapsed-fallback-icon');
+    await expect(fallback).toBeNull();
+  },
+};

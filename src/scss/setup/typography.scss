@@ -1,0 +1,41 @@
+@use '../helpers/variables' as var;
+
+body,
+input,
+select,
+textarea,
+button {
+  font-family: var.$font-family-base;
+  font-size: 16px;
+  line-height: 1.5;
+}
+
+code,
+kbd,
+samp,
+pre {
+  font-family: var.$font-family-mono;
+}
+
+// Override font-display to prevent render-blocking while fonts load.
+// Quasar extras declare font-display: block which delays text rendering.
+
+@font-face {
+  font-family: 'Roboto';
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Roboto Mono';
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Material Icons';
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Material Symbols Rounded';
+  font-display: swap;
+}

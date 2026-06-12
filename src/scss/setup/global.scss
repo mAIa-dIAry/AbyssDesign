@@ -1,0 +1,33 @@
+:root {
+  interpolate-size: allow-keywords;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+::selection {
+  background-color: white;
+  color: black;
+}
+
+body {
+  background-color: transparent;
+  color: white;
+
+  &.body--dark {
+    background-color: transparent;
+  }
+}
+
+body.q-body--force-scrollbar-x {
+  overflow-x: unset;
+}
+
+body.native-mobile {
+  .q-notifications__list--top {
+    top: env(safe-area-inset-top, 0px);
+  }
+}
