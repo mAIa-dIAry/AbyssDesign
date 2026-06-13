@@ -1,0 +1,352 @@
+:root {
+  --docs-background-color-primary: hsl(210, 4%, 9%);
+  --docs-background-color-secondary: hsl(210, 4%, 11%);
+  --docs-background-color-tertiary: hsl(210, 4%, 7%);
+  --docs-font-color-primary: white;
+  --docs-font-color-secondary: hsl(0, 0%, 80%);
+}
+
+body.within-iframe,
+.sb-main-fullscreen {
+  background: #1a1a1a !important;
+}
+
+html {
+  scrollbar-color: var(--docs-background-color-primary);
+}
+
+.sb-show-main {
+  &.sb-main-padded {
+    padding: 0;
+  }
+}
+
+.abyss-bg-decorator {
+  position: relative;
+  width: 100%;
+  min-height: 100vh;
+
+  .abyss-background.abyss-bg-decorator__background {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+  }
+
+  &__overlay {
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    background-color: rgba(0, 0, 0, 0.75);
+  }
+
+  &__content {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    justify-content: center;
+    z-index: 2;
+    padding: 48px;
+    min-height: 100vh;
+    box-sizing: border-box;
+
+    > * {
+      width: 100%;
+      max-width: 720px;
+      margin-inline: auto;
+    }
+  }
+}
+
+.abyss-bg-decorator-self {
+  width: 100%;
+  height: 100vh;
+}
+
+#storybook-docs .sbdocs {
+  background-color: var(--docs-background-color-primary);
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6,
+  .sbdocs-title,
+  .sbdocs-content p,
+  .sbdocs-content li,
+  button,
+  a {
+    color: var(--docs-font-color-primary);
+  }
+
+  .sbdocs-content code {
+    background-color: rgba(white, 0.1);
+    color: var(--docs-font-color-primary);
+    border-color: rgba(white, 0.1);
+  }
+
+  .docblock-code-toggle {
+    background-color: var(--docs-background-color-secondary);
+  }
+
+  :where(table:not(.sb-anchor, .sb-unstyled, .sb-unstyled table)) {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 16px 0;
+    font-size: 14px;
+    line-height: 1.45;
+
+    thead > tr > th,
+    tbody > tr > td {
+      color: var(--docs-font-color-primary);
+      background-color: var(--docs-background-color-secondary);
+      border: 1px solid rgba(white, 0.08);
+      padding: 10px 12px;
+      text-align: left;
+      vertical-align: top;
+    }
+
+    thead > tr > th {
+      color: var(--docs-font-color-secondary);
+      background-color: var(--docs-background-color-tertiary);
+      font-weight: 600;
+      letter-spacing: 0.02em;
+    }
+
+    tbody > tr:nth-child(even) > td {
+      background-color: var(--docs-background-color-tertiary);
+    }
+
+    tbody > tr:hover > td {
+      background-color: hsl(210, 4%, 14%);
+    }
+
+    td code,
+    th code {
+      background-color: rgba(white, 0.1);
+      color: var(--docs-font-color-primary);
+      border-color: rgba(white, 0.1);
+    }
+
+    a {
+      color: hsl(200, 80%, 70%);
+    }
+  }
+
+  .docblock-argstable {
+    input:not([type='checkbox']),
+    textarea,
+    select {
+      background-color: var(--docs-background-color-tertiary);
+      color: var(--docs-font-color-primary);
+
+      &::placeholder {
+        color: var(--docs-font-color-secondary);
+      }
+    }
+
+    label:has(input[type='checkbox']) {
+      background-color: var(--docs-background-color-tertiary);
+
+      input:focus {
+        box-shadow: none !important;
+        outline: 1px solid var(--docs-font-color-secondary);
+        outline-offset: 1px;
+      }
+
+      input:not(:checked) ~ span:first-of-type,
+      input:checked ~ span:last-of-type {
+        color: var(--docs-background-color-tertiary);
+        background-color: var(--docs-font-color-secondary);
+      }
+
+      span {
+        color: var(--docs-font-color-secondary);
+      }
+    }
+
+    tbody > tr > * {
+      color: var(--docs-font-color-primary);
+      background-color: var(--docs-background-color-secondary);
+
+      span[class] {
+        color: var(--docs-font-color-secondary);
+      }
+
+      button[class] {
+        box-shadow: rgba(255, 255, 255, 0.15) 0px 0px 0px 1px inset;
+        background-color: var(--docs-background-color-tertiary);
+      }
+    }
+
+    tbody > tr[title] > td {
+      border: none;
+    }
+
+    thead > tr > * {
+      color: var(--docs-font-color-secondary);
+    }
+  }
+
+  .sbdocs-preview {
+    div[role='toolbar'] {
+      background-color: var(--docs-background-color-secondary);
+    }
+  }
+
+  .css-aeskne {
+    background-color: var(--docs-background-color-tertiary);
+
+    button {
+      background-color: var(--docs-background-color-secondary);
+    }
+  }
+
+  .docs-story {
+    > div {
+      padding: 0;
+      border: none !important;
+      background: transparent;
+    }
+
+    .innerZoomElementWrapper {
+      &:has([id^='story--ui-abysstemplate']) {
+        height: 500px;
+
+        .abyss-template {
+          height: 100% !important;
+        }
+      }
+
+      .abyss-bg-decorator {
+        height: unset;
+      }
+
+      > div {
+        border: none !important;
+
+        .abyss-bg-decorator-self {
+          height: 300px;
+        }
+
+        .abyss-bg-decorator {
+          min-height: unset;
+
+          &__content {
+            min-height: unset;
+          }
+        }
+      }
+    }
+  }
+
+  .docblock-source {
+    background-color: var(--docs-background-color-tertiary);
+    border-radius: 6px;
+
+    & > div:last-child {
+      background-color: transparent;
+
+      & > button {
+        background-color: var(--docs-background-color-secondary);
+      }
+    }
+
+    pre.prismjs {
+      border-radius: 6px;
+      padding: 16px;
+      overflow: auto;
+      margin: 8px 0;
+
+      .language-html,
+      [class^='language-'] {
+        color: hsl(0, 0%, 85%);
+        font-family: var(--font-family-mono);
+        font-size: 13px;
+        line-height: 1.6;
+        white-space: pre;
+
+        .token {
+          &.comment,
+          &.prolog,
+          &.doctype,
+          &.cdata {
+            color: hsl(210, 10%, 45%);
+            font-style: italic;
+          }
+
+          &.punctuation {
+            color: hsl(0, 0%, 60%);
+          }
+
+          &.tag {
+            color: hsl(355, 70%, 65%);
+          }
+
+          &.attr-name {
+            color: hsl(40, 90%, 65%);
+          }
+
+          &.attr-value {
+            color: hsl(120, 45%, 60%);
+
+            &.punctuation {
+              color: hsl(0, 0%, 60%);
+
+              &.attr-equals {
+                color: hsl(0, 0%, 60%);
+              }
+            }
+          }
+
+          &.keyword,
+          &.selector,
+          &.important,
+          &.atrule {
+            color: hsl(270, 60%, 70%);
+          }
+
+          &.string {
+            color: hsl(120, 45%, 60%);
+          }
+
+          &.property,
+          &.function {
+            color: hsl(200, 80%, 65%);
+          }
+
+          &.number,
+          &.boolean,
+          &.constant,
+          &.symbol,
+          &.deleted {
+            color: hsl(30, 90%, 65%);
+          }
+
+          &.operator,
+          &.entity,
+          &.url {
+            color: hsl(0, 0%, 75%);
+          }
+
+          &.inserted {
+            color: hsl(130, 50%, 55%);
+          }
+
+          &.bold {
+            font-weight: bold;
+          }
+
+          &.italic {
+            font-style: italic;
+          }
+        }
+      }
+    }
+  }
+}
+
+.react-aria-Popover > div[class] {
+  background: var(--docs-background-color-secondary);
+}

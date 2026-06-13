@@ -75,7 +75,7 @@
             />
             <AbyssButton
               v-if="type === 'password'"
-              :size="size"
+              :size="buttonSize"
               :icon="
                 isPasswordVisible ? 'sym_r_visibility' : 'sym_r_visibility_off'
               "
@@ -85,14 +85,14 @@
             <AbyssButton
               v-if="type === 'search'"
               flat
-              :size="size"
+              :size="buttonSize"
               icon="sym_r_search"
               class="icon-button"
               @click="handleSearchClick"
             />
             <AbyssButton
               v-if="type === 'date' || type === 'datetime-local'"
-              :size="size"
+              :size="buttonSize"
               icon="sym_r_calendar_month"
               class="icon-button"
             >
@@ -114,7 +114,7 @@
             </AbyssButton>
             <AbyssButton
               v-if="type === 'time' || type === 'datetime-local'"
-              :size="size"
+              :size="buttonSize"
               icon="sym_r_schedule"
               class="icon-button"
             >
@@ -232,6 +232,10 @@ if (props.maxLength < -1) {
 const hasBottomContent = computed(() => {
   return !!(props.hint || props.errorMessage || props.counter);
 });
+
+const buttonSize = computed<'small' | 'medium'>(() =>
+  props.size === 'small' ? 'small' : 'medium',
+);
 
 const slots = useSlots();
 
