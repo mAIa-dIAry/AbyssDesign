@@ -27,24 +27,33 @@
 
     <template #top-right>
       <slot name="top-right">
-        <div class="abyss-table__search">
-          <AbyssInput
-            v-model="filter"
-            type="text"
-            size="small"
-            flat
-            debounce="300"
-            :placeholder="t('ui.table.search')"
+        <div class="abyss-table__top-actions">
+          <div class="abyss-table__search">
+            <AbyssInput
+              v-model="filter"
+              type="text"
+              size="small"
+              flat
+              debounce="300"
+              :placeholder="t('ui.table.search')"
+            >
+              <template #append>
+                <AbyssButton
+                  flat
+                  size="small"
+                  icon="sym_r_search"
+                  class="icon-button"
+                />
+              </template>
+            </AbyssInput>
+          </div>
+
+          <div
+            v-if="$slots['header-append']"
+            class="abyss-table__header-append"
           >
-            <template #append>
-              <AbyssButton
-                flat
-                size="small"
-                icon="sym_r_search"
-                class="icon-button"
-              />
-            </template>
-          </AbyssInput>
+            <slot name="header-append" />
+          </div>
         </div>
       </slot>
     </template>
@@ -193,6 +202,7 @@ const DEFAULT_ROWS_PER_PAGE_OPTIONS = [5, 7, 10, 15, 20, 25, 50, 0] as const;
 const RESERVED_SLOTS = [
   'top-left',
   'top-right',
+  'header-append',
   'header',
   'body',
   'row-expand',
@@ -365,22 +375,32 @@ defineOptions({
 </script>
 
 <style scoped lang="scss">
-@mixin abyss-separator {
-  height: 0;
-  width: 100%;
-  border-top: 1px solid var(--table-separator-dark);
-  border-bottom: 1px solid var(--table-separator-light);
-}
-
 .abyss-table__title {
   margin-left: 8px;
   width: auto;
 }
 
-.abyss-table__search {
+.abyss-table__top-actions {
   display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
   flex: 1 1 auto;
   width: 100%;
+  min-width: 0;
+}
+
+.abyss-table__header-append {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.abyss-table__search {
+  display: flex;
+  flex: 0 1 300px;
+  width: 100%;
+  max-width: 300px;
   min-width: 0;
 
   :deep(.abyss-input-container),
@@ -411,7 +431,6 @@ defineOptions({
   min-width: 0;
   gap: 16px;
   background: transparent;
-  border-top: none;
   box-shadow: none;
 }
 
@@ -471,9 +490,7 @@ defineOptions({
   --panel-radius: 12px;
   --panel-background: #{rgba(white, 0.01)};
   --table-header-background: #{rgba(white, 0.08)};
-  --table-separator-dark: #{rgba(black, 0.3)};
-  --table-separator-light: #{rgba(white, 0.04)};
-  --table-row-border-color: #{rgba(white, 0.28)};
+  --table-separator-color: #{rgba(white, 0.28)};
 
   box-sizing: border-box;
   width: 100%;
@@ -494,41 +511,29 @@ defineOptions({
   :deep(.q-table__top),
   :deep(.q-table__bottom) {
     padding: 8px;
-  }
 
-  :deep(.q-table__top:not(:empty)) {
-    position: relative;
-
-    &::after {
-      content: '';
-      position: absolute;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      @include abyss-separator;
+    .q-table__separator {
+      display: none;
     }
   }
 
-  :deep(.q-table__bottom:not(:empty)) {
-    position: relative;
-    border-top: none;
-
-    &::before {
-      content: '';
-      position: absolute;
-      left: 0;
-      right: 0;
-      top: 0;
-      @include abyss-separator;
-    }
+  :deep(.q-table__top) {
+    gap: 16px;
   }
 
-  :deep(.q-table__top > .q-table__control:has(.abyss-table__search)) {
+  :deep(.q-table__top > .q-table__control:has(.abyss-table__top-actions)) {
     flex: 1 1 auto;
     width: 0;
     min-width: 200px;
     max-width: none;
     margin-left: auto;
+  }
+
+  :deep(.q-table__top),
+  :deep(.q-table__bottom),
+  :deep(thead tr th),
+  :deep(tbody td) {
+    border-color: var(--table-separator-color);
   }
 
   :deep(.q-table__bottom) {
@@ -552,12 +557,12 @@ defineOptions({
     position: relative;
     z-index: 1;
     background-color: transparent;
-    border-top: 1px solid var(--table-row-border-color);
-    border-bottom: 1px solid var(--table-row-border-color);
+    border-top: 1px solid var(--table-separator-color);
+    border-bottom: 1px solid var(--table-separator-color);
   }
 
   :deep(tbody tr:not(:last-child) > td) {
-    border-color: var(--table-row-border-color);
+    border-color: var(--table-separator-color);
   }
 
   :deep(.q-table__middle.scroll) {
@@ -597,9 +602,7 @@ defineOptions({
     --panel-radius: 16px;
     --panel-background: transparent;
     --table-header-background: #{rgba(white, 0.04)};
-    --table-separator-dark: #{rgba(black, 0.15)};
-    --table-separator-light: #{rgba(white, 0.02)};
-    --table-row-border-color: #{rgba(white, 0.14)};
+    --table-separator-color: #{rgba(white, 0.14)};
 
     background: rgba(black, 0.2);
     border-radius: 16px;

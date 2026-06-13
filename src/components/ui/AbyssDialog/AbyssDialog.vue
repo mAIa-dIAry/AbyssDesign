@@ -72,7 +72,7 @@ export interface AbyssDialogAction {
   iconRight?: string;
   fullWidth?: boolean;
   style?: string | Record<string, string>;
-  size?: 'normal' | 'small';
+  size?: 'small' | 'medium' | 'big';
   class?: AbyssDialogClass;
   disable?: boolean;
   loading?: boolean;

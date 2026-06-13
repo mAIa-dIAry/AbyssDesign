@@ -11,7 +11,7 @@ type AbyssButtonStoryArgs = {
   fullWidth?: boolean;
   style?: string | Record<string, string>;
   current?: boolean;
-  size?: 'normal' | 'small';
+  size?: 'small' | 'medium' | 'big';
   class?:
     | string
     | Record<string, boolean>
@@ -62,10 +62,10 @@ const meta: Meta<AbyssButtonStoryArgs> = {
     },
     size: {
       control: 'select',
-      options: ['normal', 'small'],
+      options: ['small', 'medium', 'big'],
       description: 'Rozmiar przycisku',
       table: {
-        defaultValue: { summary: 'normal' },
+        defaultValue: { summary: 'big' },
       },
     },
     style: {
@@ -159,7 +159,7 @@ export const Default: Story = {
   parameters: {
     docs: {
       description: {
-        story: 'Podstawowy przycisk z tekstem w standardowym rozmiarze.',
+        story: 'Podstawowy przycisk z tekstem w rozmiarze big (domyślnym).',
       },
     },
   },
@@ -172,6 +172,8 @@ export const Default: Story = {
     await expect(button).toBeVisible();
     await expect(button).toBeEnabled();
     await expect(button).not.toHaveClass('size-small');
+    await expect(button).not.toHaveClass('size-medium');
+    await expect(button).toHaveClass('size-big');
     await expect(button).not.toHaveClass('full-width');
 
     await userEvent.click(button);
@@ -305,6 +307,29 @@ export const WithBothIcons: Story = {
     label: 'Obie strony',
     icon: 'sym_r_arrow_back',
     iconRight: 'sym_r_arrow_forward',
+  },
+};
+
+export const MediumSize: Story = {
+  name: 'Średni rozmiar',
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'Przycisk w rozmiarze medium — wysokość 40px, jak `AbyssSelect` w trybie small.',
+      },
+    },
+  },
+  args: {
+    icon: 'sym_r_refresh',
+    size: 'medium',
+  },
+  play: async ({ canvas }) => {
+    const button = canvas.getByRole('button');
+
+    await expect(button).toBeVisible();
+    await expect(button).toHaveClass('size-medium');
+    await expect(button).toHaveClass('icon-only');
   },
 };
 

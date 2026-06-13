@@ -10,6 +10,8 @@
       {
         'icon-only': icon && !label,
         'size-small': size === 'small',
+        'size-medium': size === 'medium',
+        'size-big': size === 'big',
         'full-width': fullWidth,
         gradient: gradient,
         current: isCurrent && !gradient,
@@ -59,7 +61,7 @@ export interface AbyssButtonProps {
   fullWidth?: boolean;
   style?: string | Record<string, string>;
   current?: boolean;
-  size?: 'normal' | 'small';
+  size?: 'small' | 'medium' | 'big';
   class?:
     | string
     | Record<string, boolean>
@@ -81,7 +83,7 @@ const props = withDefaults(defineProps<AbyssButtonProps>(), {
   route: '',
   fullWidth: false,
   style: '',
-  size: 'normal',
+  size: 'big',
   class: '',
   current: false,
   disable: false,
@@ -164,6 +166,27 @@ $shadow-frame-soft-inverted:
     --padding-y: 8px;
     --icon-size: 16px;
     --border-radius: 6px;
+  }
+
+  &.size-medium {
+    --font-size: 12px;
+    --padding-y: 12px;
+    --icon-size: 16px;
+    --border-radius: 6px;
+    min-height: 40px;
+    height: 40px;
+
+    &.icon-only {
+      min-width: 40px;
+      width: 40px;
+    }
+  }
+
+  &.size-big {
+    --font-size: 16px;
+    --padding-y: 12px;
+    --icon-size: 24px;
+    --border-radius: 8px;
   }
 
   :deep() {
