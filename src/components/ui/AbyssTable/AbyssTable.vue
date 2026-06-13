@@ -1,7 +1,7 @@
 <template>
   <q-table
     class="abyss-table"
-    :class="props.class"
+    :class="[{ 'abyss-table--as-card': asCard }, props.class]"
     dark
     v-bind="tableProps"
     v-model:pagination="pagination"
@@ -214,9 +214,13 @@ export interface AbyssTableProps
     | Record<string, boolean>
     | Array<string | Record<string, boolean>>;
   pagination?: QTableProps['pagination'];
+  /** Styl kontenera jak `AbyssCard` — tło, radius 16px i cień karty. */
+  asCard?: boolean;
 }
 
-const props = defineProps<AbyssTableProps>();
+const props = withDefaults(defineProps<AbyssTableProps>(), {
+  asCard: false,
+});
 
 const { t } = useI18n();
 
@@ -312,6 +316,7 @@ const tableProps = computed((): Omit<QTableProps, LockedQTableProps> => {
     class: _class,
     pagination: _pagination,
     title: _title,
+    asCard: _asCard,
     ...rest
   } = props;
   return rest;
@@ -323,6 +328,13 @@ defineOptions({
 </script>
 
 <style scoped lang="scss">
+@mixin abyss-separator {
+  height: 0;
+  width: 100%;
+  border-top: 1px solid var(--table-separator-dark);
+  border-bottom: 1px solid var(--table-separator-light);
+}
+
 .abyss-table__title {
   margin-left: 8px;
   width: auto;
@@ -360,7 +372,7 @@ defineOptions({
   flex: 1 1 auto;
   width: 100%;
   min-width: 0;
-  gap: 16px;
+  gap: 168px;
   background: transparent;
   border-top: none;
   box-shadow: none;
@@ -398,7 +410,6 @@ defineOptions({
 .abyss-table__pagination {
   display: flex;
   align-items: center;
-  gap: 12px;
   flex-shrink: 0;
   min-width: max-content;
 }
@@ -412,12 +423,16 @@ defineOptions({
 .abyss-table__pagination-label {
   flex-shrink: 0;
   white-space: nowrap;
+  margin-right: 8px;
 }
 
 .abyss-table {
   --panel-radius: 12px;
   --panel-background: #{rgba(white, 0.01)};
   --table-header-background: #{rgba(white, 0.08)};
+  --table-separator-dark: #{rgba(black, 0.3)};
+  --table-separator-light: #{rgba(white, 0.04)};
+  --table-row-border-color: #{rgba(white, 0.28)};
 
   box-sizing: border-box;
   width: 100%;
@@ -440,6 +455,33 @@ defineOptions({
   :deep(.q-table__top),
   :deep(.q-table__bottom) {
     padding: 8px;
+  }
+
+  :deep(.q-table__top:not(:empty)) {
+    position: relative;
+
+    &::after {
+      content: '';
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      @include abyss-separator;
+    }
+  }
+
+  :deep(.q-table__bottom:not(:empty)) {
+    position: relative;
+    border-top: none;
+
+    &::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      right: 0;
+      top: 0;
+      @include abyss-separator;
+    }
   }
 
   :deep(.q-table__top > .q-table__control:has(.abyss-table__search)) {
@@ -474,6 +516,12 @@ defineOptions({
     position: relative;
     z-index: 1;
     background-color: transparent;
+    border-top: 1px solid var(--table-row-border-color);
+    border-bottom: 1px solid var(--table-row-border-color);
+  }
+
+  :deep(tbody tr:not(:last-child) > td) {
+    border-color: var(--table-row-border-color);
   }
 
   /* prevent scrolling behind sticky top row on focus */
@@ -484,6 +532,24 @@ defineOptions({
 
   :deep(.q-table__middle.scroll) {
     @include scrollbar;
+  }
+
+  &--as-card {
+    --panel-radius: 16px;
+    --panel-background: #{rgba(black, 0.2)};
+    --table-header-background: #{rgba(white, 0.04)};
+    --table-separator-dark: #{rgba(black, 0.15)};
+    --table-separator-light: #{rgba(white, 0.02)};
+    --table-row-border-color: #{rgba(white, 0.14)};
+
+    background-color: rgba(black, 0.2);
+    border-radius: 16px;
+    box-shadow: $shadow-card, $shadow-frame-medium;
+    border-bottom: 1px solid rgba(black, 0.2);
+
+    :deep(tbody td::before) {
+      background: rgba(white, 0.035);
+    }
   }
 }
 </style>

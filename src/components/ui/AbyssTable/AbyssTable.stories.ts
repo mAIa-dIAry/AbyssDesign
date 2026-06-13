@@ -150,6 +150,14 @@ const meta: Meta<typeof AbyssTable> = {
   component: AbyssTable,
   tags: ["autodocs"],
   decorators: [withAbyssBackground],
+  argTypes: {
+    asCard: {
+      control: "boolean",
+      description:
+        "Styl kontenera jak AbyssCard — tło, border-radius 16px i cień karty",
+      table: { defaultValue: { summary: "false" } },
+    },
+  },
   parameters: {
     docs: {
       description: {
@@ -208,5 +216,45 @@ export const BasePreset: Story = {
 
     const pagination = canvasElement.querySelector(".q-table__bottom");
     await expect(pagination).not.toBeNull();
+  },
+};
+
+export const AsCard: Story = {
+  name: "Jako karta",
+  parameters: {
+    docs: {
+      description: {
+        story:
+          "Wariant `as-card` — tło, zaokrąglenie i cień jak w `AbyssCard`.",
+      },
+      source: {
+        code: `<AbyssTable
+  as-card
+  title="Treats"
+  :rows="rows"
+  :columns="columns"
+  row-key="name"
+/>`,
+      },
+    },
+  },
+  render: () => ({
+    components: { AbyssTable },
+    setup() {
+      return { columns, rows };
+    },
+    template: `
+      <AbyssTable
+        as-card
+        title="Treats"
+        :rows="rows"
+        :columns="columns"
+        row-key="name"
+      />
+    `,
+  }),
+  play: async ({ canvasElement }) => {
+    const table = canvasElement.querySelector(".abyss-table");
+    await expect(table).toHaveClass("abyss-table--as-card");
   },
 };
