@@ -1,7 +1,14 @@
 <template>
   <q-table
     class="abyss-table"
-    :class="[{ 'abyss-table--as-card': asCard }, props.class]"
+    :class="[
+      {
+        'abyss-table--as-card': asCard,
+        'abyss-table--fixed-height': hasFixedHeight,
+      },
+      props.class,
+    ]"
+    :style="tableContainerStyle"
     dark
     v-bind="tableProps"
     v-model:pagination="pagination"
@@ -12,6 +19,7 @@
         <AbyssTitle
           v-if="props.title"
           class="abyss-table__title"
+          :icon="props.titleIcon"
           :label="String(props.title)"
         />
       </slot>
@@ -214,12 +222,20 @@ export interface AbyssTableProps
     | Record<string, boolean>
     | Array<string | Record<string, boolean>>;
   pagination?: QTableProps['pagination'];
+  /** Ikona obok tytułu w `#top-left` (przekazywana do `AbyssTitle`). */
+  titleIcon?: string;
+  /**
+   * Wysokość kontenera tabeli. `0` (domyślnie) — auto, bez wewnętrznego scrolla.
+   * Liczba traktowana jako px; string np. `"min(70vh, 640px)"`.
+   */
+  height?: number | string;
   /** Styl kontenera jak `AbyssCard` — tło, radius 16px i cień karty. */
   asCard?: boolean;
 }
 
 const props = withDefaults(defineProps<AbyssTableProps>(), {
   asCard: false,
+  height: 0,
 });
 
 const { t } = useI18n();
@@ -311,11 +327,32 @@ function handleRowsPerPageChange(value: unknown) {
   };
 }
 
+const hasFixedHeight = computed(() => {
+  const { height } = props;
+
+  if (height == null || height === '') return false;
+  if (height === 0 || height === '0') return false;
+
+  return true;
+});
+
+const tableContainerStyle = computed(() => {
+  if (!hasFixedHeight.value) return undefined;
+
+  const { height } = props;
+
+  return {
+    height: typeof height === 'number' ? `${height}px` : height,
+  };
+});
+
 const tableProps = computed((): Omit<QTableProps, LockedQTableProps> => {
   const {
     class: _class,
     pagination: _pagination,
     title: _title,
+    titleIcon: _titleIcon,
+    height: _height,
     asCard: _asCard,
     ...rest
   } = props;
@@ -372,7 +409,7 @@ defineOptions({
   flex: 1 1 auto;
   width: 100%;
   min-width: 0;
-  gap: 168px;
+  gap: 16px;
   background: transparent;
   border-top: none;
   box-shadow: none;
@@ -412,6 +449,10 @@ defineOptions({
   align-items: center;
   flex-shrink: 0;
   min-width: max-content;
+
+  &:empty {
+    display: none;
+  }
 }
 
 .abyss-table__pagination-actions {
@@ -442,9 +483,7 @@ defineOptions({
   background: var(--panel-background);
   box-shadow: $shadow-small, $shadow-frame-soft;
   overflow: hidden;
-
-  /* height or max-height is important — Quasar StickyHeader */
-  height: 310px;
+  height: auto;
 
   :deep(.q-table__top),
   :deep(.q-table__bottom),
@@ -497,17 +536,14 @@ defineOptions({
   }
 
   :deep(thead) {
-    position: sticky;
-    top: 0;
-    z-index: 2;
+    position: relative;
+    z-index: 1;
 
     &::before {
       content: '';
       position: absolute;
       inset: 0;
       background-color: var(--table-header-background);
-      -webkit-backdrop-filter: blur(20px);
-      backdrop-filter: blur(20px);
       pointer-events: none;
     }
   }
@@ -524,28 +560,66 @@ defineOptions({
     border-color: var(--table-row-border-color);
   }
 
-  /* prevent scrolling behind sticky top row on focus */
-  :deep(tbody) {
-    /* height of all previous header rows */
-    scroll-margin-top: 48px;
-  }
-
   :deep(.q-table__middle.scroll) {
     @include scrollbar;
   }
 
+  &:not(.abyss-table--fixed-height) {
+    :deep(.q-table__middle.scroll) {
+      overflow-x: auto;
+      overflow-y: hidden;
+    }
+  }
+
+  &--fixed-height {
+    :deep(.q-table__middle) {
+      flex: 1 1 auto;
+      min-height: 0;
+    }
+
+    :deep(thead) {
+      position: sticky;
+      top: 0;
+      z-index: 2;
+
+      &::before {
+        -webkit-backdrop-filter: blur(20px);
+        backdrop-filter: blur(20px);
+      }
+    }
+
+    :deep(tbody) {
+      scroll-margin-top: 48px;
+    }
+  }
+
   &--as-card {
     --panel-radius: 16px;
-    --panel-background: #{rgba(black, 0.2)};
+    --panel-background: transparent;
     --table-header-background: #{rgba(white, 0.04)};
     --table-separator-dark: #{rgba(black, 0.15)};
     --table-separator-light: #{rgba(white, 0.02)};
     --table-row-border-color: #{rgba(white, 0.14)};
 
-    background-color: rgba(black, 0.2);
+    background: rgba(black, 0.2);
     border-radius: 16px;
     box-shadow: $shadow-card, $shadow-frame-medium;
     border-bottom: 1px solid rgba(black, 0.2);
+
+    :deep(.q-table__top),
+    :deep(.q-table__bottom),
+    :deep(.q-table__middle) {
+      background-color: transparent;
+    }
+
+    :deep(.q-table__top),
+    :deep(.q-table__bottom) {
+      padding: 12px;
+    }
+
+    .abyss-table__title {
+      margin-left: 4px;
+    }
 
     :deep(tbody td::before) {
       background: rgba(white, 0.035);

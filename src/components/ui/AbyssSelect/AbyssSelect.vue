@@ -316,9 +316,19 @@ function resolveControlElement(): HTMLElement | null {
 
   &--size-small {
     --font-size: 12px;
-    --padding-y: 8px;
+    --padding-y: 12px;
     --icon-size: 16px;
     --border-radius: 6px;
+
+    .abyss-select-wrapper :deep(.abyss-select) {
+      .q-field__append {
+        margin-right: calc(-1 * (var(--padding-x) - var(--padding-y)));
+      }
+
+      .q-select__dropdown-icon {
+        font-size: var(--icon-size);
+      }
+    }
   }
 
   .abyss-select-wrapper {

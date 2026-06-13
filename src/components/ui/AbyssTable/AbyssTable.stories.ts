@@ -157,12 +157,19 @@ const meta: Meta<typeof AbyssTable> = {
         "Styl kontenera jak AbyssCard — tło, border-radius 16px i cień karty",
       table: { defaultValue: { summary: "false" } },
     },
+    height: {
+      control: "number",
+      description:
+        "Wysokość kontenera w px. 0 — auto, bez wewnętrznego scrolla i sticky header.",
+      table: { defaultValue: { summary: "0" } },
+    },
   },
   parameters: {
     docs: {
       description: {
         component:
-          "Opiniowany wrapper na `QTable`: ciemny motyw, `flat` + `bordered`, sticky header, wyszukiwarka, sortowanie, rozwijane wiersze i paginacja są wbudowane. Wystarczą `title`, `rows`, `columns` i `row-key`.",
+          "Opiniowany wrapper na `QTable`: ciemny motyw, wyszukiwarka, sortowanie, rozwijane wiersze i paginacja są wbudowane. " +
+          "Domyślnie (`height=0`) tabela rośnie z treścią. Ustaw `height`, aby włączyć scroll wewnętrzny i sticky header.",
       },
     },
   },
@@ -206,6 +213,7 @@ export const BasePreset: Story = {
   play: async ({ canvasElement }) => {
     const table = canvasElement.querySelector(".abyss-table");
     await expect(table).not.toBeNull();
+    await expect(table).not.toHaveClass("abyss-table--fixed-height");
 
     const title = canvasElement.querySelector(".abyss-table__title");
     await expect(title).not.toBeNull();
@@ -256,5 +264,45 @@ export const AsCard: Story = {
   play: async ({ canvasElement }) => {
     const table = canvasElement.querySelector(".abyss-table");
     await expect(table).toHaveClass("abyss-table--as-card");
+  },
+};
+
+export const FixedHeight: Story = {
+  name: "Stała wysokość",
+  parameters: {
+    docs: {
+      description: {
+        story:
+          "Prop `height` włącza scroll wewnętrzny, sticky header i backdrop-filter na nagłówku kolumn.",
+      },
+      source: {
+        code: `<AbyssTable
+  :height="400"
+  title="Treats"
+  :rows="rows"
+  :columns="columns"
+  row-key="name"
+/>`,
+      },
+    },
+  },
+  render: () => ({
+    components: { AbyssTable },
+    setup() {
+      return { columns, rows };
+    },
+    template: `
+      <AbyssTable
+        :height="400"
+        title="Treats"
+        :rows="rows"
+        :columns="columns"
+        row-key="name"
+      />
+    `,
+  }),
+  play: async ({ canvasElement }) => {
+    const table = canvasElement.querySelector(".abyss-table");
+    await expect(table).toHaveClass("abyss-table--fixed-height");
   },
 };
