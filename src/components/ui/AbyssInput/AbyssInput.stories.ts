@@ -53,6 +53,18 @@ const meta: Meta<typeof AbyssInput> = {
       description:
         'Zwija input do wielkości kwadratu, pokazując tylko sekcję append',
     },
+    size: {
+      control: { type: 'select' },
+      options: ['normal', 'small'],
+      description: 'Rozmiar pola — `small` zmniejsza padding, font i ikonę',
+      table: { defaultValue: { summary: 'normal' } },
+    },
+    flat: {
+      control: 'boolean',
+      description:
+        'Wariant bez cienia — np. w nagłówku tabeli lub zwartym toolbarze',
+      table: { defaultValue: { summary: 'false' } },
+    },
     style: { control: 'object' },
     class: { control: 'text' },
   },
@@ -730,5 +742,120 @@ export const CollapsedWithCustomAppend: Story = {
     // !hasAppendContent = false → ikona fallback NIE jest renderowana
     const fallback = canvasElement.querySelector('.collapsed-fallback-icon');
     await expect(fallback).toBeNull();
+  },
+};
+
+export const SmallSize: Story = {
+  name: 'Mały rozmiar',
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'Input w rozmiarze `small` — mniejszy padding, font i ikony w slocie append.',
+      },
+    },
+  },
+  args: {
+    modelValue: '',
+    label: 'Szukaj',
+    placeholder: 'Szukaj...',
+    type: 'search',
+    size: 'small',
+  },
+  render: (args) => ({
+    components: { AbyssInput },
+    setup() {
+      return { args };
+    },
+    template: `<AbyssInput v-bind="args" v-model="args.modelValue" />`,
+  }),
+  play: async ({ canvasElement }) => {
+    const container = canvasElement.querySelector('.abyss-input-container');
+    await expect(container).toHaveClass('abyss-input-container--size-small');
+  },
+};
+
+export const Flat: Story = {
+  name: 'Płaski',
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'Input bez cienia (`flat`) — wariant do osadzenia w gęstych layoutach, np. nagłówku tabeli.',
+      },
+    },
+  },
+  args: {
+    modelValue: '',
+    label: 'Szukaj',
+    placeholder: 'Szukaj...',
+    type: 'text',
+    flat: true,
+  },
+  render: (args) => ({
+    components: { AbyssInput },
+    setup() {
+      return { args };
+    },
+    template: `<AbyssInput v-bind="args" v-model="args.modelValue" />`,
+  }),
+  play: async ({ canvasElement }) => {
+    const input = canvasElement.querySelector('.abyss-input');
+    await expect(input).toHaveClass('abyss-input--flat');
+  },
+};
+
+export const SmallFlat: Story = {
+  name: 'Mały i płaski',
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'Połączenie `size="small"` i `flat` z własnym przyciskiem w slocie append — typowy wariant w `AbyssTable`.',
+      },
+      source: {
+        language: 'html',
+        code: `<AbyssInput
+  v-model="filter"
+  type="text"
+  size="small"
+  flat
+  placeholder="Szukaj"
+>
+  <template #append>
+    <AbyssButton flat size="small" icon="sym_r_search" class="icon-button" />
+  </template>
+</AbyssInput>`,
+      },
+    },
+  },
+  args: {
+    modelValue: '',
+    placeholder: 'Szukaj...',
+    type: 'text',
+    size: 'small',
+    flat: true,
+  },
+  render: (args) => ({
+    components: { AbyssInput, AbyssButton },
+    setup() {
+      return { args };
+    },
+    template: `
+      <AbyssInput v-bind="args" v-model="args.modelValue">
+        <template #append>
+          <AbyssButton flat size="small" icon="sym_r_search" class="icon-button" />
+        </template>
+      </AbyssInput>
+    `,
+  }),
+  play: async ({ canvasElement }) => {
+    const container = canvasElement.querySelector('.abyss-input-container');
+    const input = canvasElement.querySelector('.abyss-input');
+    const button = canvasElement.querySelector('.icon-button');
+
+    await expect(container).toHaveClass('abyss-input-container--size-small');
+    await expect(input).toHaveClass('abyss-input--flat');
+    await expect(button).toHaveClass('size-small');
   },
 };

@@ -90,6 +90,18 @@ const meta = {
       description: 'Zagęszczony wygląd',
       table: { defaultValue: { summary: 'false' } },
     },
+    size: {
+      control: { type: 'select' },
+      options: ['normal', 'small'],
+      description: 'Rozmiar pola — `small` zmniejsza padding, font i ikonę',
+      table: { defaultValue: { summary: 'normal' } },
+    },
+    flat: {
+      control: 'boolean',
+      description:
+        'Wariant bez cienia — np. w nagłówku tabeli lub zwartym toolbarze',
+      table: { defaultValue: { summary: 'false' } },
+    },
     emitValue: {
       control: 'boolean',
       description: 'Emituj tylko wartość opcji zamiast całego obiektu',
@@ -167,6 +179,117 @@ export const Default: Story = {
   play: async ({ canvas }) => {
     const combobox = canvas.getByRole('combobox');
     await expect(combobox.closest('.abyss-select-wrapper')).toBeVisible();
+  },
+};
+
+// ─── Size & flat ──────────────────────────────────────────────────────────────
+
+export const SmallSize: Story = {
+  name: 'Mały rozmiar',
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'Select w rozmiarze `small` — mniejszy padding, font i ikona dropdownu.',
+      },
+    },
+  },
+  args: {
+    label: 'Framework',
+    options: stringOptions,
+    size: 'small',
+  },
+  render: (args) => ({
+    components: { AbyssSelect },
+    setup() {
+      const value = ref('Vue');
+      return { args, value };
+    },
+    template: `<AbyssSelect v-bind="args" v-model="value" />`,
+  }),
+  play: async ({ canvasElement }) => {
+    const container = canvasElement.querySelector('.abyss-select-container');
+    await expect(container).toHaveClass('abyss-select-container--size-small');
+  },
+};
+
+export const Flat: Story = {
+  name: 'Płaski',
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'Select bez cienia (`flat`) — wariant do osadzenia w gęstych layoutach, np. stopce tabeli.',
+      },
+    },
+  },
+  args: {
+    label: 'Framework',
+    options: stringOptions,
+    flat: true,
+  },
+  render: (args) => ({
+    components: { AbyssSelect },
+    setup() {
+      const value = ref('Vue');
+      return { args, value };
+    },
+    template: `<AbyssSelect v-bind="args" v-model="value" />`,
+  }),
+  play: async ({ canvasElement }) => {
+    const select = canvasElement.querySelector('.abyss-select');
+    await expect(select).toHaveClass('abyss-select--flat');
+  },
+};
+
+export const SmallFlat: Story = {
+  name: 'Mały i płaski',
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'Połączenie `size="small"` i `flat` — typowy wariant w kompaktowych panelach i tabelach.',
+      },
+      source: {
+        language: 'html',
+        code: `<AbyssSelect
+  v-model="value"
+  label="Wierszy na stronę"
+  :options="options"
+  size="small"
+  flat
+  emit-value
+  map-options
+/>`,
+      },
+    },
+  },
+  args: {
+    label: 'Wierszy na stronę',
+    options: [
+      { label: '5', value: 5 },
+      { label: '10', value: 10 },
+      { label: '25', value: 25 },
+    ],
+    size: 'small',
+    flat: true,
+    emitValue: true,
+    mapOptions: true,
+    hideBottomSpace: true,
+  },
+  render: (args) => ({
+    components: { AbyssSelect },
+    setup() {
+      const value = ref(5);
+      return { args, value };
+    },
+    template: `<AbyssSelect v-bind="args" v-model="value" />`,
+  }),
+  play: async ({ canvasElement }) => {
+    const container = canvasElement.querySelector('.abyss-select-container');
+    const select = canvasElement.querySelector('.abyss-select');
+    await expect(container).toHaveClass('abyss-select-container--size-small');
+    await expect(select).toHaveClass('abyss-select--flat');
   },
 };
 

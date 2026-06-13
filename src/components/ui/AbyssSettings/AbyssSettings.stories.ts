@@ -3,7 +3,7 @@ import type { PropType } from 'vue';
 import { computed, defineComponent, ref, watch } from 'vue';
 import { expect } from 'storybook/test';
 import AbyssSettings from '@/components/ui/AbyssSettings/AbyssSettings.vue';
-import AbyssPage from '@/components/ui/AbyssPage/AbyssPage.vue';
+import AbyssTemplate from '@/components/ui/AbyssTemplate/AbyssTemplate.vue';
 import AbyssNavigation from '@/components/ui/AbyssNavigation/AbyssNavigation.vue';
 import AbyssBackground from '@/components/ui/AbyssBackground/AbyssBackground.vue';
 import AbyssButton from '@/components/ui/AbyssButton/AbyssButton.vue';
@@ -45,7 +45,7 @@ const MOBILE_FRAME_STYLE =
 const MOBILE_LANDSCAPE_FRAME_STYLE =
   'position:relative;width:100%;max-width:844px;height:min(100vh,390px);overflow:hidden;box-shadow:0 24px 80px rgba(0,0,0,0.35);';
 const MOBILE_STORY_SCROLLBAR_HIDDEN_STYLES = `
-  .abyss-settings-story--scrollbarless .abyss-page__overflow-wrapper,
+  .abyss-settings-story--scrollbarless .abyss-template__overflow-wrapper,
   .abyss-settings-story--scrollbarless .abyss-settings__sidebar,
   .abyss-settings-story--scrollbarless .abyss-settings__content,
   .abyss-settings-story--scrollbarless .abyss-settings__pane--list,
@@ -54,7 +54,7 @@ const MOBILE_STORY_SCROLLBAR_HIDDEN_STYLES = `
     -ms-overflow-style: none;
   }
 
-  .abyss-settings-story--scrollbarless .abyss-page__overflow-wrapper::-webkit-scrollbar,
+  .abyss-settings-story--scrollbarless .abyss-template__overflow-wrapper::-webkit-scrollbar,
   .abyss-settings-story--scrollbarless .abyss-settings__sidebar::-webkit-scrollbar,
   .abyss-settings-story--scrollbarless .abyss-settings__content::-webkit-scrollbar,
   .abyss-settings-story--scrollbarless .abyss-settings__pane--list::-webkit-scrollbar,
@@ -481,7 +481,7 @@ type Story = StoryObj<typeof AbyssSettings>;
 const Wrapper = defineComponent({
   name: 'AbyssSettingsStoryWrapper',
   components: {
-    AbyssPage,
+    AbyssTemplate,
     AbyssNavigation,
     AbyssBackground,
     AbyssSettings,
@@ -572,7 +572,7 @@ const Wrapper = defineComponent({
     <div style="width:100%;height:100%;">
       <component :is="'style'">{{ demoStyles }}</component>
 
-      <AbyssPage
+      <AbyssTemplate
         :device="shellDevice"
         :orientation="shellOrientation"
         style="width:100%;height:100%;"
@@ -645,7 +645,7 @@ const Wrapper = defineComponent({
             </template>
           </AbyssSettings>
         </template>
-      </AbyssPage>
+      </AbyssTemplate>
     </div>
   `,
 });

@@ -1,6 +1,6 @@
 <template>
   <div
-    class="abyss-page"
+    class="abyss-template"
     :class="[
       `device--${props.device}`,
       {
@@ -11,42 +11,42 @@
     ]"
     :style="props.screenRadius ? { '--screen-radius': props.screenRadius } : {}"
   >
-    <div class="abyss-page__background">
+    <div class="abyss-template__background">
       <slot name="background" />
     </div>
     <div
-      class="abyss-page__background-overlay"
+      class="abyss-template__background-overlay"
       :class="{ 'no-navigation': !hasNavigation }"
     ></div>
-    <header v-if="props.device !== 'mobile'" class="abyss-page__app-bar">
-      <div class="abyss-page__app-bar-start">
+    <header v-if="props.device === 'desktop'" class="abyss-template__app-bar">
+      <div class="abyss-template__app-bar-start">
         <slot name="app-bar-start" />
       </div>
-      <div class="abyss-page__app-bar-end">
+      <div class="abyss-template__app-bar-end">
         <slot name="app-bar-end" />
       </div>
     </header>
     <aside
       v-if="hasNavigation"
-      class="abyss-page__navigation"
+      class="abyss-template__navigation"
       :class="[`device--${props.device}`]"
     >
       <nav
-        class="abyss-page__navigation-start"
+        class="abyss-template__navigation-start"
         :class="[`device--${props.device}`]"
       >
         <slot name="navigation-start" />
       </nav>
-      <div v-if="props.device !== 'mobile'" class="abyss-page__navigation-end">
+      <div v-if="props.device !== 'mobile'" class="abyss-template__navigation-end">
         <slot name="navigation-end" />
       </div>
     </aside>
-    <main class="abyss-page__content" :class="[`device--${props.device}`]">
+    <main class="abyss-template__content" :class="[`device--${props.device}`]">
       <div
-        class="abyss-page__overflow-wrapper"
+        class="abyss-template__overflow-wrapper"
         :class="[
           `device--${props.device}`,
-          { 'abyss-page__overflow-wrapper--locked': !props.contentScrollable },
+          { 'abyss-template__overflow-wrapper--locked': !props.contentScrollable },
         ]"
       >
         <slot name="content" />
@@ -59,14 +59,14 @@
 import { computed, useSlots } from 'vue';
 import { useKeyboardState } from '@/composables/useKeyboardState';
 
-export interface AbyssPageProps {
-  device: 'desktop' | 'mobile';
+export interface AbyssTemplateProps {
+  device: 'desktop' | 'mobile' | 'web';
   orientation?: 'portrait' | 'landscape';
   screenRadius?: string;
   contentScrollable?: boolean;
 }
 
-const props = withDefaults(defineProps<AbyssPageProps>(), {
+const props = withDefaults(defineProps<AbyssTemplateProps>(), {
   orientation: 'portrait',
   screenRadius: '',
   contentScrollable: true,
@@ -87,7 +87,7 @@ const hasNavigation = computed(
 </script>
 
 <style lang="scss" scoped>
-.abyss-page {
+.abyss-template {
   --mobile-padding: 4px;
   --safe-area-top-offset: env(safe-area-inset-top, 0px);
   --dispatch-screen-radius-start: max(
@@ -129,6 +129,13 @@ const hasNavigation = computed(
     grid-template-areas: 'app-bar app-bar' 'navigation content';
     grid-template-columns: var(--nav-size) 1fr;
     grid-template-rows: 30px 1fr;
+  }
+
+  &.device--web {
+    --nav-size: 92px;
+    grid-template-areas: 'navigation content';
+    grid-template-columns: var(--nav-size) 1fr;
+    grid-template-rows: 1fr;
   }
 
   &.device--mobile {
@@ -174,8 +181,13 @@ const hasNavigation = computed(
     justify-content: space-between;
     grid-area: navigation;
 
-    &.device--desktop {
+    &.device--desktop,
+    &.device--web {
       padding: 0px 8px 8px;
+    }
+
+    &.device--web {
+      margin-top: 8px;
     }
 
     &.device--mobile {
@@ -196,6 +208,16 @@ const hasNavigation = computed(
       padding-bottom: 8px;
       padding-right: 8px;
       border-top-left-radius: 16px;
+      box-shadow: inset 0 0 8px 0 rgba(black, 0.5);
+    }
+
+    &.device--web {
+      width: calc(100% + 8px);
+      height: calc(100% + 8px);
+      margin-top: -8px;
+      padding-bottom: 8px;
+      padding-right: 8px;
+      border-top-left-radius: 0;
       box-shadow: inset 0 0 8px 0 rgba(black, 0.5);
     }
 
@@ -271,7 +293,8 @@ const hasNavigation = computed(
       overflow: hidden;
     }
 
-    &.device--desktop {
+    &.device--desktop,
+    &.device--web {
       padding: 24px;
       @include scrollbar;
     }
@@ -325,8 +348,7 @@ const hasNavigation = computed(
     grid-template-columns: 1fr calc(var(--nav-size) + var(--offset-right));
     grid-template-rows: 1fr;
 
-    // FIX #1: Swapped radial-gradient centers so concave curves face inward
-    .abyss-page__content {
+    .abyss-template__content {
       height: 100%;
       width: calc(100% + 20px);
       mask-image:
@@ -351,12 +373,11 @@ const hasNavigation = computed(
       padding-right: 0;
     }
 
-    // FIX #4: Safe area top & bottom on navigation
-    .abyss-page__navigation {
+    .abyss-template__navigation {
       padding: var(--offset-top) 8px var(--offset-bottom) 8px;
     }
 
-    .abyss-page__navigation-start {
+    .abyss-template__navigation-start {
       height: 100%;
       width: calc(var(--nav-size) - 8px);
       border-bottom-left-radius: calc(8px + var(--mobile-padding));
@@ -397,7 +418,7 @@ const hasNavigation = computed(
       }
     }
 
-    .abyss-page__overflow-wrapper {
+    .abyss-template__overflow-wrapper {
       padding: var(--offset-top) 20px
         max(
           8px,
@@ -414,24 +435,35 @@ const hasNavigation = computed(
       grid-template-columns: 1fr;
     }
 
+    &.device--web {
+      grid-template-areas: 'content';
+      grid-template-columns: 1fr;
+    }
+
     &.device--mobile {
       grid-template-areas: 'content';
       grid-template-rows: 1fr;
     }
 
-    .abyss-page__content.device--desktop {
+    .abyss-template__content.device--desktop {
       border-top-left-radius: 0;
       margin-left: -8px;
       width: calc(100% + 16px);
       padding-left: 8px;
     }
 
-    .abyss-page__content.device--mobile {
+    .abyss-template__content.device--web {
+      margin-left: -8px;
+      width: calc(100% + 16px);
+      padding-left: 8px;
+    }
+
+    .abyss-template__content.device--mobile {
       height: 100%;
       mask-image: none;
     }
 
-    .abyss-page__overflow-wrapper.device--mobile {
+    .abyss-template__overflow-wrapper.device--mobile {
       padding-bottom: 12px;
     }
 
@@ -439,12 +471,12 @@ const hasNavigation = computed(
       grid-template-areas: 'content';
       grid-template-columns: 1fr;
 
-      .abyss-page__content {
+      .abyss-template__content {
         width: 100%;
         mask-image: none;
       }
 
-      .abyss-page__overflow-wrapper {
+      .abyss-template__overflow-wrapper {
         padding-right: var(--offset-right);
         padding-bottom: max(12px, env(safe-area-inset-bottom, 0px));
       }

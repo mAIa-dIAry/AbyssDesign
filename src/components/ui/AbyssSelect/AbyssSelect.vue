@@ -1,5 +1,8 @@
 <template>
-  <div class="abyss-select-container">
+  <div
+    class="abyss-select-container"
+    :class="{ 'abyss-select-container--size-small': size === 'small' }"
+  >
     <div class="abyss-select-wrapper">
       <div v-if="label" class="abyss-select-label">
         <div class="abyss-select-label-text">{{ label }}</div>
@@ -75,6 +78,7 @@
           {
             'abyss-select--popup-open': isPopupOpen,
             'abyss-select--popup-open-above': isPopupAbove,
+            'abyss-select--flat': flat,
           },
           $props.class,
         ]"
@@ -156,6 +160,8 @@ withDefaults(defineProps<AbyssSelectProps>(), {
   readonly: false,
   autofocus: false,
   dense: false,
+  size: 'normal',
+  flat: false,
   behavior: 'menu',
   popupNoRouteDismiss: false,
   disableTabSelection: false,
@@ -307,6 +313,13 @@ function resolveControlElement(): HTMLElement | null {
 
   container-type: inline-size;
   width: 100%;
+
+  &--size-small {
+    --font-size: 12px;
+    --padding-y: 8px;
+    --icon-size: 16px;
+    --border-radius: 6px;
+  }
 
   .abyss-select-wrapper {
     display: flex;
@@ -522,6 +535,22 @@ function resolveControlElement(): HTMLElement | null {
           --control-radius-bottom: var(--border-radius);
           --control-border-top-color: transparent;
           --control-border-bottom-color: var(--border-color);
+        }
+      }
+
+      &.abyss-select--flat {
+        .q-field__control {
+          box-shadow: none;
+        }
+
+        &.q-field--disabled .q-field__control {
+          box-shadow: none;
+          transform: none;
+        }
+
+        &.q-field--readonly .q-field__control {
+          box-shadow: none;
+          transform: none;
         }
       }
     }

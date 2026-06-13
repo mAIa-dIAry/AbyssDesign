@@ -36,6 +36,8 @@ export interface AbyssSelectProps {
   readonly?: boolean;
   autofocus?: boolean;
   dense?: boolean;
+  size?: 'normal' | 'small';
+  flat?: boolean;
   prefix?: string;
   suffix?: string;
   tabindex?: number | string;

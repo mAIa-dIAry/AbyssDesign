@@ -2,6 +2,7 @@
   <div
     class="abyss-input-container"
     :class="{
+      'abyss-input-container--size-small': size === 'small',
       'abyss-input--collapsed': collapsed,
       'is-collapsed': isCollapsed,
     }"
@@ -31,6 +32,7 @@
           {
             'abyss-input--no-bottom': !hasBottomContent,
             'abyss-input--custom-picker': usesCustomPicker,
+            'abyss-input--flat': flat,
           },
           $props.class,
         ]"
@@ -73,6 +75,7 @@
             />
             <AbyssButton
               v-if="type === 'password'"
+              :size="size"
               :icon="
                 isPasswordVisible ? 'sym_r_visibility' : 'sym_r_visibility_off'
               "
@@ -81,12 +84,15 @@
             />
             <AbyssButton
               v-if="type === 'search'"
+              flat
+              :size="size"
               icon="sym_r_search"
               class="icon-button"
               @click="handleSearchClick"
             />
             <AbyssButton
               v-if="type === 'date' || type === 'datetime-local'"
+              :size="size"
               icon="sym_r_calendar_month"
               class="icon-button"
             >
@@ -108,6 +114,7 @@
             </AbyssButton>
             <AbyssButton
               v-if="type === 'time' || type === 'datetime-local'"
+              :size="size"
               icon="sym_r_schedule"
               class="icon-button"
             >
@@ -189,6 +196,9 @@ export interface AbyssInputProps {
   mask?: string;
   fillMask?: boolean;
   collapsed?: boolean;
+  /** Usuwa cień pola — wariant bez wypukłości, np. w nagłówku tabeli. */
+  flat?: boolean;
+  size?: 'normal' | 'small';
 }
 
 const props = withDefaults(defineProps<AbyssInputProps>(), {
@@ -209,6 +219,8 @@ const props = withDefaults(defineProps<AbyssInputProps>(), {
   mask: '',
   fillMask: false,
   collapsed: false,
+  flat: false,
+  size: 'normal',
 });
 
 if (props.maxLength < -1) {
@@ -251,7 +263,7 @@ const usesCustomPicker = computed(
   () => usesDatePopup.value || usesTimePopup.value,
 );
 
-const isCollapsed = ref(true);
+const isCollapsed = ref(props.collapsed);
 
 watch(
   () => props.collapsed,
@@ -386,6 +398,13 @@ function handleInputBlur() {
   transition: $transition-medium;
   min-width: calc(var(--icon-size) + var(--padding-y) * 2);
 
+  &--size-small {
+    --font-size: 12px;
+    --padding-y: 8px;
+    --icon-size: 16px;
+    --border-radius: 6px;
+  }
+
   .abyss-input-wrapper {
     display: flex;
     flex-direction: row;
@@ -393,12 +412,29 @@ function handleInputBlur() {
     gap: var(--gap);
     width: 100%;
 
-    :deep(.icon-button.abyss-button) {
+    :deep(.icon-button.abyss-button:not(.size-small)) {
       box-shadow: $shadow-zero;
       background-color: transparent;
       padding: 8px;
       min-height: 40px;
       border-radius: 6px;
+
+      &:hover,
+      &:focus-visible {
+        background-color: rgba(white, 0.04);
+        box-shadow: $shadow-hover;
+      }
+
+      &:active {
+        background-color: rgba(white, 0.03);
+        box-shadow: $shadow-active;
+      }
+    }
+
+    :deep(.icon-button.abyss-button.size-small) {
+      box-shadow: $shadow-zero;
+      background-color: transparent;
+      border-radius: calc(var(--border-radius) - 2px);
 
       &:hover,
       &:focus-visible {
@@ -448,6 +484,7 @@ function handleInputBlur() {
         padding: calc(var(--padding-y) - 1px) calc(var(--padding-x) - 1px);
         min-height: calc(var(--icon-size) + var(--padding-y) * 2);
         height: auto;
+        align-items: center;
         outline: 0px solid rgba(white, 0.05);
         outline-offset: 2px;
         transition: $transition-fast;
@@ -484,17 +521,28 @@ function handleInputBlur() {
       .q-field__control-container {
         padding-top: 0;
         width: 100%;
+        align-items: center;
         transition: $transition-medium;
       }
 
       .q-field__append {
         padding-left: var(--gap);
 
-        .icon-button {
+        .icon-button:not(.size-small) {
           margin: -8px -12px -8px -8px;
 
           &:not(:first-child) {
             margin-left: 12px;
+          }
+        }
+
+        .icon-button.size-small {
+          margin: calc(-1 * var(--padding-y))
+            calc(-1 * (var(--padding-x) - 1px)) calc(-1 * var(--padding-y))
+            calc(-1 * var(--gap));
+
+          &:not(:first-child) {
+            margin-left: var(--gap);
           }
         }
 
@@ -506,11 +554,20 @@ function handleInputBlur() {
       .q-field__prepend {
         padding-right: var(--gap);
 
-        .icon-button {
+        .icon-button:not(.size-small) {
           margin: -8px -8px -8px -12px;
 
           &:not(:last-child) {
             margin-right: 12px;
+          }
+        }
+
+        .icon-button.size-small {
+          margin: calc(-1 * var(--padding-y)) calc(-1 * var(--gap))
+            calc(-1 * var(--padding-y)) calc(-1 * var(--padding-x));
+
+          &:not(:last-child) {
+            margin-right: var(--gap);
           }
         }
 
@@ -521,6 +578,7 @@ function handleInputBlur() {
 
       .q-field__marginal {
         height: unset;
+        align-self: center;
       }
 
       .q-icon,
@@ -629,6 +687,53 @@ function handleInputBlur() {
           display: none;
         }
       }
+
+      &.abyss-input--flat {
+        .q-field__control {
+          box-shadow: none;
+        }
+
+        &.q-field--disabled .q-field__control {
+          box-shadow: none;
+          transform: none;
+        }
+
+        &.q-field--readonly .q-field__control {
+          box-shadow: none;
+          transform: none;
+        }
+
+        &.q-field--readonly.abyss-input--custom-picker .q-field__control {
+          box-shadow: none;
+        }
+      }
+    }
+  }
+
+  &.abyss-input-container--size-small {
+    .abyss-input-wrapper {
+      align-items: center;
+
+      .icon-prepend {
+        padding: calc(var(--padding-y) - 1px);
+        margin: calc(-1 * (var(--padding-y) - 1px)) var(--gap)
+          calc(-1 * (var(--padding-y) - 1px))
+          calc(-1 * (var(--padding-x) - 1px));
+      }
+
+      :deep(.abyss-input) {
+        .q-field__control {
+          padding: calc(var(--padding-y) - 1px) calc(var(--padding-x) - 1px);
+          min-height: calc(var(--icon-size) + var(--padding-y) * 2 - 2px);
+        }
+
+        .q-field__native {
+          font-size: var(--font-size);
+          line-height: var(--icon-size);
+          min-height: var(--icon-size);
+          height: auto;
+        }
+      }
     }
   }
 
@@ -645,7 +750,7 @@ function handleInputBlur() {
         min-width: calc(var(--icon-size) + var(--padding-y) * 2);
 
         .q-field__control {
-          padding: 11px;
+          padding: calc(var(--padding-y) - 1px);
           cursor: pointer;
         }
 

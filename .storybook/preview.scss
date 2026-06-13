@@ -213,10 +213,10 @@ html {
     }
 
     .innerZoomElementWrapper {
-      &:has([id^='story--ui-abysspage']) {
+      &:has([id^='story--ui-abysstemplate']) {
         height: 500px;
 
-        .abyss-page {
+        .abyss-template {
           height: 100% !important;
         }
       }

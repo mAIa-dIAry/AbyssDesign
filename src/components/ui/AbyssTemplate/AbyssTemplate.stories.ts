@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/vue3';
 import { defineComponent, ref } from 'vue';
-import AbyssPage from '@/components/ui/AbyssPage/AbyssPage.vue';
+import AbyssTemplate from '@/components/ui/AbyssTemplate/AbyssTemplate.vue';
 import AbyssNavigation from '@/components/ui/AbyssNavigation/AbyssNavigation.vue';
 import AbyssButton from '@/components/ui/AbyssButton/AbyssButton.vue';
 import AbyssBackground from '@/components/ui/AbyssBackground/AbyssBackground.vue';
@@ -123,26 +123,26 @@ const TestContent = defineComponent({
   `,
 });
 
-const meta: Meta<typeof AbyssPage> = {
-  title: 'UI/AbyssPage',
-  component: AbyssPage,
+const meta: Meta<typeof AbyssTemplate> = {
+  title: 'UI/AbyssTemplate',
+  component: AbyssTemplate,
   tags: ['autodocs'],
   parameters: {
     layout: 'fullscreen',
     docs: {
       description: {
         component:
-          'Główny komponent aplikacji definiujący strukturę layoutu. Obsługuje dwa warianty: `desktop` z paskiem aplikacji i pionową nawigacją boczną oraz `mobile` z poziomą nawigacją na dole ekranu.',
+          'Główny komponent aplikacji definiujący strukturę layoutu. Obsługuje warianty: `desktop` (Electron z paskiem tytułu), `web` (panel webowy bez paska tytułu) oraz `mobile` z poziomą nawigacją na dole ekranu.',
       },
     },
   },
   argTypes: {
     device: {
       control: 'select',
-      options: ['desktop', 'mobile'],
-      description: 'Wariant layoutu – desktopowy lub mobilny',
+      options: ['desktop', 'web', 'mobile'],
+      description: 'Wariant layoutu – desktopowy (Electron), webowy lub mobilny',
       table: {
-        type: { summary: "'desktop' | 'mobile'" },
+        type: { summary: "'desktop' | 'web' | 'mobile'" },
       },
     },
     orientation: {
@@ -216,7 +216,7 @@ const meta: Meta<typeof AbyssPage> = {
 };
 
 export default meta;
-type Story = StoryObj<typeof AbyssPage>;
+type Story = StoryObj<typeof AbyssTemplate>;
 
 const navItems = [
   { label: 'Start', icon: 'sym_r_home', route: 'index' },
@@ -227,7 +227,7 @@ const navItems = [
 
 const renderMobileStory: NonNullable<Story['render']> = (args) => ({
   components: {
-    AbyssPage,
+    AbyssTemplate,
     AbyssNavigation,
     AbyssButton,
     AbyssBackground,
@@ -238,7 +238,7 @@ const renderMobileStory: NonNullable<Story['render']> = (args) => ({
     return { args, navItems, currentRoute };
   },
   template: `
-    <AbyssPage v-bind="args" style="height: 100vh;">
+    <AbyssTemplate v-bind="args" style="height: 100vh;">
       <template #background>
         <AbyssBackground style="position: absolute; inset: 0;" />
       </template>
@@ -258,18 +258,18 @@ const renderMobileStory: NonNullable<Story['render']> = (args) => ({
           />
         </AbyssNavigation>
       </template>
-    </AbyssPage>
+    </AbyssTemplate>
   `,
 });
 
-export const Desktop: Story = {
-  name: 'Desktop',
+export const Web: Story = {
+  name: 'Web',
   args: {
-    device: 'desktop',
+    device: 'web',
   },
   render: (args) => ({
     components: {
-      AbyssPage,
+      AbyssTemplate,
       AbyssNavigation,
       AbyssButton,
       AbyssBackground,
@@ -280,7 +280,73 @@ export const Desktop: Story = {
       return { args, navItems, currentRoute };
     },
     template: `
-      <AbyssPage v-bind="args" style="height: 100vh;">
+      <AbyssTemplate v-bind="args" style="height: 100vh;">
+        <template #background>
+          <AbyssBackground style="position: absolute; inset: 0;" />
+        </template>
+        <template #navigation-start>
+          <AbyssNavigation device="desktop" :current-route="currentRoute">
+            <AbyssButton
+              v-for="item in navItems"
+              :key="item.route"
+              :label="item.label"
+              :icon="item.icon"
+              :route="item.route"
+              embedded
+              @click="currentRoute = item.route"
+            />
+          </AbyssNavigation>
+        </template>
+        <template #content>
+          <TestContent />
+        </template>
+      </AbyssTemplate>
+    `,
+  }),
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'Layout webowy – jak desktop, ale bez paska tytułu. Obszar treści bez zaokrąglenia w lewym górnym rogu i z ujemnym marginesem górnym -8px.',
+      },
+      source: {
+        code: `<AbyssTemplate device="web">
+  <template #background>
+    <AbyssBackground />
+  </template>
+  <template #navigation-start>
+    <AbyssNavigation device="desktop" current-route="index">
+      <AbyssButton label="Start" icon="sym_r_home" route="index" />
+    </AbyssNavigation>
+  </template>
+  <template #content>
+    <div>Treść aplikacji</div>
+  </template>
+</AbyssTemplate>`,
+      },
+    },
+  },
+};
+
+export const Desktop: Story = {
+  name: 'Desktop',
+  args: {
+    device: 'desktop',
+  },
+  render: (args) => ({
+    components: {
+      AbyssTemplate,
+      AbyssNavigation,
+      AbyssButton,
+      AbyssBackground,
+      TestContent,
+    },
+    setup() {
+      const currentRoute = ref('index');
+      return { args, navItems, currentRoute };
+    },
+    template: `
+      <AbyssTemplate v-bind="args" style="height: 100vh;">
         <template #background>
           <AbyssBackground style="position: absolute; inset: 0;" />
         </template>
@@ -306,7 +372,7 @@ export const Desktop: Story = {
         <template #content>
           <TestContent />
         </template>
-      </AbyssPage>
+      </AbyssTemplate>
     `,
   }),
   parameters: {
@@ -316,7 +382,7 @@ export const Desktop: Story = {
           'Layout desktopowy z paskiem aplikacji, boczną nawigacją i obszarem treści.',
       },
       source: {
-        code: `<AbyssPage device="desktop">
+        code: `<AbyssTemplate device="desktop">
   <template #background>
     <AbyssBackground />
   </template>
@@ -335,7 +401,7 @@ export const Desktop: Story = {
   <template #content>
     <div>Treść aplikacji</div>
   </template>
-</AbyssPage>`,
+</AbyssTemplate>`,
       },
     },
   },
@@ -355,7 +421,7 @@ export const Mobile: Story = {
       description: {
         story:
           'Layout mobilny w orientacji pionowej z treścią i nawigacją dolną.\n\n' +
-          '`screenRadius` określa promień zaokrąglenia ekranu urządzenia. Wartość jest ustawiana raz na `AbyssPage` i automatycznie propagowana do wszystkich zagnieżdżonych komponentów (w tym `AbyssNavigation`) przez CSS custom property `--screen-radius` – **nie trzeba jej osobno przekazywać do `AbyssNavigation`**.\n\n' +
+          '`screenRadius` określa promień zaokrąglenia ekranu urządzenia. Wartość jest ustawiana raz na `AbyssTemplate` i automatycznie propagowana do wszystkich zagnieżdżonych komponentów (w tym `AbyssNavigation`) przez CSS custom property `--screen-radius` – **nie trzeba jej osobno przekazywać do `AbyssNavigation`**.\n\n' +
           'Na urządzeniu z Capacitorem wartość pobieramy z własnego pluginu `ScreenRadius`, który na Androidzie wywołuje `Display.getRoundedCorner()` (API 31+):\n\n' +
           '```ts\n' +
           "import { ScreenRadius } from '@/plugins/ScreenRadius';\n" +
@@ -392,8 +458,8 @@ onMounted(async () => {
 </script>
 
 <template>
-  <!-- screenRadius ustawiony raz na AbyssPage – nie przekazuj go osobno do AbyssNavigation -->
-  <AbyssPage device="mobile" orientation="portrait" :screen-radius="screenRadius">
+  <!-- screenRadius ustawiony raz na AbyssTemplate – nie przekazuj go osobno do AbyssNavigation -->
+  <AbyssTemplate device="mobile" orientation="portrait" :screen-radius="screenRadius">
     <template #background>
       <AbyssBackground />
     </template>
@@ -406,7 +472,7 @@ onMounted(async () => {
         <AbyssButton label="Kalendarz" icon="sym_r_calendar_month" route="calendar" />
       </AbyssNavigation>
     </template>
-  </AbyssPage>
+  </AbyssTemplate>
 </template>`,
       },
     },
@@ -429,7 +495,7 @@ export const MobileLandscape: Story = {
           'Layout mobilny w orientacji poziomej. Nawigacja przechodzi na prawą krawędź, a obszar treści dopasowuje maskę i padding do układu landscape.',
       },
       source: {
-        code: `<AbyssPage device="mobile" orientation="landscape" screen-radius="30px">
+        code: `<AbyssTemplate device="mobile" orientation="landscape" screen-radius="30px">
   <template #background>
     <AbyssBackground />
   </template>
@@ -442,7 +508,7 @@ export const MobileLandscape: Story = {
       <AbyssButton label="Kalendarz" icon="sym_r_calendar_month" route="calendar" />
     </AbyssNavigation>
   </template>
-</AbyssPage>`,
+</AbyssTemplate>`,
       },
     },
   },
@@ -454,19 +520,19 @@ export const EmptyDesktop: Story = {
     device: 'desktop',
   },
   render: (args) => ({
-    components: { AbyssPage },
+    components: { AbyssTemplate },
     setup() {
       return { args };
     },
     template: `
-      <AbyssPage v-bind="args" style="height: 100vh;">
+      <AbyssTemplate v-bind="args" style="height: 100vh;">
         <template #background>[background]</template>
         <template #app-bar-start>[app-bar-start]</template>
         <template #app-bar-end>[app-bar-end]</template>
         <template #navigation-start>[navigation-start]</template>
         <template #navigation-end>[navigation-end]</template>
         <template #content>[content]</template>
-      </AbyssPage>
+      </AbyssTemplate>
     `,
   }),
   parameters: {
@@ -486,16 +552,16 @@ export const EmptyMobile: Story = {
     orientation: 'portrait',
   },
   render: (args) => ({
-    components: { AbyssPage },
+    components: { AbyssTemplate },
     setup() {
       return { args };
     },
     template: `
-      <AbyssPage v-bind="args" style="height: 100vh;">
+      <AbyssTemplate v-bind="args" style="height: 100vh;">
         <template #background>[background]</template>
         <template #navigation-start>[navigation-start]</template>
         <template #content>[content]</template>
-      </AbyssPage>
+      </AbyssTemplate>
     `,
   }),
   parameters: {
@@ -515,7 +581,7 @@ export const DesktopNoNavigation: Story = {
   },
   render: (args) => ({
     components: {
-      AbyssPage,
+      AbyssTemplate,
       AbyssBackground,
       TestContent,
     },
@@ -523,7 +589,7 @@ export const DesktopNoNavigation: Story = {
       return { args };
     },
     template: `
-      <AbyssPage v-bind="args" style="height: 100vh;">
+      <AbyssTemplate v-bind="args" style="height: 100vh;">
         <template #background>
           <AbyssBackground style="position: absolute; inset: 0;" />
         </template>
@@ -536,7 +602,7 @@ export const DesktopNoNavigation: Story = {
         <template #content>
           <TestContent />
         </template>
-      </AbyssPage>
+      </AbyssTemplate>
     `,
   }),
   parameters: {
@@ -558,7 +624,7 @@ export const MobileNoNavigation: Story = {
   },
   render: (args) => ({
     components: {
-      AbyssPage,
+      AbyssTemplate,
       AbyssBackground,
       TestContent,
     },
@@ -566,14 +632,14 @@ export const MobileNoNavigation: Story = {
       return { args };
     },
     template: `
-      <AbyssPage v-bind="args" style="height: 100vh;">
+      <AbyssTemplate v-bind="args" style="height: 100vh;">
         <template #background>
           <AbyssBackground style="position: absolute; inset: 0;" />
         </template>
         <template #content>
           <TestContent />
         </template>
-      </AbyssPage>
+      </AbyssTemplate>
     `,
   }),
   parameters: {

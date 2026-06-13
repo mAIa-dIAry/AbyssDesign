@@ -1,0 +1,489 @@
+<template>
+  <q-table
+    class="abyss-table"
+    :class="props.class"
+    dark
+    v-bind="tableProps"
+    v-model:pagination="pagination"
+    :filter="filter"
+  >
+    <template #top-left>
+      <slot name="top-left">
+        <AbyssTitle
+          v-if="props.title"
+          class="abyss-table__title"
+          :label="String(props.title)"
+        />
+      </slot>
+    </template>
+
+    <template #top-right>
+      <slot name="top-right">
+        <div class="abyss-table__search">
+          <AbyssInput
+            v-model="filter"
+            type="text"
+            size="small"
+            flat
+            debounce="300"
+            :placeholder="t('ui.table.search')"
+          >
+            <template #append>
+              <AbyssButton
+                flat
+                size="small"
+                icon="sym_r_search"
+                class="icon-button"
+              />
+            </template>
+          </AbyssInput>
+        </div>
+      </slot>
+    </template>
+
+    <template #header="headerProps">
+      <slot name="header" v-bind="headerProps">
+        <q-tr :props="headerProps">
+          <q-th auto-width />
+          <q-th
+            v-for="col in headerProps.cols"
+            :key="col.name"
+            :props="headerProps"
+          >
+            {{ col.label }}
+          </q-th>
+        </q-tr>
+      </slot>
+    </template>
+
+    <template #body="bodyProps">
+      <slot name="body" v-bind="bodyProps">
+        <q-tr :props="bodyProps">
+          <q-td auto-width>
+            <AbyssButton
+              flat
+              size="small"
+              :icon="bodyProps.expand ? 'sym_r_remove' : 'sym_r_add'"
+              @click="bodyProps.expand = !bodyProps.expand"
+            />
+          </q-td>
+          <q-td
+            v-for="col in bodyProps.cols"
+            :key="col.name"
+            :props="bodyProps"
+          >
+            {{ col.value }}
+          </q-td>
+        </q-tr>
+        <q-tr v-show="bodyProps.expand" :props="bodyProps">
+          <q-td colspan="100%">
+            <slot name="row-expand" v-bind="bodyProps">
+              <div class="text-left">
+                This is expand slot for row above: {{ bodyProps.row.name }}.
+              </div>
+            </slot>
+          </q-td>
+        </q-tr>
+      </slot>
+    </template>
+
+    <template #bottom="bottomProps">
+      <slot name="bottom" v-bind="bottomProps">
+        <div class="abyss-table__bottom row items-center justify-end">
+          <div class="q-table__separator col" />
+
+          <div
+            v-if="showRowsPerPageSelect"
+            class="abyss-table__rows-per-page"
+          >
+            <span class="abyss-table__rows-per-page-label">
+              {{ t('ui.table.recordsPerPage') }}
+            </span>
+            <div class="abyss-table__rows-per-page-select">
+              <AbyssSelect
+                :model-value="pagination.rowsPerPage"
+                :options="rowsPerPageSelectOptions"
+                emit-value
+                map-options
+                size="small"
+                flat
+                hide-bottom-space
+                @update:model-value="handleRowsPerPageChange"
+              />
+            </div>
+          </div>
+
+          <div class="abyss-table__pagination">
+            <span
+              v-if="pagination.rowsPerPage !== 0"
+              class="abyss-table__pagination-label"
+            >
+              {{ getPaginationText(bottomProps) }}
+            </span>
+
+            <div
+              v-if="pagination.rowsPerPage !== 0 && bottomProps.pagesNumber > 1"
+              class="abyss-table__pagination-actions"
+            >
+              <AbyssButton
+                v-if="bottomProps.pagesNumber > 2"
+                flat
+                size="small"
+                icon="sym_r_first_page"
+                :disable="bottomProps.isFirstPage"
+                @click="bottomProps.firstPage"
+              />
+              <AbyssButton
+                flat
+                size="small"
+                icon="sym_r_chevron_left"
+                :disable="bottomProps.isFirstPage"
+                @click="bottomProps.prevPage"
+              />
+              <AbyssButton
+                flat
+                size="small"
+                icon="sym_r_chevron_right"
+                :disable="bottomProps.isLastPage"
+                @click="bottomProps.nextPage"
+              />
+              <AbyssButton
+                v-if="bottomProps.pagesNumber > 2"
+                flat
+                size="small"
+                icon="sym_r_last_page"
+                :disable="bottomProps.isLastPage"
+                @click="bottomProps.lastPage"
+              />
+            </div>
+          </div>
+        </div>
+      </slot>
+    </template>
+
+    <template
+      v-for="slotName in forwardedSlotNames"
+      #[slotName]="slotProps"
+      :key="slotName"
+    >
+      <slot :name="slotName" v-bind="slotProps ?? {}" />
+    </template>
+  </q-table>
+</template>
+
+<script setup lang="ts">
+import { computed, ref, useSlots, watch } from 'vue';
+import { useI18n } from 'vue-i18n';
+import type { QTableProps } from 'quasar';
+import AbyssInput from '@/components/ui/AbyssInput/AbyssInput.vue';
+import AbyssButton from '@/components/ui/AbyssButton/AbyssButton.vue';
+import AbyssSelect from '@/components/ui/AbyssSelect/AbyssSelect.vue';
+import AbyssTitle from '@/components/ui/AbyssTitle/AbyssTitle.vue';
+
+const DEFAULT_ROWS_PER_PAGE_OPTIONS = [5, 7, 10, 15, 20, 25, 50, 0] as const;
+
+const RESERVED_SLOTS = [
+  'top-left',
+  'top-right',
+  'header',
+  'body',
+  'row-expand',
+  'bottom',
+] as const;
+
+type LockedQTableProps = 'dark' | 'flat' | 'bordered' | 'filter' | 'pagination';
+
+type AbyssTableBottomScope = {
+  pagination: {
+    page: number;
+    rowsPerPage: number;
+  };
+  pagesNumber: number;
+  isFirstPage: boolean;
+  isLastPage: boolean;
+  firstPage: () => void;
+  prevPage: () => void;
+  nextPage: () => void;
+  lastPage: () => void;
+};
+
+export interface AbyssTableProps
+  extends Omit<QTableProps, LockedQTableProps> {
+  class?:
+    | string
+    | Record<string, boolean>
+    | Array<string | Record<string, boolean>>;
+  pagination?: QTableProps['pagination'];
+}
+
+const props = defineProps<AbyssTableProps>();
+
+const { t } = useI18n();
+
+const filter = ref('');
+
+const pagination = ref({
+  page: 1,
+  rowsPerPage: 5,
+  descending: false,
+  sortBy: props.columns?.[0]?.name ?? null,
+});
+
+watch(
+  () => props.pagination,
+  (value) => {
+    if (!value) return;
+    pagination.value = { ...pagination.value, ...value };
+  },
+  { deep: true, immediate: true },
+);
+
+watch(
+  () => props.columns?.[0]?.name,
+  (sortBy) => {
+    if (sortBy && pagination.value.sortBy == null) {
+      pagination.value.sortBy = sortBy;
+    }
+  },
+);
+
+const slots = useSlots();
+
+const forwardedSlotNames = computed(() =>
+  Object.keys(slots).filter(
+    (name) => !RESERVED_SLOTS.includes(name as (typeof RESERVED_SLOTS)[number]),
+  ),
+);
+
+const rowsPerPageSelectOptions = computed(() => {
+  const options = props.rowsPerPageOptions ?? [...DEFAULT_ROWS_PER_PAGE_OPTIONS];
+
+  return options.map((value) => ({
+    label: value === 0 ? t('ui.table.allRows') : String(value),
+    value,
+  }));
+});
+
+const showRowsPerPageSelect = computed(
+  () => rowsPerPageSelectOptions.value.length > 1,
+);
+
+const filteredRowsCount = computed(() => {
+  const needle = filter.value.trim().toLowerCase();
+  const rows = props.rows ?? [];
+
+  if (!needle) return rows.length;
+
+  return rows.filter((row) =>
+    Object.values(row).some((value) =>
+      String(value ?? '')
+        .toLowerCase()
+        .includes(needle),
+    ),
+  ).length;
+});
+
+function getPaginationText(scope: AbyssTableBottomScope): string {
+  const total = filteredRowsCount.value;
+  const { page, rowsPerPage } = scope.pagination;
+
+  if (rowsPerPage === 0) {
+    return t('ui.table.pagination', { start: 1, end: total, total });
+  }
+
+  const start = total === 0 ? 0 : (page - 1) * rowsPerPage + 1;
+  const end = Math.min(page * rowsPerPage, total);
+
+  return t('ui.table.pagination', { start, end, total });
+}
+
+function handleRowsPerPageChange(value: unknown) {
+  if (typeof value !== 'number') return;
+
+  pagination.value = {
+    ...pagination.value,
+    page: 1,
+    rowsPerPage: value,
+  };
+}
+
+const tableProps = computed((): Omit<QTableProps, LockedQTableProps> => {
+  const {
+    class: _class,
+    pagination: _pagination,
+    title: _title,
+    ...rest
+  } = props;
+  return rest;
+});
+
+defineOptions({
+  inheritAttrs: false,
+});
+</script>
+
+<style scoped lang="scss">
+.abyss-table__title {
+  margin-left: 8px;
+  width: auto;
+}
+
+.abyss-table__search {
+  display: flex;
+  flex: 1 1 auto;
+  width: 100%;
+  min-width: 0;
+
+  :deep(.abyss-input-container),
+  :deep(.abyss-input-wrapper),
+  :deep(.abyss-input),
+  :deep(.q-field) {
+    flex: 1 1 auto;
+    width: 100%;
+    min-width: 0;
+  }
+
+  :deep(.abyss-input-container) {
+    --font-size: 14px;
+    --padding-y: 12px;
+    --icon-size: 16px;
+    --border-radius: 6px;
+  }
+
+  :deep(.q-field__control-container) {
+    flex: 1 1 auto;
+    min-width: 0;
+  }
+}
+
+.abyss-table__bottom {
+  flex: 1 1 auto;
+  width: 100%;
+  min-width: 0;
+  gap: 16px;
+  background: transparent;
+  border-top: none;
+  box-shadow: none;
+}
+
+.abyss-table__rows-per-page {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-shrink: 0;
+  min-width: max-content;
+}
+
+.abyss-table__rows-per-page-label {
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+
+.abyss-table__rows-per-page-select {
+  flex: 0 0 104px;
+  width: 104px;
+  min-width: 104px;
+
+  :deep(.abyss-select-container) {
+    width: 100%;
+  }
+
+  :deep(.abyss-select-wrapper),
+  :deep(.abyss-select),
+  :deep(.q-field) {
+    width: 100%;
+  }
+}
+
+.abyss-table__pagination {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-shrink: 0;
+  min-width: max-content;
+}
+
+.abyss-table__pagination-actions {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.abyss-table__pagination-label {
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+
+.abyss-table {
+  --panel-radius: 12px;
+  --panel-background: #{rgba(white, 0.01)};
+  --table-header-background: #{rgba(white, 0.08)};
+
+  box-sizing: border-box;
+  width: 100%;
+  min-width: 0;
+  container-type: inline-size;
+  border-radius: var(--panel-radius);
+  background: var(--panel-background);
+  box-shadow: $shadow-small, $shadow-frame-soft;
+  overflow: hidden;
+
+  /* height or max-height is important — Quasar StickyHeader */
+  height: 310px;
+
+  :deep(.q-table__top),
+  :deep(.q-table__bottom),
+  :deep(.q-table__middle) {
+    background-color: var(--panel-background);
+  }
+
+  :deep(.q-table__top),
+  :deep(.q-table__bottom) {
+    padding: 8px;
+  }
+
+  :deep(.q-table__top > .q-table__control:has(.abyss-table__search)) {
+    flex: 1 1 auto;
+    width: 0;
+    min-width: 200px;
+    max-width: none;
+    margin-left: auto;
+  }
+
+  :deep(.q-table__bottom) {
+    width: 100%;
+  }
+
+  :deep(thead) {
+    position: sticky;
+    top: 0;
+    z-index: 2;
+
+    &::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background-color: var(--table-header-background);
+      -webkit-backdrop-filter: blur(20px);
+      backdrop-filter: blur(20px);
+      pointer-events: none;
+    }
+  }
+
+  :deep(thead tr th) {
+    position: relative;
+    z-index: 1;
+    background-color: transparent;
+  }
+
+  /* prevent scrolling behind sticky top row on focus */
+  :deep(tbody) {
+    /* height of all previous header rows */
+    scroll-margin-top: 48px;
+  }
+
+  :deep(.q-table__middle.scroll) {
+    @include scrollbar;
+  }
+}
+</style>
