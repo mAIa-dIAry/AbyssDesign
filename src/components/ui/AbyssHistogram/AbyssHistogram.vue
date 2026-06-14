@@ -326,7 +326,7 @@ const histogramOptions = computed<ApexOptions>(() => ({
       type: 'vertical',
       shadeIntensity: 0.2,
       gradientToColors: ['#ffffff'],
-      opacityFrom: 0.38,
+      opacityFrom: 0.48,
       opacityTo: 0,
       stops: [0, 100],
     },

@@ -37,12 +37,14 @@ provide(
   display: flex;
   gap: 4px;
 
-  :deep(.abyss-button) {
+  :deep(.abyss-button.size-big) {
     --font-size: 10px;
     --icon-size: 36px;
     --padding-y: 7px;
     --padding-x: 8px;
     min-width: 0;
+    min-height: unset;
+    height: auto;
     line-height: 1.2;
 
     .q-btn__content {
@@ -65,7 +67,7 @@ provide(
   &--desktop {
     flex-direction: column;
 
-    :deep(.abyss-button) {
+    :deep(.abyss-button.size-big) {
       width: 100%;
     }
   }
@@ -74,7 +76,7 @@ provide(
     flex-direction: row;
     gap: 0px;
 
-    :deep(.abyss-button) {
+    :deep(.abyss-button.size-big) {
       flex: 1;
       --icon-size: 28px;
 
