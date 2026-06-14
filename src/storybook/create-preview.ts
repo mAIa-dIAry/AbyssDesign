@@ -1,12 +1,8 @@
 import type { Preview } from '@storybook/vue3-vite';
 
 import 'quasar/dist/quasar.css';
-import '@quasar/extras/roboto-font/roboto-font.css';
-import '@fontsource/roboto-mono/400.css';
-import '@fontsource/roboto-mono/600.css';
-import '@fontsource/roboto-mono/700.css';
-import '@quasar/extras/material-icons/material-icons.css';
-import '@quasar/extras/material-symbols-rounded/material-symbols-rounded.css';
+import '@maia/abyss-design/styles/fonts';
+import '@maia/abyss-design/styles/icons';
 
 import { setup } from '@storybook/vue3-vite';
 import { createPinia } from 'pinia';

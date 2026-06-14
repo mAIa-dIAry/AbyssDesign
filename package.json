@@ -11,6 +11,7 @@
     "src/scss",
     "src/stories",
     "src/storybook",
+    "src/styles",
     "src/assets"
   ],
   "main": "./dist/index.js",
@@ -33,6 +34,7 @@
       "import": "./dist/i18n/index.js"
     },
     "./styles/fonts": "./src/styles/fonts.ts",
+    "./styles/icons": "./src/styles/icons.ts",
     "./storybook/create-main-config": "./src/storybook/create-main-config.ts",
     "./storybook/create-preview": "./src/storybook/create-preview.ts",
     "./storybook/preview-base": "./src/storybook/preview-base.scss",
