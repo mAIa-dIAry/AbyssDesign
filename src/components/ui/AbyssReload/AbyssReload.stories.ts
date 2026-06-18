@@ -12,6 +12,11 @@ type AbyssReloadStoryArgs = {
   disabledBottom?: boolean;
   activationThreshold?: number;
   size?: "default" | "large";
+  paddingTop?: number;
+  paddingBottom?: number;
+  indicatorPaddingTop?: number;
+  indicatorPaddingBottom?: number;
+  minLoadingTime?: number;
 };
 
 const demoItems = Array.from({ length: 24 }, (_, index) => ({
@@ -94,6 +99,34 @@ const meta: Meta<AbyssReloadStoryArgs> = {
       options: ["default", "large"],
       description: "Rozmiar wskaźnika odświeżania",
       table: { defaultValue: { summary: "default" } },
+    },
+    paddingTop: {
+      control: { type: "number", min: 0, max: 64, step: 4 },
+      description: "Odstęp (px) między górnym wskaźnikiem a treścią listy",
+      table: { defaultValue: { summary: "0" } },
+    },
+    paddingBottom: {
+      control: { type: "number", min: 0, max: 64, step: 4 },
+      description: "Odstęp (px) między treścią listy a dolnym wskaźnikiem",
+      table: { defaultValue: { summary: "0" } },
+    },
+    indicatorPaddingTop: {
+      control: { type: "number", min: 0, max: 64, step: 4 },
+      description:
+        "Padding (px) wrappera górnego wskaźnika od zewnętrznej krawędzi listy",
+      table: { defaultValue: { summary: "0" } },
+    },
+    indicatorPaddingBottom: {
+      control: { type: "number", min: 0, max: 64, step: 4 },
+      description:
+        "Padding (px) wrappera dolnego wskaźnika od zewnętrznej krawędzi listy",
+      table: { defaultValue: { summary: "0" } },
+    },
+    minLoadingTime: {
+      control: { type: "number", min: 0, max: 5000, step: 100 },
+      description:
+        "Minimalny czas (ms) utrzymania stanu ładowania po zakończeniu odświeżania",
+      table: { defaultValue: { summary: "0" } },
     },
   },
 };
@@ -198,6 +231,11 @@ export const Default: Story = {
           :disabled-bottom="args.disabledBottom"
           :activation-threshold="args.activationThreshold ?? 8"
           :size="args.size"
+          :padding-top="args.paddingTop ?? 0"
+          :padding-bottom="args.paddingBottom ?? 0"
+          :indicator-padding-top="args.indicatorPaddingTop ?? 0"
+          :indicator-padding-bottom="args.indicatorPaddingBottom ?? 0"
+          :min-loading-time="args.minLoadingTime ?? 0"
           @refresh-top="handleRefreshTop"
           @refresh-bottom="handleRefreshBottom"
         >

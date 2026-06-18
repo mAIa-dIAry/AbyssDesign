@@ -22,9 +22,23 @@
           <AbyssReloadIndicator :loading="effectiveLoadingTop" :size="size" />
         </div>
 
+        <div
+          v-if="paddingTopPx > 0"
+          class="abyss-reload__spacer abyss-reload__spacer--top"
+          aria-hidden="true"
+          :style="topSpacerStyle"
+        />
+
         <div class="abyss-reload__body">
           <slot />
         </div>
+
+        <div
+          v-if="paddingBottomPx > 0"
+          class="abyss-reload__spacer abyss-reload__spacer--bottom"
+          aria-hidden="true"
+          :style="bottomSpacerStyle"
+        />
 
         <div
           v-if="!disabledBottom"
@@ -44,7 +58,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, nextTick, onMounted, ref, watch } from "vue";
+import { computed, nextTick, onMounted, onUnmounted, ref, watch } from "vue";
 import AbyssReloadIndicator from "@/components/ui/AbyssReload/AbyssReloadIndicator.vue";
 
 const DEFAULT_LOADER_HEIGHT = 56;
@@ -64,6 +78,16 @@ export interface AbyssReloadProps {
   activationThreshold?: number;
   /** Rozmiar wskaźnika odświeżania. */
   size?: "default" | "large";
+  /** Odstęp (px) między górnym wskaźnikiem a treścią listy. */
+  paddingTop?: number;
+  /** Odstęp (px) między treścią listy a dolnym wskaźnikiem. */
+  paddingBottom?: number;
+  /** Wewnętrzny padding (px) wrappera górnego wskaźnika od zewnętrznej krawędzi listy. */
+  indicatorPaddingTop?: number;
+  /** Wewnętrzny padding (px) wrappera dolnego wskaźnika od zewnętrznej krawędzi listy. */
+  indicatorPaddingBottom?: number;
+  /** Minimalny czas (ms) utrzymania stanu ładowania po zakończeniu odświeżania. */
+  minLoadingTime?: number;
   class?:
     | string
     | Record<string, boolean>
@@ -78,6 +102,11 @@ const props = withDefaults(defineProps<AbyssReloadProps>(), {
   disabledBottom: false,
   activationThreshold: DEFAULT_ACTIVATION_THRESHOLD,
   size: "default",
+  paddingTop: 0,
+  paddingBottom: 0,
+  indicatorPaddingTop: 0,
+  indicatorPaddingBottom: 0,
+  minLoadingTime: 0,
   class: "",
   style: "",
 });
@@ -93,11 +122,17 @@ const bottomLoaderEl = ref<HTMLElement | null>(null);
 
 const pendingTop = ref(false);
 const pendingBottom = ref(false);
+const holdLoadingTop = ref(false);
+const holdLoadingBottom = ref(false);
 
 let lastScrollTop = -1;
 let scrollDirection: "up" | "down" = "down";
 let isTouchActive = false;
 let programmaticScrollTarget: number | null = null;
+let loadingTopStartedAt: number | null = null;
+let loadingBottomStartedAt: number | null = null;
+let topLoadingFinishTimer: ReturnType<typeof setTimeout> | null = null;
+let bottomLoadingFinishTimer: ReturnType<typeof setTimeout> | null = null;
 
 /** Debug scrolla — nie usuwać (diagnoza AbyssReload). */
 function logScrollDebug(event: string, details: Record<string, unknown>): void {
@@ -113,21 +148,128 @@ const activationThresholdPx = computed(
 );
 
 const effectiveLoadingTop = computed(
-  () => props.loadingTop || pendingTop.value,
+  () => props.loadingTop || pendingTop.value || holdLoadingTop.value,
 );
 
 const effectiveLoadingBottom = computed(
-  () => props.loadingBottom || pendingBottom.value,
+  () => props.loadingBottom || pendingBottom.value || holdLoadingBottom.value,
 );
+
+const minLoadingTimeMs = computed(() => Math.max(0, props.minLoadingTime ?? 0));
+
+function clearTopLoadingFinishTimer(): void {
+  if (topLoadingFinishTimer !== null) {
+    clearTimeout(topLoadingFinishTimer);
+    topLoadingFinishTimer = null;
+  }
+}
+
+function clearBottomLoadingFinishTimer(): void {
+  if (bottomLoadingFinishTimer !== null) {
+    clearTimeout(bottomLoadingFinishTimer);
+    bottomLoadingFinishTimer = null;
+  }
+}
+
+function markLoadingTopStarted(): void {
+  if (loadingTopStartedAt === null) {
+    loadingTopStartedAt = Date.now();
+  }
+}
+
+function markLoadingBottomStarted(): void {
+  if (loadingBottomStartedAt === null) {
+    loadingBottomStartedAt = Date.now();
+  }
+}
+
+function finishLoadingTop(): void {
+  const startedAt = loadingTopStartedAt ?? Date.now();
+  loadingTopStartedAt = null;
+
+  const remaining = minLoadingTimeMs.value - (Date.now() - startedAt);
+
+  if (remaining > 0) {
+    holdLoadingTop.value = true;
+    clearTopLoadingFinishTimer();
+    topLoadingFinishTimer = setTimeout(() => {
+      topLoadingFinishTimer = null;
+      holdLoadingTop.value = false;
+      hideTopLoader();
+    }, remaining);
+    return;
+  }
+
+  hideTopLoader();
+}
+
+function finishLoadingBottom(): void {
+  const startedAt = loadingBottomStartedAt ?? Date.now();
+  loadingBottomStartedAt = null;
+
+  const remaining = minLoadingTimeMs.value - (Date.now() - startedAt);
+
+  if (remaining > 0) {
+    holdLoadingBottom.value = true;
+    clearBottomLoadingFinishTimer();
+    bottomLoadingFinishTimer = setTimeout(() => {
+      bottomLoadingFinishTimer = null;
+      holdLoadingBottom.value = false;
+      hideBottomLoader();
+    }, remaining);
+    return;
+  }
+
+  hideBottomLoader();
+}
+
+const paddingTopPx = computed(() => Math.max(0, props.paddingTop ?? 0));
+const paddingBottomPx = computed(() => Math.max(0, props.paddingBottom ?? 0));
+const indicatorPaddingTopPx = computed(() =>
+  Math.max(0, props.indicatorPaddingTop ?? 0),
+);
+const indicatorPaddingBottomPx = computed(() =>
+  Math.max(0, props.indicatorPaddingBottom ?? 0),
+);
+
+const topSpacerStyle = computed(() => ({
+  height: `${paddingTopPx.value}px`,
+}));
+
+const bottomSpacerStyle = computed(() => ({
+  height: `${paddingBottomPx.value}px`,
+}));
+
+const topSectionInsetPx = computed(() => {
+  if (props.disabledTop) {
+    return paddingTopPx.value;
+  }
+
+  return (
+    loaderHeight.value +
+    indicatorPaddingTopPx.value +
+    paddingTopPx.value
+  );
+});
+
+const bottomSectionInsetPx = computed(() => {
+  if (props.disabledBottom) {
+    return paddingBottomPx.value;
+  }
+
+  return (
+    loaderHeight.value +
+    indicatorPaddingBottomPx.value +
+    paddingBottomPx.value
+  );
+});
 
 const rootStyle = computed(() => ({
   "--abyss-reload-loader-height": `${loaderHeight.value}px`,
-  "--abyss-reload-top-inset": props.disabledTop
-    ? "0px"
-    : `${loaderHeight.value}px`,
-  "--abyss-reload-bottom-inset": props.disabledBottom
-    ? "0px"
-    : `${loaderHeight.value}px`,
+  "--abyss-reload-indicator-padding-top": `${indicatorPaddingTopPx.value}px`,
+  "--abyss-reload-indicator-padding-bottom": `${indicatorPaddingBottomPx.value}px`,
+  "--abyss-reload-top-inset": `${topSectionInsetPx.value}px`,
+  "--abyss-reload-bottom-inset": `${bottomSectionInsetPx.value}px`,
 }));
 
 function getMaxScrollTop(container: HTMLElement): number {
@@ -200,11 +342,21 @@ function isBottomLoaderActivated(): boolean {
 }
 
 function canRefreshTop(): boolean {
-  return !props.disabledTop && !props.loadingTop && !pendingTop.value;
+  return (
+    !props.disabledTop &&
+    !props.loadingTop &&
+    !pendingTop.value &&
+    !holdLoadingTop.value
+  );
 }
 
 function canRefreshBottom(): boolean {
-  return !props.disabledBottom && !props.loadingBottom && !pendingBottom.value;
+  return (
+    !props.disabledBottom &&
+    !props.loadingBottom &&
+    !pendingBottom.value &&
+    !holdLoadingBottom.value
+  );
 }
 
 function triggerRefreshTop(): void {
@@ -213,6 +365,7 @@ function triggerRefreshTop(): void {
   }
 
   pendingTop.value = true;
+  markLoadingTopStarted();
   logScrollDebug("refresh-top", {
     scrollTop: viewportEl.value?.scrollTop ?? null,
     direction: scrollDirection,
@@ -230,6 +383,7 @@ function triggerRefreshBottom(): void {
   }
 
   pendingBottom.value = true;
+  markLoadingBottomStarted();
   logScrollDebug("refresh-bottom", {
     scrollTop: viewportEl.value?.scrollTop ?? null,
     direction: scrollDirection,
@@ -477,11 +631,12 @@ watch(
   (loading, wasLoading) => {
     if (loading) {
       pendingTop.value = false;
+      markLoadingTopStarted();
       return;
     }
 
     if (wasLoading) {
-      hideTopLoader();
+      finishLoadingTop();
     }
   },
 );
@@ -491,11 +646,12 @@ watch(
   (loading, wasLoading) => {
     if (loading) {
       pendingBottom.value = false;
+      markLoadingBottomStarted();
       return;
     }
 
     if (wasLoading) {
-      hideBottomLoader();
+      finishLoadingBottom();
     }
   },
 );
@@ -523,6 +679,11 @@ onMounted(() => {
   });
 });
 
+onUnmounted(() => {
+  clearTopLoadingFinishTimer();
+  clearBottomLoadingFinishTimer();
+});
+
 defineExpose({
   viewportEl,
   topLoaderEl,
@@ -544,7 +705,8 @@ defineExpose({
   &__viewport {
     flex: 1 1 auto;
     min-height: 0;
-    overflow: auto;
+    overflow-x: hidden;
+    overflow-y: auto;
     overscroll-behavior: contain;
     -webkit-overflow-scrolling: touch;
   }
@@ -569,7 +731,21 @@ defineExpose({
     flex-shrink: 0;
     justify-content: center;
     align-items: center;
-    height: var(--abyss-reload-loader-height);
+    box-sizing: border-box;
+    min-height: var(--abyss-reload-loader-height);
+
+    &--top {
+      padding-top: var(--abyss-reload-indicator-padding-top);
+    }
+
+    &--bottom {
+      padding-bottom: var(--abyss-reload-indicator-padding-bottom);
+    }
+  }
+
+  &__spacer {
+    flex-shrink: 0;
+    width: 100%;
   }
 }
 </style>
