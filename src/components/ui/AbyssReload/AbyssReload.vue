@@ -128,6 +128,7 @@ const holdLoadingBottom = ref(false);
 let lastScrollTop = -1;
 let scrollDirection: "up" | "down" = "down";
 let isTouchActive = false;
+let activationSuppressedDepth = 0;
 let programmaticScrollTarget: number | null = null;
 let loadingTopStartedAt: number | null = null;
 let loadingBottomStartedAt: number | null = null;
@@ -341,6 +342,28 @@ function isBottomLoaderActivated(): boolean {
   return isBottomScrollActivated(container, container.scrollTop);
 }
 
+function isActivationSuppressed(): boolean {
+  return activationSuppressedDepth > 0;
+}
+
+function withSuppressedActivation(callback: () => void): void {
+  activationSuppressedDepth += 1;
+
+  try {
+    callback();
+  } finally {
+    void nextTick(() => {
+      activationSuppressedDepth -= 1;
+
+      const container = viewportEl.value;
+
+      if (container) {
+        lastScrollTop = container.scrollTop;
+      }
+    });
+  }
+}
+
 function canRefreshTop(): boolean {
   return (
     !props.disabledTop &&
@@ -396,6 +419,10 @@ function triggerRefreshBottom(): void {
 }
 
 function checkTopActivation(scrollTop: number): void {
+  if (isActivationSuppressed()) {
+    return;
+  }
+
   if (props.disabledTop || !isTopScrollActivated(scrollTop)) {
     return;
   }
@@ -421,6 +448,10 @@ function checkBottomActivation(
   container: HTMLElement,
   scrollTop: number,
 ): void {
+  if (isActivationSuppressed()) {
+    return;
+  }
+
   if (props.disabledBottom || !isBottomScrollActivated(container, scrollTop)) {
     return;
   }
@@ -692,6 +723,7 @@ defineExpose({
   hideBottomLoader,
   isTopLoaderActivated,
   isBottomLoaderActivated,
+  withSuppressedActivation,
 });
 </script>
 
