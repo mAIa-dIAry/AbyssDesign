@@ -1,10 +1,10 @@
 <template>
   <div class="abyss-info" :class="`abyss-info--${type}`" v-bind="$attrs">
-    <div v-if="icon || title" class="abyss-info__header">
+    <div class="abyss-info__header">
       <span v-if="icon" class="material-symbols-rounded abyss-info__icon">
         {{ icon }}
       </span>
-      <span v-if="title" class="abyss-info__title">{{ title }}</span>
+      <span class="abyss-info__title">{{ title }}</span>
     </div>
     <div class="abyss-info__content">
       <slot />
@@ -13,6 +13,8 @@
 </template>
 
 <script setup lang="ts">
+import { watch } from 'vue';
+
 export type AbyssInfoType =
   | 'info'
   | 'warning'
@@ -22,15 +24,29 @@ export type AbyssInfoType =
 
 export interface AbyssInfoProps {
   type?: AbyssInfoType;
-  title?: string;
+  title: string;
   icon?: string;
   class?: string;
   style?: string | Record<string, string>;
 }
 
-withDefaults(defineProps<AbyssInfoProps>(), {
+const props = withDefaults(defineProps<AbyssInfoProps>(), {
   type: 'info',
 });
+
+if (import.meta.env.DEV) {
+  watch(
+    () => props.title,
+    (title) => {
+      if (!title.trim()) {
+        console.error(
+          '[AbyssInfo] Prop "title" is required and cannot be empty.',
+        );
+      }
+    },
+    { immediate: true },
+  );
+}
 </script>
 
 <style scoped lang="scss">

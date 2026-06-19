@@ -84,13 +84,16 @@
               @click="bodyProps.expand = !bodyProps.expand"
             />
           </q-td>
-          <q-td
-            v-for="col in bodyProps.cols"
-            :key="col.name"
-            :props="bodyProps"
-          >
-            {{ col.value }}
-          </q-td>
+          <template v-for="col in bodyProps.cols" :key="col.name">
+            <slot
+              :name="`body-cell-${col.name}`"
+              v-bind="cellScope(bodyProps, col)"
+            >
+              <q-td :props="cellScope(bodyProps, col)">
+                {{ col.value }}
+              </q-td>
+            </slot>
+          </template>
         </q-tr>
         <q-tr v-show="bodyProps.expand" :props="bodyProps">
           <q-td colspan="100%">
@@ -334,6 +337,18 @@ function handleRowsPerPageChange(value: unknown) {
     ...pagination.value,
     page: 1,
     rowsPerPage: value,
+  };
+}
+
+function cellScope(
+  bodyProps: Record<string, unknown>,
+  col: { name: string; value: unknown },
+) {
+  return {
+    ...bodyProps,
+    key: col.name,
+    col,
+    value: col.value,
   };
 }
 

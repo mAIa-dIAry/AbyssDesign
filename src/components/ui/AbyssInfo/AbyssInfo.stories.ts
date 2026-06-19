@@ -18,7 +18,7 @@ const meta: Meta<typeof AbyssInfo> = {
         component:
           'Komponent informacyjny AbyssInfo służy do wyświetlania komunikatów kontekstowych: ' +
           'informacji, ostrzeżeń, błędów, potwierdzeń i wiadomości neutralnych. ' +
-          'Posiada opcjonalny tytuł, ikonę oraz domyślny slot na treść.\n\n' +
+          'Posiada **wymagany** tytuł, opcjonalną ikonę oraz domyślny slot na treść.\n\n' +
           '> Jeśli sekcja nie ma własnego `title`, nie używaj `AbyssInfo` jako samego ozdobnego wrappera. ' +
           'Dla zwykłych opisów i hintów używaj zwykłego tekstu zamiast calloutu.\n\n' +
           '### Zalecane ikony i etykiety\n\n' +
@@ -30,7 +30,7 @@ const meta: Meta<typeof AbyssInfo> = {
           "| `warning` | `warning`      | `t('common.labels.warning')`       |\n" +
           "| `danger`  | `error`        | `t('common.labels.error')`         |\n" +
           "| `success` | `check_circle` | `t('common.labels.success')`       |\n" +
-          '| `neutral` | *(opcjonalnie)*| *(opcjonalnie)*                    |\n\n' +
+          "| `neutral` | *(opcjonalnie)*| `t('common.labels.info')`          |\n\n" +
           '```html\n' +
           '<AbyssInfo type="info"    icon="info"         :title="t(\'common.labels.info\')">\n' +
           '<AbyssInfo type="warning" icon="warning"      :title="t(\'common.labels.warning\')">\n' +
@@ -55,9 +55,8 @@ const meta: Meta<typeof AbyssInfo> = {
     title: {
       control: 'text',
       description:
-        'Opcjonalny tytuł wyświetlany pogrubioną czcionką w kolorze akcentu',
+        'Wymagany tytuł wyświetlany pogrubioną czcionką w kolorze akcentu',
       table: {
-        defaultValue: { summary: 'undefined' },
         type: { summary: 'string' },
       },
     },
