@@ -19,8 +19,8 @@
         <AbyssTitle
           v-if="props.title"
           class="abyss-table__title"
-          :icon="props.titleIcon"
           :label="String(props.title)"
+          v-bind="props.titleIcon ? { icon: props.titleIcon } : {}"
         />
       </slot>
     </template>
@@ -341,7 +341,7 @@ function handleRowsPerPageChange(value: unknown) {
 }
 
 function cellScope(
-  bodyProps: Record<string, unknown>,
+  bodyProps: { row: unknown; [key: string]: unknown },
   col: { name: string; value: unknown },
 ) {
   return {
@@ -349,6 +349,7 @@ function cellScope(
     key: col.name,
     col,
     value: col.value,
+    row: bodyProps.row,
   };
 }
 
@@ -379,9 +380,10 @@ const tableProps = computed((): Omit<QTableProps, LockedQTableProps> => {
     titleIcon: _titleIcon,
     height: _height,
     asCard: _asCard,
+    onVirtualScroll: _onVirtualScroll,
     ...rest
   } = props;
-  return rest;
+  return rest as Omit<QTableProps, LockedQTableProps>;
 });
 
 defineOptions({
