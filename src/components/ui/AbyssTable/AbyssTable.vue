@@ -122,7 +122,7 @@
             </span>
             <div class="abyss-table__rows-per-page-select">
               <AbyssSelect
-                :model-value="pagination.rowsPerPage"
+                :model-value="rowsPerPageSelectValue"
                 :options="rowsPerPageSelectOptions"
                 emit-value
                 map-options
@@ -193,7 +193,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref, useSlots, watch } from 'vue';
+import { computed, onMounted, ref, useSlots, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import type { QTableProps } from 'quasar';
 import AbyssInput from '@/components/ui/AbyssInput/AbyssInput.vue';
@@ -275,11 +275,22 @@ const pagination = ref({
   rowsNumber: 0,
 });
 
+const preferredRowsPerPage = ref(pagination.value.rowsPerPage);
+
+const rowsPerPageSelectValue = computed(() =>
+  isServerPaginated.value
+    ? preferredRowsPerPage.value
+    : pagination.value.rowsPerPage,
+);
+
 watch(
   () => props.pagination,
   (value) => {
     if (!value) return;
     pagination.value = { ...pagination.value, ...value };
+    if (typeof value.rowsPerPage === 'number' && value.rowsPerPage > 0) {
+      preferredRowsPerPage.value = value.rowsPerPage;
+    }
   },
   { deep: true, immediate: true },
 );
@@ -291,6 +302,19 @@ watch(
     pagination.value = { ...pagination.value, rowsNumber };
   },
   { immediate: true },
+);
+
+watch(
+  () => pagination.value.rowsPerPage,
+  (rowsPerPage) => {
+    if (!isServerPaginated.value) return;
+    if (rowsPerPage === preferredRowsPerPage.value) return;
+
+    pagination.value = {
+      ...pagination.value,
+      rowsPerPage: preferredRowsPerPage.value,
+    };
+  },
 );
 
 watch(
@@ -344,7 +368,10 @@ const totalRowsCount = computed(
 
 function getPaginationText(scope: AbyssTableBottomScope): string {
   const total = totalRowsCount.value;
-  const { page, rowsPerPage } = scope.pagination;
+  const { page } = scope.pagination;
+  const rowsPerPage = isServerPaginated.value
+    ? preferredRowsPerPage.value
+    : scope.pagination.rowsPerPage;
 
   if (rowsPerPage === 0) {
     return t('ui.table.pagination', { start: 1, end: total, total });
@@ -359,22 +386,68 @@ function getPaginationText(scope: AbyssTableBottomScope): string {
 function handleRowsPerPageChange(value: unknown) {
   if (typeof value !== 'number') return;
 
+  preferredRowsPerPage.value = value;
   pagination.value = {
     ...pagination.value,
     page: 1,
     rowsPerPage: value,
   };
+
+  if (isServerPaginated.value) {
+    emitServerRequest();
+  }
 }
 
 function handleRequest(
   requestProps: Parameters<NonNullable<QTableProps['onRequest']>>[0],
 ) {
+  const rowsPerPage = isServerPaginated.value
+    ? preferredRowsPerPage.value
+    : requestProps.pagination.rowsPerPage;
+
+  const nextPagination = {
+    ...requestProps.pagination,
+    rowsPerPage,
+  };
+
   pagination.value = {
     ...pagination.value,
-    ...requestProps.pagination,
+    ...nextPagination,
   };
-  emit('request', requestProps);
+
+  emit('request', {
+    ...requestProps,
+    pagination: nextPagination,
+  });
 }
+
+function emitServerRequest(): void {
+  if (!isServerPaginated.value) return;
+
+  const requestProps = {
+    pagination: {
+      ...pagination.value,
+      rowsPerPage: preferredRowsPerPage.value,
+    },
+    filter: filter.value,
+    getCellValue: (col: { field?: unknown }, row: unknown) => {
+      const field = col.field;
+      if (typeof field === 'function') {
+        return (field as (row: unknown) => unknown)(row);
+      }
+      if (typeof field === 'string') {
+        return (row as Record<string, unknown>)[field];
+      }
+      return undefined;
+    },
+  } as Parameters<NonNullable<QTableProps['onRequest']>>[0];
+
+  handleRequest(requestProps);
+}
+
+onMounted(() => {
+  emitServerRequest();
+});
 
 function cellScope(
   bodyProps: { row: unknown; [key: string]: unknown },
