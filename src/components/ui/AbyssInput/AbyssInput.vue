@@ -18,7 +18,7 @@
         @update:model-value="$emit('update:modelValue', $event)"
         @click="handleInputClick"
         @blur="handleInputBlur"
-        :placeholder="placeholder"
+        :placeholder="effectivePlaceholder"
         :type="computedType"
         :disable="disable"
         :readonly="computedReadonly"
@@ -231,6 +231,15 @@ if (props.maxLength < -1) {
 
 const hasBottomContent = computed(() => {
   return !!(props.hint || props.errorMessage || props.counter);
+});
+
+const effectivePlaceholder = computed(() => {
+  const value = props.modelValue;
+  if (value !== null && value !== undefined && String(value).length > 0) {
+    return '';
+  }
+
+  return props.placeholder;
 });
 
 const buttonSize = computed<'small' | 'medium'>(() =>
@@ -616,6 +625,10 @@ function handleInputBlur() {
         color: rgba(white, 0.5);
         opacity: 1;
         user-select: none;
+      }
+
+      &.q-field--float .q-placeholder::placeholder {
+        opacity: 0;
       }
 
       &.q-field:not(

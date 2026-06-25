@@ -8,7 +8,7 @@
       @scrollend.passive="handleScrollEnd"
       @touchstart.passive="handleTouchStart"
       @touchend.passive="handleTouchEnd"
-      @touchcancel.passive="handleTouchEnd"
+      @touchcancel.passive="handleTouchCancel"
       @wheel.passive="handleWheel"
     >
       <div class="abyss-reload__content">
@@ -64,6 +64,8 @@ import AbyssReloadIndicator from "@/components/ui/AbyssReload/AbyssReloadIndicat
 const DEFAULT_LOADER_HEIGHT = 56;
 const DEFAULT_LOADER_HEIGHT_LARGE = 64;
 const DEFAULT_ACTIVATION_THRESHOLD = 8;
+/** Minimalny przyrost scrollTop (px) przy aktywacji — chroni przed fałszywym triggerem po programatycznym scrollu. */
+const REFRESH_SCROLL_DELTA = 12;
 
 export interface AbyssReloadProps {
   /** Stan ładowania wskaźnika u góry (fade ikony → spinner). */
@@ -130,6 +132,11 @@ let scrollDirection: "up" | "down" = "down";
 let isTouchActive = false;
 let activationSuppressedDepth = 0;
 let programmaticScrollTarget: number | null = null;
+type UserScrollGestureKind = "touch" | "wheel";
+let activeUserScrollGesture: UserScrollGestureKind | null = null;
+let bottomUserScrollAccum = 0;
+let topUserScrollAccum = 0;
+let touchStartScrollTop: number | null = null;
 let loadingTopStartedAt: number | null = null;
 let loadingBottomStartedAt: number | null = null;
 let topLoadingFinishTimer: ReturnType<typeof setTimeout> | null = null;
@@ -346,20 +353,92 @@ function isActivationSuppressed(): boolean {
   return activationSuppressedDepth > 0;
 }
 
+function beginUserScrollGesture(kind: UserScrollGestureKind): void {
+  activeUserScrollGesture = kind;
+}
+
+function endUserScrollGesture(): void {
+  activeUserScrollGesture = null;
+  resetUserScrollAccum();
+}
+
+function hasUserScrollIntent(): boolean {
+  return isTouchActive || activeUserScrollGesture !== null;
+}
+
+function resetUserScrollAccum(): void {
+  bottomUserScrollAccum = 0;
+  topUserScrollAccum = 0;
+}
+
+function trackUserScrollAccum(scrollDelta: number): void {
+  if (!isTouchActive && !hasUserScrollIntent()) {
+    return;
+  }
+
+  if (scrollDelta > 0) {
+    bottomUserScrollAccum += scrollDelta;
+    topUserScrollAccum = 0;
+    return;
+  }
+
+  if (scrollDelta < 0) {
+    topUserScrollAccum += Math.abs(scrollDelta);
+    bottomUserScrollAccum = 0;
+  }
+}
+
+function tryActivateAtScrollPosition(
+  container: HTMLElement,
+  scrollTop: number,
+): void {
+  if (shouldCheckTopActivation(scrollTop)) {
+    checkTopActivation(scrollTop);
+  }
+
+  if (shouldCheckBottomActivation(container, scrollTop)) {
+    checkBottomActivation(container, scrollTop);
+  }
+}
+
+function releaseSuppressedActivation(): void {
+  activationSuppressedDepth = Math.max(0, activationSuppressedDepth - 1);
+
+  const container = viewportEl.value;
+
+  if (container) {
+    lastScrollTop = container.scrollTop;
+  }
+}
+
 function withSuppressedActivation(callback: () => void): void {
   activationSuppressedDepth += 1;
+
+  const container = viewportEl.value;
+  const scrollTopBefore = container?.scrollTop ?? 0;
 
   try {
     callback();
   } finally {
     void nextTick(() => {
-      activationSuppressedDepth -= 1;
+      const current = viewportEl.value;
 
-      const container = viewportEl.value;
-
-      if (container) {
-        lastScrollTop = container.scrollTop;
+      if (!current) {
+        releaseSuppressedActivation();
+        return;
       }
+
+      if (current.scrollTop !== scrollTopBefore) {
+        const onScrollEnd = (): void => {
+          current.removeEventListener("scrollend", onScrollEnd);
+          releaseSuppressedActivation();
+        };
+
+        current.addEventListener("scrollend", onScrollEnd, { once: true });
+        return;
+      }
+
+      releaseSuppressedActivation();
     });
   }
 }
@@ -389,6 +468,7 @@ function triggerRefreshTop(): void {
 
   pendingTop.value = true;
   markLoadingTopStarted();
+  topUserScrollAccum = 0;
   logScrollDebug("refresh-top", {
     scrollTop: viewportEl.value?.scrollTop ?? null,
     direction: scrollDirection,
@@ -407,6 +487,7 @@ function triggerRefreshBottom(): void {
 
   pendingBottom.value = true;
   markLoadingBottomStarted();
+  bottomUserScrollAccum = 0;
   logScrollDebug("refresh-bottom", {
     scrollTop: viewportEl.value?.scrollTop ?? null,
     direction: scrollDirection,
@@ -420,6 +501,19 @@ function triggerRefreshBottom(): void {
 
 function checkTopActivation(scrollTop: number): void {
   if (isActivationSuppressed()) {
+    return;
+  }
+
+  if (!hasUserScrollIntent()) {
+    return;
+  }
+
+  const scrollDelta = scrollTop - lastScrollTop;
+  const hasEnoughTopScroll =
+    scrollDelta <= -REFRESH_SCROLL_DELTA ||
+    topUserScrollAccum >= REFRESH_SCROLL_DELTA;
+
+  if (!hasEnoughTopScroll) {
     return;
   }
 
@@ -449,6 +543,19 @@ function checkBottomActivation(
   scrollTop: number,
 ): void {
   if (isActivationSuppressed()) {
+    return;
+  }
+
+  if (!hasUserScrollIntent()) {
+    return;
+  }
+
+  const scrollDelta = scrollTop - lastScrollTop;
+  const hasEnoughBottomScroll =
+    scrollDelta >= REFRESH_SCROLL_DELTA ||
+    bottomUserScrollAccum >= REFRESH_SCROLL_DELTA;
+
+  if (!hasEnoughBottomScroll) {
     return;
   }
 
@@ -541,8 +648,16 @@ function hideBottomLoader(): void {
     return;
   }
 
-  const maxScrollTop = container.scrollHeight - container.clientHeight;
+  const scrollTop = container.scrollTop;
+  const maxScrollTop = getMaxScrollTop(container);
   const targetScrollTop = Math.max(0, maxScrollTop - loader.offsetHeight);
+
+  if (
+    !isBottomScrollActivated(container, scrollTop) &&
+    !isBottomScrollPartial(container, scrollTop)
+  ) {
+    return;
+  }
 
   startProgrammaticScroll(targetScrollTop);
   container.scrollTo({
@@ -581,13 +696,18 @@ function handleScroll(): void {
   }
 
   const scrollTop = container.scrollTop;
+  let scrollDelta = 0;
 
   if (lastScrollTop !== -1) {
+    scrollDelta = scrollTop - lastScrollTop;
+
     if (scrollTop > lastScrollTop) {
       scrollDirection = "down";
     } else if (scrollTop < lastScrollTop) {
       scrollDirection = "up";
     }
+
+    trackUserScrollAccum(scrollDelta);
 
     if (programmaticScrollTarget !== null) {
       const userOpposesProgrammaticScroll =
@@ -640,21 +760,51 @@ function handleScrollEnd(): void {
     return;
   }
 
+  const container = viewportEl.value;
+
+  if (container) {
+    tryActivateAtScrollPosition(container, container.scrollTop);
+  }
+
   hidePartialLoaders();
+  endUserScrollGesture();
 }
 
 function handleTouchStart(): void {
   cancelProgrammaticScroll("touchstart");
   isTouchActive = true;
+  resetUserScrollAccum();
+  beginUserScrollGesture("touch");
+  touchStartScrollTop = viewportEl.value?.scrollTop ?? null;
 }
 
 function handleTouchEnd(): void {
   isTouchActive = false;
-  hidePartialLoaders();
+
+  const container = viewportEl.value;
+
+  if (container) {
+    tryActivateAtScrollPosition(container, container.scrollTop);
+
+    if (touchStartScrollTop === container.scrollTop) {
+      endUserScrollGesture();
+    }
+  } else {
+    endUserScrollGesture();
+  }
+
+  touchStartScrollTop = null;
+}
+
+function handleTouchCancel(): void {
+  isTouchActive = false;
+  touchStartScrollTop = null;
+  endUserScrollGesture();
 }
 
 function handleWheel(): void {
   cancelProgrammaticScroll("wheel");
+  beginUserScrollGesture("wheel");
 }
 
 watch(

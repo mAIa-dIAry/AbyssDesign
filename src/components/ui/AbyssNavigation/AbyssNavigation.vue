@@ -42,15 +42,30 @@ provide(
     --icon-size: 36px;
     --padding-y: 7px;
     --padding-x: 8px;
+    --nav-button-content-gap: 2px;
+    --nav-button-label-line-height: 1.2;
+    --nav-button-min-height: calc(
+      var(--padding-y) * 2 + var(--icon-size) + var(--nav-button-content-gap) +
+        var(--font-size) * var(--nav-button-label-line-height)
+    );
     min-width: 0;
-    min-height: unset;
+    min-height: var(--nav-button-min-height);
     height: auto;
-    line-height: 1.2;
+    line-height: var(--nav-button-label-line-height);
 
     .q-btn__content {
       flex-direction: column;
-      gap: 2px;
+      gap: var(--nav-button-content-gap);
       align-items: center;
+    }
+
+    &[role='progressbar'] {
+      min-height: var(--nav-button-min-height);
+
+      .q-btn__content {
+        inset: 0;
+        justify-content: center;
+      }
     }
 
     .q-icon {

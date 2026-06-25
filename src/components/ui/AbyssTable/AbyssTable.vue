@@ -13,6 +13,7 @@
     v-bind="tableProps"
     v-model:pagination="pagination"
     :filter="filter"
+    @request="isServerPaginated ? handleRequest : undefined"
   >
     <template #top-left>
       <slot name="top-left">
@@ -28,7 +29,7 @@
     <template #top-right>
       <slot name="top-right">
         <div class="abyss-table__top-actions">
-          <div class="abyss-table__search">
+          <div v-if="!hideSearch" class="abyss-table__search">
             <AbyssInput
               v-model="filter"
               type="text"
@@ -200,7 +201,7 @@ import AbyssButton from '@/components/ui/AbyssButton/AbyssButton.vue';
 import AbyssSelect from '@/components/ui/AbyssSelect/AbyssSelect.vue';
 import AbyssTitle from '@/components/ui/AbyssTitle/AbyssTitle.vue';
 
-const DEFAULT_ROWS_PER_PAGE_OPTIONS = [5, 7, 10, 15, 20, 25, 50, 0] as const;
+const DEFAULT_ROWS_PER_PAGE_OPTIONS = [20, 50, 100, 200] as const;
 
 const RESERVED_SLOTS = [
   'top-left',
@@ -235,6 +236,10 @@ export interface AbyssTableProps
     | Record<string, boolean>
     | Array<string | Record<string, boolean>>;
   pagination?: QTableProps['pagination'];
+  /** Całkowita liczba wierszy z serwera (paginacja server-side). */
+  rowsNumber?: number;
+  /** Ukrywa pole wyszukiwania w nagłówku tabeli. */
+  hideSearch?: boolean;
   /** Ikona obok tytułu w `#top-left` (przekazywana do `AbyssTitle`). */
   titleIcon?: string;
   /**
@@ -249,7 +254,14 @@ export interface AbyssTableProps
 const props = withDefaults(defineProps<AbyssTableProps>(), {
   asCard: false,
   height: 0,
+  hideSearch: false,
 });
+
+const emit = defineEmits<{
+  request: [props: Parameters<NonNullable<QTableProps['onRequest']>>[0]];
+}>();
+
+const isServerPaginated = computed(() => props.rowsNumber != null);
 
 const { t } = useI18n();
 
@@ -257,9 +269,10 @@ const filter = ref('');
 
 const pagination = ref({
   page: 1,
-  rowsPerPage: 5,
+  rowsPerPage: 20,
   descending: false,
   sortBy: props.columns?.[0]?.name ?? null,
+  rowsNumber: 0,
 });
 
 watch(
@@ -269,6 +282,15 @@ watch(
     pagination.value = { ...pagination.value, ...value };
   },
   { deep: true, immediate: true },
+);
+
+watch(
+  () => props.rowsNumber,
+  (rowsNumber) => {
+    if (rowsNumber == null) return;
+    pagination.value = { ...pagination.value, rowsNumber };
+  },
+  { immediate: true },
 );
 
 watch(
@@ -316,8 +338,12 @@ const filteredRowsCount = computed(() => {
   ).length;
 });
 
+const totalRowsCount = computed(
+  () => props.rowsNumber ?? filteredRowsCount.value,
+);
+
 function getPaginationText(scope: AbyssTableBottomScope): string {
-  const total = filteredRowsCount.value;
+  const total = totalRowsCount.value;
   const { page, rowsPerPage } = scope.pagination;
 
   if (rowsPerPage === 0) {
@@ -338,6 +364,16 @@ function handleRowsPerPageChange(value: unknown) {
     page: 1,
     rowsPerPage: value,
   };
+}
+
+function handleRequest(
+  requestProps: Parameters<NonNullable<QTableProps['onRequest']>>[0],
+) {
+  pagination.value = {
+    ...pagination.value,
+    ...requestProps.pagination,
+  };
+  emit('request', requestProps);
 }
 
 function cellScope(
@@ -376,6 +412,8 @@ const tableProps = computed((): Omit<QTableProps, LockedQTableProps> => {
   const {
     class: _class,
     pagination: _pagination,
+    rowsNumber: _rowsNumber,
+    hideSearch: _hideSearch,
     title: _title,
     titleIcon: _titleIcon,
     height: _height,

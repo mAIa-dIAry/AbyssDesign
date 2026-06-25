@@ -26,8 +26,8 @@
         :options-selected-class="optionsSelectedClass"
         :use-input="useInput"
         :use-chips="useChips"
-        :fill-input="fillInput"
-        :hide-selected="hideSelected"
+        :fill-input="resolvedFillInput"
+        :hide-selected="resolvedHideSelected"
         :hide-dropdown-icon="hideDropdownIcon"
         :clearable="clearable"
         :max-values="maxValues"
@@ -79,11 +79,13 @@
             'abyss-select--popup-open': isPopupOpen,
             'abyss-select--popup-open-above': isPopupAbove,
             'abyss-select--flat': flat,
+            'abyss-select--has-selection': hasSelection,
           },
           $props.class,
         ]"
         :style="style"
         v-bind="$attrs"
+        :placeholder="resolvedPlaceholder"
         @popup-show="handlePopupShow"
         @popup-hide="handlePopupHide"
       >
@@ -126,19 +128,21 @@
 </template>
 
 <script setup lang="ts">
-import { nextTick, ref } from 'vue';
+import { computed, nextTick, ref, useAttrs } from 'vue';
 import type { AbyssSelectProps } from './AbyssSelect.props';
 
 type SelectRootRef = {
   $el?: Element | null;
 };
 
+const attrs = useAttrs();
+
 const isPopupOpen = ref(false);
 const isPopupAbove = ref(false);
 const selectRef = ref<SelectRootRef | null>(null);
 const POPUP_SCROLL_SYNC_KEY = '__abyssSelectScrollSyncAttached';
 
-withDefaults(defineProps<AbyssSelectProps>(), {
+const props = withDefaults(defineProps<AbyssSelectProps>(), {
   multiple: false,
   displayValueHtml: false,
   optionsHtml: false,
@@ -173,6 +177,49 @@ withDefaults(defineProps<AbyssSelectProps>(), {
 defineEmits<{
   'update:modelValue': [value: unknown];
 }>();
+
+function hasSelectedValue(value: unknown): boolean {
+  if (value === null || value === undefined || value === '') {
+    return false;
+  }
+
+  if (Array.isArray(value)) {
+    return value.length > 0;
+  }
+
+  return true;
+}
+
+const hasSelection = computed(
+  () =>
+    hasSelectedValue(props.modelValue) ||
+    (props.displayValue !== undefined &&
+      props.displayValue !== null &&
+      props.displayValue !== ''),
+);
+
+const resolvedPlaceholder = computed(() => {
+  if (hasSelection.value) {
+    return undefined;
+  }
+
+  if (typeof props.placeholder === 'string' && props.placeholder.length > 0) {
+    return props.placeholder;
+  }
+
+  const attrPlaceholder = attrs.placeholder;
+  return typeof attrPlaceholder === 'string' && attrPlaceholder.length > 0
+    ? attrPlaceholder
+    : undefined;
+});
+
+const resolvedFillInput = computed(
+  () => props.fillInput || (props.useInput && hasSelection.value),
+);
+
+const resolvedHideSelected = computed(
+  () => props.hideSelected || (props.useInput && hasSelection.value),
+);
 
 function handlePopupShow(): void {
   isPopupOpen.value = true;
@@ -408,6 +455,15 @@ function resolveControlElement(): HTMLElement | null {
           padding: 0;
         }
 
+        .q-field__input::placeholder {
+          color: rgba(white, 0.5);
+          opacity: 1;
+        }
+
+        &.q-field--float .q-field__input::placeholder {
+          opacity: 0;
+        }
+
         // Label jest zewnętrzny – ukryj wbudowany
         .q-field__label {
           display: none;
@@ -465,6 +521,10 @@ function resolveControlElement(): HTMLElement | null {
             }
           }
         }
+      }
+
+      &.abyss-select--has-selection .q-field__control .q-field__input::placeholder {
+        opacity: 0;
       }
 
       .q-field__bottom {

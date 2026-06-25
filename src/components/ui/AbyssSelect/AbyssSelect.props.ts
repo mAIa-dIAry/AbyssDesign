@@ -26,6 +26,7 @@ export interface AbyssSelectProps {
   loading?: boolean;
   label?: string;
   hint?: string;
+  placeholder?: string;
   error?: boolean;
   errorMessage?: string;
   rules?: ValidationRule[];

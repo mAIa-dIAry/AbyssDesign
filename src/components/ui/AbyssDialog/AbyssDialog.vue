@@ -201,6 +201,14 @@ function getActionButtonProps(
     gap: 12px;
     @include scrollbar;
 
+    :slotted(form) {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      width: 100%;
+      min-width: 0;
+    }
+
     :deep(p) {
       margin-bottom: 8px;
 

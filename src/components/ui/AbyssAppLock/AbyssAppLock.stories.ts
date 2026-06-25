@@ -3,13 +3,13 @@ import { ref } from 'vue';
 import { expect } from 'storybook/test';
 import AbyssAppLock from '@/components/ui/AbyssAppLock/AbyssAppLock.vue';
 import AbyssDialog from '@/components/ui/AbyssDialog/AbyssDialog.vue';
-import { withAbyssBackground } from '@/stories/AbyssBackgroundDecorator';
+import { withAbyssBackgroundDialogScope } from '@/stories/StoryDialogScopeDecorator';
 
 const meta = {
   title: 'UI/AbyssAppLock',
   component: AbyssAppLock,
   tags: ['autodocs'],
-  decorators: [withAbyssBackground],
+  decorators: [withAbyssBackgroundDialogScope],
   parameters: {
     docs: {
       description: {
