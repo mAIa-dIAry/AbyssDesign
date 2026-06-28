@@ -298,6 +298,8 @@ body.sb-show-main:not(:has(.docs-story)) {
   }
 
   .docs-story {
+    padding: 0 !important;
+
     > div {
       padding: 0;
       border: none !important;
