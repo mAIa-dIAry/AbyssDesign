@@ -170,6 +170,7 @@ $shadow-frame-soft-inverted:
 
   &.size-medium {
     --font-size: 12px;
+    --padding-x: 16px;
     --padding-y: 12px;
     --icon-size: 16px;
     --border-radius: 6px;

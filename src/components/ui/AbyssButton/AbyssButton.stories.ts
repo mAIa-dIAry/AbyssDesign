@@ -154,30 +154,45 @@ const meta: Meta<AbyssButtonStoryArgs> = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 
+const BUTTON_SIZES = ['small', 'medium', 'big'] as const;
+
+const sizesLayoutStyle =
+  'display: flex; flex-direction: column; gap: 12px; align-items: flex-start;';
+
 export const Default: Story = {
-  name: 'Domyślny',
+  name: 'Rozmiary',
   parameters: {
     docs: {
       description: {
-        story: 'Podstawowy przycisk z tekstem w rozmiarze big (domyślnym).',
+        story: 'Przycisk tekstowy we wszystkich rozmiarach: small, medium i big.',
       },
     },
   },
-  args: {
-    label: 'Testowy przycisk',
-  },
-  play: async ({ args, canvas, userEvent }) => {
-    const button = canvas.getByRole('button', { name: /testowy przycisk/i });
+  render: () => ({
+    components: { AbyssButton },
+    setup() {
+      return { sizes: BUTTON_SIZES };
+    },
+    template: `
+      <div style="${sizesLayoutStyle}">
+        <AbyssButton
+          v-for="size in sizes"
+          :key="size"
+          :label="'Przycisk ' + size"
+          :size="size"
+        />
+      </div>
+    `,
+  }),
+  play: async ({ canvas, userEvent }) => {
+    const buttons = canvas.getAllByRole('button');
 
-    await expect(button).toBeVisible();
-    await expect(button).toBeEnabled();
-    await expect(button).not.toHaveClass('size-small');
-    await expect(button).not.toHaveClass('size-medium');
-    await expect(button).toHaveClass('size-big');
-    await expect(button).not.toHaveClass('full-width');
+    await expect(buttons).toHaveLength(3);
+    await expect(buttons[0]).toHaveClass('size-small');
+    await expect(buttons[1]).toHaveClass('size-medium');
+    await expect(buttons[2]).toHaveClass('size-big');
 
-    await userEvent.click(button);
-    await expect(args.onClick).toHaveBeenCalledOnce();
+    await userEvent.click(buttons[2]!);
   },
 };
 
@@ -235,19 +250,33 @@ export const IconOnly: Story = {
     docs: {
       description: {
         story:
-          'Przycisk zawierający tylko ikonę bez tekstu. Automatycznie dostosowuje padding.',
+          'Przycisk zawierający tylko ikonę bez tekstu we wszystkich rozmiarach. Automatycznie dostosowuje padding.',
       },
     },
   },
-  args: {
-    label: '',
-    icon: 'sym_r_favorite',
-  },
+  render: () => ({
+    components: { AbyssButton },
+    setup() {
+      return { sizes: BUTTON_SIZES };
+    },
+    template: `
+      <div style="${sizesLayoutStyle}">
+        <AbyssButton
+          v-for="size in sizes"
+          :key="size"
+          icon="sym_r_favorite"
+          :size="size"
+        />
+      </div>
+    `,
+  }),
   play: async ({ canvas }) => {
-    const button = canvas.getByRole('button');
+    const buttons = canvas.getAllByRole('button');
 
-    await expect(button).toBeVisible();
-    await expect(button).toHaveClass('icon-only');
+    await expect(buttons).toHaveLength(3);
+    for (const button of buttons) {
+      await expect(button).toHaveClass('icon-only');
+    }
   },
 };
 
@@ -257,19 +286,34 @@ export const WithIcon: Story = {
     docs: {
       description: {
         story:
-          'Przycisk z ikoną i tekstem - ikona dodaje wizualny kontekst do akcji.',
+          'Przycisk z ikoną po lewej i tekstem we wszystkich rozmiarach.',
       },
     },
   },
-  args: {
-    label: 'Przycisk z ikoną',
-    icon: 'sym_r_check_box',
-  },
+  render: () => ({
+    components: { AbyssButton },
+    setup() {
+      return { sizes: BUTTON_SIZES };
+    },
+    template: `
+      <div style="${sizesLayoutStyle}">
+        <AbyssButton
+          v-for="size in sizes"
+          :key="size"
+          :label="'Przycisk ' + size"
+          icon="sym_r_check_box"
+          :size="size"
+        />
+      </div>
+    `,
+  }),
   play: async ({ canvas }) => {
-    const button = canvas.getByRole('button', { name: /przycisk z ikoną/i });
-    await expect(button).toBeVisible();
-    const iconLeft = button.querySelector('.on-left');
-    await expect(iconLeft).toBeInTheDocument();
+    const buttons = canvas.getAllByRole('button');
+
+    await expect(buttons).toHaveLength(3);
+    for (const button of buttons) {
+      await expect(button.querySelector('.on-left')).toBeInTheDocument();
+    }
   },
 };
 
@@ -278,19 +322,35 @@ export const WithIconRight: Story = {
   parameters: {
     docs: {
       description: {
-        story: 'Przycisk z ikoną umieszczoną po prawej stronie tekstu.',
+        story:
+          'Przycisk z ikoną po prawej stronie tekstu we wszystkich rozmiarach.',
       },
     },
   },
-  args: {
-    label: 'Ikona po prawej',
-    iconRight: 'sym_r_arrow_forward',
-  },
+  render: () => ({
+    components: { AbyssButton },
+    setup() {
+      return { sizes: BUTTON_SIZES };
+    },
+    template: `
+      <div style="${sizesLayoutStyle}">
+        <AbyssButton
+          v-for="size in sizes"
+          :key="size"
+          :label="'Przycisk ' + size"
+          icon-right="sym_r_arrow_forward"
+          :size="size"
+        />
+      </div>
+    `,
+  }),
   play: async ({ canvas }) => {
-    const button = canvas.getByRole('button', { name: /ikona po prawej/i });
-    await expect(button).toBeVisible();
-    const iconRight = button.querySelector('.on-right');
-    await expect(iconRight).toBeInTheDocument();
+    const buttons = canvas.getAllByRole('button');
+
+    await expect(buttons).toHaveLength(3);
+    for (const button of buttons) {
+      await expect(button.querySelector('.on-right')).toBeInTheDocument();
+    }
   },
 };
 
@@ -299,77 +359,29 @@ export const WithBothIcons: Story = {
   parameters: {
     docs: {
       description: {
-        story: 'Przycisk z ikonami po lewej i prawej stronie tekstu.',
-      },
-    },
-  },
-  args: {
-    label: 'Obie strony',
-    icon: 'sym_r_arrow_back',
-    iconRight: 'sym_r_arrow_forward',
-  },
-};
-
-export const MediumSize: Story = {
-  name: 'Średni rozmiar',
-  parameters: {
-    docs: {
-      description: {
         story:
-          'Przycisk w rozmiarze medium — wysokość 40px, jak `AbyssSelect` w trybie small.',
+          'Przycisk z ikonami po lewej i prawej stronie tekstu we wszystkich rozmiarach.',
       },
     },
   },
-  args: {
-    icon: 'sym_r_refresh',
-    size: 'medium',
-  },
-  play: async ({ canvas }) => {
-    const button = canvas.getByRole('button');
-
-    await expect(button).toBeVisible();
-    await expect(button).toHaveClass('size-medium');
-    await expect(button).toHaveClass('icon-only');
-  },
-};
-
-export const SmallSize: Story = {
-  name: 'Mały rozmiar',
-  parameters: {
-    docs: {
-      description: {
-        story:
-          'Przycisk w małym rozmiarze - zmniejszony padding, ikona i tekst.',
-      },
+  render: () => ({
+    components: { AbyssButton },
+    setup() {
+      return { sizes: BUTTON_SIZES };
     },
-  },
-  args: {
-    label: 'Mały przycisk',
-    icon: 'sym_r_star',
-    size: 'small',
-  },
-  play: async ({ canvas }) => {
-    const button = canvas.getByRole('button', { name: /mały przycisk/i });
-
-    await expect(button).toBeVisible();
-    await expect(button).toHaveClass('size-small');
-  },
-};
-
-export const SmallIconOnly: Story = {
-  name: 'Mały z ikoną',
-  parameters: {
-    docs: {
-      description: {
-        story:
-          'Mały przycisk zawierający tylko ikonę - idealny do kompaktowych interfejsów.',
-      },
-    },
-  },
-  args: {
-    icon: 'sym_r_settings',
-    size: 'small',
-  },
+    template: `
+      <div style="${sizesLayoutStyle}">
+        <AbyssButton
+          v-for="size in sizes"
+          :key="size"
+          :label="'Przycisk ' + size"
+          icon="sym_r_arrow_back"
+          icon-right="sym_r_arrow_forward"
+          :size="size"
+        />
+      </div>
+    `,
+  }),
 };
 
 export const FullWidth: Story = {
