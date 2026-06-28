@@ -163,9 +163,17 @@ $shadow-frame-soft-inverted:
 
   &.size-small {
     --font-size: 12px;
+    --padding-x: 12px;
     --padding-y: 8px;
     --icon-size: 16px;
     --border-radius: 6px;
+    min-height: 32px;
+    height: 32px;
+
+    &.icon-only {
+      min-width: 32px;
+      width: 32px;
+    }
   }
 
   &.size-medium {
@@ -185,9 +193,17 @@ $shadow-frame-soft-inverted:
 
   &.size-big {
     --font-size: 16px;
+    --padding-x: 16px;
     --padding-y: 12px;
     --icon-size: 24px;
     --border-radius: 8px;
+    min-height: 48px;
+    height: 48px;
+
+    &.icon-only {
+      min-width: 48px;
+      width: 48px;
+    }
   }
 
   :deep() {

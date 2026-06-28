@@ -156,8 +156,51 @@ type Story = StoryObj<typeof meta>;
 
 const BUTTON_SIZES = ['small', 'medium', 'big'] as const;
 
+type ButtonSize = (typeof BUTTON_SIZES)[number];
+
 const sizesLayoutStyle =
   'display: flex; flex-direction: column; gap: 12px; align-items: flex-start;';
+
+const fullWidthLayoutStyle =
+  'display: flex; flex-direction: column; gap: 12px; width: 100%; max-width: 360px;';
+
+function renderSizeVariants(options: {
+  wrapperStyle?: string;
+  getLabel?: (size: ButtonSize) => string;
+  props?: Record<string, unknown> | ((size: ButtonSize) => Record<string, unknown>);
+}) {
+  return (args?: AbyssButtonStoryArgs) => ({
+    components: { AbyssButton },
+    setup() {
+      const getLabel =
+        options.getLabel ?? ((size: ButtonSize) => `Przycisk ${size}`);
+      const getProps =
+        typeof options.props === 'function'
+          ? options.props
+          : () => options.props ?? {};
+
+      return {
+        sizes: BUTTON_SIZES,
+        wrapperStyle: options.wrapperStyle ?? sizesLayoutStyle,
+        getLabel,
+        getProps,
+        onClick: args?.onClick,
+      };
+    },
+    template: `
+      <div :style="wrapperStyle">
+        <AbyssButton
+          v-for="size in sizes"
+          :key="size"
+          v-bind="getProps(size)"
+          :label="getLabel(size)"
+          :size="size"
+          @click="onClick"
+        />
+      </div>
+    `,
+  });
+}
 
 export const Default: Story = {
   name: 'Rozmiary',
@@ -202,20 +245,24 @@ export const Current: Story = {
     docs: {
       description: {
         story:
-          'Przycisk w stanie "current" - reprezentuje aktualnie wybrany element lub aktywną opcję.',
+          'Przycisk w stanie "current" we wszystkich rozmiarach — reprezentuje aktualnie wybrany element lub aktywną opcję.',
       },
     },
   },
-  args: {
-    label: 'Wybrany element',
-    icon: 'sym_r_check',
-    current: true,
-  },
+  render: renderSizeVariants({
+    getLabel: (size) => `Wybrany ${size}`,
+    props: {
+      icon: 'sym_r_check',
+      current: true,
+    },
+  }),
   play: async ({ canvas }) => {
-    const button = canvas.getByRole('button', { name: /wybrany element/i });
+    const buttons = canvas.getAllByRole('button');
 
-    await expect(button).toBeEnabled();
-    await expect(button).toHaveClass('current');
+    await expect(buttons).toHaveLength(3);
+    for (const button of buttons) {
+      await expect(button).toHaveClass('current');
+    }
   },
 };
 
@@ -225,21 +272,26 @@ export const Disabled: Story = {
     docs: {
       description: {
         story:
-          'Przycisk w stanie nieaktywnym - nie można z nim wchodzić w interakcję.',
+          'Przycisk w stanie nieaktywnym we wszystkich rozmiarach — nie można z nim wchodzić w interakcję.',
       },
     },
   },
-  args: {
-    label: 'Nieaktywny przycisk',
-    icon: 'sym_r_block',
-    disable: true,
-  },
+  render: renderSizeVariants({
+    getLabel: (size) => `Nieaktywny ${size}`,
+    props: {
+      icon: 'sym_r_block',
+      disable: true,
+    },
+  }),
   play: async ({ args, canvas, userEvent }) => {
-    const button = canvas.getByRole('button', { name: /nieaktywny przycisk/i });
+    const buttons = canvas.getAllByRole('button');
 
-    await expect(button).toBeDisabled();
+    await expect(buttons).toHaveLength(3);
+    for (const button of buttons) {
+      await expect(button).toBeDisabled();
+    }
 
-    await userEvent.click(button);
+    await userEvent.click(buttons[0]!);
     await expect(args.onClick).not.toHaveBeenCalled();
   },
 };
@@ -389,22 +441,26 @@ export const FullWidth: Story = {
   parameters: {
     docs: {
       description: {
-        story: 'Przycisk rozciągnięty na pełną szerokość kontenera.',
+        story:
+          'Przycisk rozciągnięty na pełną szerokość kontenera we wszystkich rozmiarach.',
       },
     },
   },
-  args: {
-    label: 'Przycisk pełnej szerokości',
-    icon: 'sym_r_arrow_forward',
-    fullWidth: true,
-  },
+  render: renderSizeVariants({
+    wrapperStyle: fullWidthLayoutStyle,
+    getLabel: (size) => `Pełna szerokość ${size}`,
+    props: {
+      icon: 'sym_r_arrow_forward',
+      fullWidth: true,
+    },
+  }),
   play: async ({ canvas }) => {
-    const button = canvas.getByRole('button', {
-      name: /przycisk pełnej szerokości/i,
-    });
+    const buttons = canvas.getAllByRole('button');
 
-    await expect(button).toBeVisible();
-    await expect(button).toHaveClass('full-width');
+    await expect(buttons).toHaveLength(3);
+    for (const button of buttons) {
+      await expect(button).toHaveClass('full-width');
+    }
   },
 };
 
@@ -414,33 +470,38 @@ export const LoadingWithPercentage: Story = {
     docs: {
       description: {
         story:
-          'Przycisk w stanie ładowania z paskiem postępu pokazującym procent ukończenia i niestandardowym spinnerem.',
+          'Przycisk w stanie ładowania z paskiem postępu we wszystkich rozmiarach.',
       },
     },
   },
-  render: (args) => ({
+  render: () => ({
     components: { AbyssButton },
     setup() {
-      return { args };
+      return { sizes: BUTTON_SIZES };
     },
     template: `
-      <AbyssButton v-bind="args">
-        <template v-slot:loading>
-          <q-spinner-gears class="on-left" />
-          Przetwarzanie...
-        </template>
-      </AbyssButton>
+      <div style="${sizesLayoutStyle}">
+        <AbyssButton
+          v-for="size in sizes"
+          :key="size"
+          :label="'Zapisz ' + size"
+          :size="size"
+          loading
+          :percentage="65"
+        >
+          <template v-slot:loading>
+            <q-spinner-gears class="on-left" />
+            Przetwarzanie...
+          </template>
+        </AbyssButton>
+      </div>
     `,
   }),
-  args: {
-    label: 'Zapisz',
-    loading: true,
-    percentage: 65,
-  },
   play: async ({ args, canvas, userEvent }) => {
-    const progressBar = canvas.getByRole('progressbar');
-    await expect(progressBar).toBeVisible();
-    await userEvent.click(progressBar);
+    const progressBars = canvas.getAllByRole('progressbar');
+
+    await expect(progressBars).toHaveLength(3);
+    await userEvent.click(progressBars[0]!);
     await expect(args.onClick).not.toHaveBeenCalled();
   },
 };
@@ -451,20 +512,24 @@ export const Flat: Story = {
     docs: {
       description: {
         story:
-          'Przycisk w płaskim stylu z transparentnym tłem, bez cienia i bez ruchu unoszenia. Na hover i focus dostaje delikatny border zamiast cienia.',
+          'Przycisk w płaskim stylu we wszystkich rozmiarach — transparentne tło, bez cienia i ruchu unoszenia.',
       },
     },
   },
-  args: {
-    label: 'Płaski przycisk',
-    icon: 'sym_r_arrow_forward',
-    flat: true,
-  },
+  render: renderSizeVariants({
+    getLabel: (size) => `Płaski ${size}`,
+    props: {
+      icon: 'sym_r_arrow_forward',
+      flat: true,
+    },
+  }),
   play: async ({ canvas }) => {
-    const button = canvas.getByRole('button', { name: /płaski przycisk/i });
+    const buttons = canvas.getAllByRole('button');
 
-    await expect(button).toBeVisible();
-    await expect(button).toHaveClass('flat');
+    await expect(buttons).toHaveLength(3);
+    for (const button of buttons) {
+      await expect(button).toHaveClass('flat');
+    }
   },
 };
 
@@ -474,20 +539,24 @@ export const Embedded: Story = {
     docs: {
       description: {
         story:
-          'Przycisk wtopiony w tło: transparentny, bez stałego wypełnienia, ale zachowujący standardowy cień i unoszenie podczas interakcji.',
+          'Przycisk wtopiony w tło we wszystkich rozmiarach — transparentny, z cieniem i unoszeniem podczas interakcji.',
       },
     },
   },
-  args: {
-    label: 'Wtopiony przycisk',
-    icon: 'sym_r_arrow_forward',
-    embedded: true,
-  },
+  render: renderSizeVariants({
+    getLabel: (size) => `Wtopiony ${size}`,
+    props: {
+      icon: 'sym_r_arrow_forward',
+      embedded: true,
+    },
+  }),
   play: async ({ canvas }) => {
-    const button = canvas.getByRole('button', { name: /wtopiony przycisk/i });
+    const buttons = canvas.getAllByRole('button');
 
-    await expect(button).toBeVisible();
-    await expect(button).toHaveClass('embedded');
+    await expect(buttons).toHaveLength(3);
+    for (const button of buttons) {
+      await expect(button).toHaveClass('embedded');
+    }
   },
 };
 
@@ -497,23 +566,27 @@ export const Toggled: Story = {
     docs: {
       description: {
         story:
-          'Przycisk w trybie przełączonym - ciemniejsze tło sygnalizuje aktywny stan (np. aktywne formatowanie w pasku narzędzi). W odróżnieniu od `current` przycisk pozostaje w pełni interaktywny i można go ponownie kliknąć aby wyłączyć stan.',
+          'Przycisk w trybie przełączonym we wszystkich rozmiarach — ciemniejsze tło sygnalizuje aktywny stan.',
       },
     },
   },
-  args: {
-    label: 'Aktywny',
-    icon: 'sym_r_format_bold',
-    toggled: true,
-  },
+  render: renderSizeVariants({
+    getLabel: (size) => `Aktywny ${size}`,
+    props: {
+      icon: 'sym_r_format_bold',
+      toggled: true,
+    },
+  }),
   play: async ({ args, canvas, userEvent }) => {
-    const button = canvas.getByRole('button', { name: /aktywny/i });
+    const buttons = canvas.getAllByRole('button');
 
-    await expect(button).toBeVisible();
-    await expect(button).toHaveClass('toggled');
-    await expect(button).toBeEnabled();
+    await expect(buttons).toHaveLength(3);
+    for (const button of buttons) {
+      await expect(button).toHaveClass('toggled');
+      await expect(button).toBeEnabled();
+    }
 
-    await userEvent.click(button);
+    await userEvent.click(buttons[0]!);
     await expect(args.onClick).toHaveBeenCalledOnce();
   },
 };
@@ -524,23 +597,25 @@ export const Gradient: Story = {
     docs: {
       description: {
         story:
-          'Przycisk z gradientowym tłem opartym na kolorach motywu. Modyfikator gradient odpowiada wyłącznie za gradient, a układ specyficzny dla OpenEditorButton jest stylowany w samym komponencie współdzielonym.',
+          'Przycisk z gradientowym tłem we wszystkich rozmiarach.',
       },
     },
   },
-  args: {
-    label: 'Gradientowy przycisk',
-    iconRight: 'sym_r_note_stack_add',
-    gradient: true,
-    gradientColors: ['#FF7194', '#028096'],
-  },
+  render: renderSizeVariants({
+    getLabel: (size) => `Gradient ${size}`,
+    props: {
+      iconRight: 'sym_r_note_stack_add',
+      gradient: true,
+      gradientColors: ['#FF7194', '#028096'],
+    },
+  }),
   play: async ({ canvas }) => {
-    const button = canvas.getByRole('button', {
-      name: /gradientowy przycisk/i,
-    });
+    const buttons = canvas.getAllByRole('button');
 
-    await expect(button).toBeVisible();
-    await expect(button).toHaveClass('gradient');
+    await expect(buttons).toHaveLength(3);
+    for (const button of buttons) {
+      await expect(button).toHaveClass('gradient');
+    }
   },
 };
 
@@ -550,46 +625,56 @@ export const InteractiveLoading: Story = {
     docs: {
       description: {
         story:
-          'Kliknięcie w przycisk uruchamia symulowane ładowanie trwające 3 sekundy, po czym przycisk wraca do stanu normalnego.',
+          'Kliknięcie uruchamia symulowane ładowanie (3 s) we wszystkich rozmiarach.',
       },
     },
   },
-  render: (args) => ({
+  render: () => ({
     components: { AbyssButton },
     setup() {
-      const loading = ref(false);
+      const loading = ref<Record<ButtonSize, boolean>>({
+        small: false,
+        medium: false,
+        big: false,
+      });
 
-      async function handleClick() {
-        if (loading.value) return;
-        loading.value = true;
+      async function handleClick(size: ButtonSize) {
+        if (loading.value[size]) return;
+        loading.value = { ...loading.value, [size]: true };
         await new Promise((resolve) => setTimeout(resolve, 3000));
-        loading.value = false;
+        loading.value = { ...loading.value, [size]: false };
       }
 
-      return { args, loading, handleClick };
+      return { sizes: BUTTON_SIZES, loading, handleClick };
     },
     template: `
-      <AbyssButton v-bind="args" :loading="loading" @click="handleClick">
-        <template v-slot:loading>
-          <q-spinner-gears class="on-left" />
-          Przetwarzanie...
-        </template>
-      </AbyssButton>
+      <div style="${sizesLayoutStyle}">
+        <AbyssButton
+          v-for="size in sizes"
+          :key="size"
+          :label="'Zapisz ' + size"
+          icon="sym_r_save"
+          :size="size"
+          :loading="loading[size]"
+          @click="handleClick(size)"
+        >
+          <template v-slot:loading>
+            <q-spinner-gears class="on-left" />
+            Przetwarzanie...
+          </template>
+        </AbyssButton>
+      </div>
     `,
   }),
-  args: {
-    label: 'Zapisz',
-    icon: 'sym_r_save',
-  },
   play: async ({ canvas, userEvent }) => {
-    const button = canvas.getByRole('button', { name: /zapisz/i });
+    const buttons = canvas.getAllByRole('button');
 
-    await expect(button).toBeVisible();
-    await expect(button).toBeEnabled();
+    await expect(buttons).toHaveLength(3);
+    await expect(buttons[0]).toBeEnabled();
 
-    await userEvent.click(button);
+    await userEvent.click(buttons[0]!);
 
-    const progressBar = canvas.getByRole('progressbar');
-    await expect(progressBar).toBeVisible();
+    const progressBars = canvas.getAllByRole('progressbar');
+    await expect(progressBars.length).toBeGreaterThan(0);
   },
 };
