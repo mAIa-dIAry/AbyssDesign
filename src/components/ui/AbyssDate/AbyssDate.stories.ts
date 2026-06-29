@@ -2,6 +2,7 @@ import type { Meta, StoryObj } from '@storybook/vue3';
 import { expect } from 'storybook/test';
 import { ref } from 'vue';
 import AbyssDate from '@/components/ui/AbyssDate/AbyssDate.vue';
+import AbyssButton from '@/components/ui/AbyssButton/AbyssButton.vue';
 import { withAbyssBackground } from '@/stories/AbyssBackgroundDecorator';
 
 const meta: Meta<typeof AbyssDate> = {
@@ -95,7 +96,7 @@ export const ColorsWatch: Story = {
     },
   },
   render: () => ({
-    components: { AbyssDate },
+    components: { AbyssDate, AbyssButton },
     setup() {
       const colors = ref(['hsl(345, 100%, 72%)', 'hsl(188, 98%, 30%)']);
       function changeColors() {
@@ -104,19 +105,16 @@ export const ColorsWatch: Story = {
       return { colors, changeColors };
     },
     template: `
-      <div>
-        <button data-testid="change-colors" @click="changeColors" style="margin-bottom:8px;">Zmień kolory</button>
+      <div style="display: flex; flex-direction: column; gap: 8px; align-items: flex-start;">
+        <AbyssButton label="Zmień kolory" size="small" @click="changeColors" />
         <AbyssDate model-value="2026-02-13" :colors="colors" />
       </div>
     `,
   }),
-  play: async ({ canvasElement, userEvent }) => {
-    const el = canvasElement.querySelector('.q-date') as HTMLElement;
+  play: async ({ canvas, canvasElement, userEvent }) => {
+    const el = canvasElement.querySelector('.abyss-date') as HTMLElement;
     const styleBefore = el.getAttribute('style');
-    const btn = canvasElement.querySelector(
-      '[data-testid="change-colors"]',
-    ) as HTMLElement;
-    await userEvent.click(btn);
+    await userEvent.click(canvas.getByRole('button', { name: /zmień kolory/i }));
     await new Promise((r) => setTimeout(r, 50));
     const styleAfter = el.getAttribute('style');
     await expect(styleAfter).not.toBe(styleBefore);
