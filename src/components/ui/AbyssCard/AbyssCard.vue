@@ -19,9 +19,17 @@
       <slot></slot>
     </div>
     <AbyssSeparator v-if="hasContent && hasFooter" />
-    <div v-if="hasFooter" class="abyss-card-footer">
-      <slot name="footer"></slot>
-    </div>
+    <slot name="footer">
+      <div class="abyss-card-footer" v-if="hasFooter">
+        <div class="abyss-card-footer-prepend">
+          <slot name="footer-prepend"></slot>
+        </div>
+        <div class="abyss-card-footer-spacer"></div>
+        <div class="abyss-card-footer-append">
+          <slot name="footer-append"></slot>
+        </div>
+      </div>
+    </slot>
   </div>
 </template>
 
@@ -49,7 +57,11 @@ const hasContent = computed(() => {
 });
 
 const hasFooter = computed(() => {
-  return !!slots.footer;
+  return !!(
+    slots.footer ||
+    slots['footer-prepend'] ||
+    slots['footer-append']
+  );
 });
 </script>
 
@@ -65,49 +77,89 @@ const hasFooter = computed(() => {
   width: 100%;
   border-bottom: 1px solid rgba(black, 0.2);
 
-  .abyss-card-header {
+  .abyss-card-header,
+  .abyss-card-footer {
     display: flex;
     align-items: center;
-    padding: 0 var(--card-padding);
+    padding: 12px var(--card-padding);
     gap: 8px;
     font-size: 18px;
-    min-height: 46px;
+    min-height: 48px;
   }
 
   .abyss-card-prepend,
-  .abyss-card-append {
+  .abyss-card-append,
+  .abyss-card-footer-prepend,
+  .abyss-card-footer-append {
     display: flex;
     align-items: center;
 
     &:empty {
       display: none;
     }
+
+    :deep(.abyss-button) {
+      --border-radius: 12px;
+    }
+  }
+
+  .abyss-card-prepend {
+    :deep(.q-icon) {
+      font-size: 24px;
+      width: 24px;
+      height: 24px;
+    }
+  }
+
+  .abyss-card-append,
+  .abyss-card-footer-append {
+    :deep(.abyss-button-group) {
+      margin-top: -8px;
+      margin-bottom: -8px;
+      margin-right: -12px;
+    }
+  }
+
+  .abyss-card-footer-prepend {
+    font-size: 14px;
+    line-height: 20px;
+    font-weight: 400;
+    opacity: 0.6;
+
+    :deep(.abyss-button-group),
+    :deep(> .abyss-button) {
+      margin-top: -8px;
+      margin-bottom: -8px;
+      margin-left: -12px;
+      opacity: 1;
+    }
+  }
+
+  .abyss-card-title,
+  .abyss-card-footer-spacer {
+    flex: 1;
+    min-width: 0;
+    min-height: 24px;
   }
 
   .abyss-card-title {
-    flex: 1;
     font-weight: 500;
-    padding: 12px 0px;
-    line-height: 22px;
+    line-height: 24px;
   }
 
-  .abyss-card-content,
-  .abyss-card-footer {
+  .abyss-card-content {
     padding: var(--card-padding);
     display: flex;
     flex-direction: column;
     font-size: 14px;
     line-height: 20px;
+    min-height: 0;
 
     :deep(.abyss-separator) {
       margin-left: calc(var(--card-padding) * -1);
       margin-right: calc(var(--card-padding) * -1);
       width: calc(100% + 32px);
     }
-  }
-
-  .abyss-card-content {
-    min-height: 0;
   }
 }
 </style>

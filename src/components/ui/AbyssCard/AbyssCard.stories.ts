@@ -1,9 +1,8 @@
 import type { Meta, StoryObj } from '@storybook/vue3';
-import { ref } from 'vue';
 import { expect } from 'storybook/test';
 import AbyssCard from '@/components/ui/AbyssCard/AbyssCard.vue';
-import AbyssInput from '@/components/ui/AbyssInput/AbyssInput.vue';
 import AbyssButton from '@/components/ui/AbyssButton/AbyssButton.vue';
+import AbyssButtonGroup from '@/components/ui/AbyssButtonGroup/AbyssButtonGroup.vue';
 import { withAbyssBackground } from '@/stories/AbyssBackgroundDecorator';
 
 const meta: Meta<typeof AbyssCard> = {
@@ -15,8 +14,8 @@ const meta: Meta<typeof AbyssCard> = {
     docs: {
       description: {
         component:
-          'Komponent karty (AbyssCard) służy do wyświetlania zawartości w kontenerze z opcjonalnym nagłówkiem. ' +
-          'Oferuje elastyczność poprzez sloty dla nagłówka (header, header-prepend, header-append), głównej treści (content) oraz stopki (footer).',
+          'Komponent karty (AbyssCard) służy do wyświetlania zawartości w kontenerze z opcjonalnym nagłówkiem i stopką. ' +
+          'Oferuje elastyczność poprzez sloty dla nagłówka (header, header-prepend, header-append), głównej treści (content) oraz stopki (footer, footer-prepend, footer-append).',
       },
     },
   },
@@ -125,48 +124,13 @@ export const WithoutTitle: Story = {
   },
 };
 
-export const QuickSetup: Story = {
-  name: 'Szybka konfiguracja',
-  args: {
-    title: 'Szybka karta',
-  },
-  render: (args) => ({
-    components: { AbyssCard },
-    setup() {
-      return { args };
-    },
-    template: `
-      <AbyssCard v-bind="args">
-        <div>
-          Prosta karta z tytułem i treścią, idealna do szybkiego użycia.
-        </div>
-      </AbyssCard>
-    `,
-  }),
-  parameters: {
-    docs: {
-      description: {
-        story:
-          'Szybka konfiguracja karty z tytułem i treścią. Idealna do sytuacji, gdy potrzebujesz prostego kontenera z nagłówkiem.',
-      },
-      source: {
-        code: `<AbyssCard title="Szybka karta">
-  <div>
-    Prosta karta z tytułem i treścią, idealna do szybkiego użycia.
-  </div>
-</AbyssCard>`,
-      },
-    },
-  },
-};
-
 export const WithHeaderSlots: Story = {
   name: 'Z dodatkowymi slotami nagłówka',
   args: {
     title: 'Tytuł karty',
   },
   render: (args) => ({
-    components: { AbyssCard },
+    components: { AbyssCard, AbyssButton, AbyssButtonGroup },
     setup() {
       return { args };
     },
@@ -176,7 +140,26 @@ export const WithHeaderSlots: Story = {
           <q-icon name="sym_r_description" />
         </template>
         <template #header-append>
-          <q-badge color="primary" text-color="white" label="Nowy" />
+          <AbyssButtonGroup>
+            <AbyssButton
+              icon="sym_r_refresh"
+              flat
+              size="medium"
+              aria-label="Ponów"
+            />
+            <AbyssButton
+              icon="sym_r_settings"
+              flat
+              size="medium"
+              aria-label="Ustawienia"
+            />
+            <AbyssButton
+              icon="sym_r_more_vert"
+              flat
+              size="medium"
+              aria-label="Więcej opcji"
+            />
+          </AbyssButtonGroup>
         </template>
         <template #content>
           <div>
@@ -198,7 +181,26 @@ export const WithHeaderSlots: Story = {
     <q-icon name="sym_r_description" />
   </template>
   <template #header-append>
-    <q-badge color="primary" text-color="white" label="Nowy" />
+    <AbyssButtonGroup>
+      <AbyssButton
+        icon="sym_r_refresh"
+        flat
+        size="medium"
+        aria-label="Ponów"
+      />
+      <AbyssButton
+        icon="sym_r_settings"
+        flat
+        size="medium"
+        aria-label="Ustawienia"
+      />
+      <AbyssButton
+        icon="sym_r_more_vert"
+        flat
+        size="medium"
+        aria-label="Więcej opcji"
+      />
+    </AbyssButtonGroup>
   </template>
   <template #content>
     <div>
@@ -212,32 +214,51 @@ export const WithHeaderSlots: Story = {
   play: async ({ canvas }) => {
     const title = canvas.getByText('Tytuł karty');
     await expect(title).toBeVisible();
-    const badge = canvas.getByText('Nowy');
-    await expect(badge).toBeVisible();
+    await expect(canvas.getByRole('button', { name: 'Ponów' })).toBeVisible();
+    await expect(
+      canvas.getByRole('button', { name: 'Ustawienia' }),
+    ).toBeVisible();
+    await expect(
+      canvas.getByRole('button', { name: 'Więcej opcji' }),
+    ).toBeVisible();
   },
 };
 
-export const CustomHeader: Story = {
-  name: 'Z własnym nagłówkiem',
-  args: {},
+export const WithFooterSlots: Story = {
+  name: 'Z dodatkowymi slotami stopki',
+  args: {
+    title: 'Tytuł karty',
+  },
   render: (args) => ({
-    components: { AbyssCard },
+    components: { AbyssCard, AbyssButton, AbyssButtonGroup },
     setup() {
       return { args };
     },
     template: `
       <AbyssCard v-bind="args">
-        <template #header>
-          <div style="display: flex; align-items: center; gap: 8px; padding: 8px 16px;">
-            <q-icon name="sym_r_palette" size="sm" />
-            <strong>Własny nagłówek</strong>
-            <span style="font-size: 12px; opacity: 0.6;">(customowy)</span>
-          </div>
-        </template>
         <template #content>
           <div>
-            Zawartość karty z całkowicie niestandardowym nagłówkiem.
+            Zawartość karty z dodatkowymi elementami w stopce.
           </div>
+        </template>
+        <template #footer-prepend>
+          Masz niezapisane zmiany
+        </template>
+        <template #footer-append>
+          <AbyssButtonGroup>
+            <AbyssButton
+              label="Zapisz"
+              icon="sym_r_save"
+              flat
+              size="medium"
+            />
+            <AbyssButton
+              label="Zastosuj"
+              icon="sym_r_check"
+              flat
+              size="medium"
+            />
+          </AbyssButtonGroup>
         </template>
       </AbyssCard>
     `,
@@ -246,189 +267,47 @@ export const CustomHeader: Story = {
     docs: {
       description: {
         story:
-          'Karta z całkowicie customowym nagłówkiem przez slot header. Zastępuje domyślny tytuł z props.',
+          'Karta z tekstem informacyjnym w footer-prepend oraz akcjami w footer-append.',
       },
       source: {
-        code: `<AbyssCard>
-  <template #header>
-    <div style="display: flex; align-items: center; gap: 8px; padding: 8px 16px;">
-      <q-icon name="sym_r_palette" size="sm" />
-      <strong>Własny nagłówek</strong>
-      <span style="font-size: 12px; opacity: 0.6;">(customowy)</span>
-    </div>
-  </template>
+        code: `<AbyssCard title="Tytuł karty">
   <template #content>
     <div>
-      Zawartość karty z całkowicie niestandardowym nagłówkiem.
+      Zawartość karty z dodatkowymi elementami w stopce.
     </div>
+  </template>
+  <template #footer-prepend>
+    Masz niezapisane zmiany
+  </template>
+  <template #footer-append>
+    <AbyssButtonGroup>
+      <AbyssButton
+        label="Zapisz"
+        icon="sym_r_save"
+        flat
+        size="medium"
+      />
+      <AbyssButton
+        label="Zastosuj"
+        icon="sym_r_check"
+        flat
+        size="medium"
+      />
+    </AbyssButtonGroup>
   </template>
 </AbyssCard>`,
       },
     },
   },
   play: async ({ canvas }) => {
-    const customTitle = canvas.getByText('Własny nagłówek');
-    await expect(customTitle).toBeVisible();
-    const content = canvas.getByText(
-      'Zawartość karty z całkowicie niestandardowym nagłówkiem.',
-    );
-    await expect(content).toBeVisible();
-  },
-};
-
-export const ComplexContent: Story = {
-  name: 'Ze złożoną zawartością',
-  args: {
-    title: 'Ustawienia aplikacji',
-  },
-  render: (args) => ({
-    components: { AbyssCard, AbyssInput, AbyssButton },
-    setup() {
-      const username = ref('użytkownik123');
-      const email = ref('uzytkownik@example.com');
-      const notifications = ref(true);
-
-      return { args, username, email, notifications };
-    },
-    template: `
-      <AbyssCard v-bind="args">
-        <template #header-prepend>
-          <q-icon name="sym_r_settings" />
-        </template>
-        <template #content>
-          <div style="display: flex; flex-direction: column; gap: 16px;">
-            <AbyssInput
-              v-model="username"
-              label="Nazwa użytkownika"
-              placeholder="Wprowadź nazwę użytkownika"
-            />
-
-            <AbyssInput
-              v-model="email"
-              label="Email"
-              type="email"
-              placeholder="twoj@email.com"
-            />
-
-            <div style="display: flex; align-items: center; gap: 12px;">
-              <span style="flex: 1;">Powiadomienia</span>
-              <AbyssButton
-                :icon="notifications ? 'sym_r_notifications_active' : 'sym_r_notifications_off'"
-                :label="notifications ? 'Włączone' : 'Wyłączone'"
-                @click="notifications = !notifications"
-              />
-            </div>
-          </div>
-        </template>
-        <template #footer>
-          <div style="display: flex; gap: 12px; justify-content: flex-end;">
-            <AbyssButton
-              label="Anuluj"
-              icon="sym_r_close"
-            />
-            <AbyssButton
-              label="Zapisz zmiany"
-              icon="sym_r_save"
-            />
-          </div>
-        </template>
-      </AbyssCard>
-    `,
-  }),
-  parameters: {
-    docs: {
-      description: {
-        story:
-          'Przykład karty z bardziej złożoną zawartością wykorzystującą komponenty AbyssInput i AbyssButton oraz nowy slot footer do akcji formularza.',
-      },
-      source: {
-        code: `<AbyssCard title="Ustawienia aplikacji">
-  <template #header-prepend>
-    <q-icon name="sym_r_settings" />
-  </template>
-  <template #content>
-    <div style="display: flex; flex-direction: column; gap: 16px;">
-      <AbyssInput
-        v-model="username"
-        label="Nazwa użytkownika"
-        placeholder="Wprowadź nazwę użytkownika"
-      />
-
-      <AbyssInput
-        v-model="email"
-        label="Email"
-        type="email"
-        placeholder="twoj@email.com"
-      />
-
-      <div style="display: flex; align-items: center; gap: 12px;">
-        <span style="flex: 1;">Powiadomienia</span>
-        <AbyssButton
-          :icon="notifications ? 'sym_r_notifications_active' : 'sym_r_notifications_off'"
-          :label="notifications ? 'Włączone' : 'Wyłączone'"
-          @click="notifications = !notifications"
-        />
-      </div>
-    </div>
-  </template>
-
-  <template #footer>
-    <div style="display: flex; gap: 12px; justify-content: flex-end;">
-      <AbyssButton label="Anuluj" icon="sym_r_close" />
-      <AbyssButton label="Zapisz zmiany" icon="sym_r_save" />
-    </div>
-  </template>
-</AbyssCard>`,
-      },
-    },
-  },
-};
-
-export const OnlyHeaderSlots: Story = {
-  name: 'Tylko sloty nagłówka',
-  args: {},
-  render: (args) => ({
-    components: { AbyssCard, AbyssButton },
-    setup() {
-      return { args };
-    },
-    template: `
-      <AbyssCard v-bind="args">
-        <template #header-prepend>
-          <AbyssButton icon="sym_r_arrow_back" embedded size="small" style="margin-left: -10px;" />
-        </template>
-        <template #header-append>
-          <AbyssButton icon="sym_r_arrow_forward" embedded size="small" style="margin-right: -10px;" />
-        </template>
-        <template #content>
-          <div>
-            Karta z nagłówkiem utworzonym tylko ze slotów prepend i append (bez tytułu).
-          </div>
-        </template>
-      </AbyssCard>
-    `,
-  }),
-  parameters: {
-    docs: {
-      description: {
-        story:
-          'Karta z nagłówkiem utworzonym wyłącznie ze slotów header-prepend i header-append, bez użycia props title.',
-      },
-      source: {
-        code: `<AbyssCard>
-  <template #header-prepend>
-    <AbyssButton icon="sym_r_arrow_back" embedded size="small" style="margin-left: -10px;" />
-  </template>
-  <template #header-append>
-    <AbyssButton icon="sym_r_arrow_forward" embedded size="small" style="margin-right: -10px;" />
-  </template>
-  <template #content>
-    <div>
-      Karta z nagłówkiem utworzonym tylko ze slotów prepend i append (bez tytułu).
-    </div>
-  </template>
-</AbyssCard>`,
-      },
-    },
+    const title = canvas.getByText('Tytuł karty');
+    await expect(title).toBeVisible();
+    await expect(
+      canvas.getByText('Masz niezapisane zmiany'),
+    ).toBeVisible();
+    await expect(canvas.getByRole('button', { name: 'Zapisz' })).toBeVisible();
+    await expect(
+      canvas.getByRole('button', { name: 'Zastosuj' }),
+    ).toBeVisible();
   },
 };
