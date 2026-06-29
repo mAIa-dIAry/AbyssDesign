@@ -49,7 +49,7 @@ const meta: Meta<AbyssButtonStoryArgs> = {
           '- `danger` — operacje nieodwracalne (np. usunięcie danych).\n' +
           '- `hint` — akcje informacyjne lub prowadzące do pobocznego procesu.\n\n' +
           'Kolory `success`, `info`, `warning`, `danger` i `hint` są kontekstowe — w dialogu z potwierdzeniem i anulowaniem przycisk operacyjny dostaje kolor zależny od wykonywanej akcji. Nie używaj wariantu gradientowego, jeśli akcja jest jedyna na liście.\n\n' +
-          '**`flat`** — wyłącznie w nagłówku i stopce `AbyssCard` oraz w `AbyssDialog`. Nie stosuj go nigdzie indziej.\n\n' +
+          '**`flat`** — wyłącznie w nagłówku i stopce `AbyssCard` oraz w `AbyssDialog`. W tych miejscach **każdy** przycisk jest `flat`. Akcja operacyjna z kolorem semantycznym łączy `flat` + `gradient` + `gradientColors`; akcja pomocnicza (anulowanie, ikona kontekstowa) zostaje jako samo `flat`.\n\n' +
           'Pełna matryca decyzyjna: `docs/architecture/abyss-design.md`.',
       },
     },
@@ -138,7 +138,7 @@ const meta: Meta<AbyssButtonStoryArgs> = {
     flat: {
       control: 'boolean',
       description:
-        'Płaski styl bez cienia i unoszenia. Dozwolony wyłącznie w nagłówku/stopce `AbyssCard` i w `AbyssDialog`. Można łączyć z `gradient`.',
+        'Płaski styl bez cienia i unoszenia. Obowiązkowy dla każdego przycisku w nagłówku/stopce `AbyssCard` i w `AbyssDialog`. Akcje operacyjne łącz z `gradient` + `gradientColors`.',
       table: {
         defaultValue: { summary: 'false' },
       },
@@ -154,7 +154,7 @@ const meta: Meta<AbyssButtonStoryArgs> = {
     gradient: {
       control: 'boolean',
       description:
-        'Włącza gradientowe tło. Używaj dla kontekstowej akcji operacyjnej (`gradientColors`) lub globalnego CTA (`theme`). Nie stosuj, gdy akcja jest jedyna na liście.',
+        'Włącza gradientowe tło. Poza kartą/dialogiem — dla kontekstowej akcji operacyjnej lub globalnego CTA (`theme`). W nagłówku/stopce karty i dialogu zawsze łącz z `flat`.',
       table: {
         defaultValue: { summary: 'false' },
       },
@@ -785,7 +785,7 @@ export const Flat: Story = {
     docs: {
       description: {
         story:
-          'Przycisk w płaskim stylu — dozwolony wyłącznie w nagłówku/stopce `AbyssCard` i w `AbyssDialog`. Transparentne tło, bez cienia i ruchu unoszenia.',
+          'Przycisk w płaskim stylu — obowiązkowy dla każdego przycisku w nagłówku/stopce `AbyssCard` i w `AbyssDialog`. Akcje operacyjne łącz z `gradient` + `gradientColors`.',
       },
       source: {
         code: sizeVariantsSourceCode({
@@ -985,7 +985,7 @@ export const SemanticColorUsage: Story = {
     docs: {
       description: {
         story:
-          'Przykłady doboru `gradientColors` w kontekście oraz reguła: bez gradientu, gdy akcja jest jedyna na liście. `flat` pokazany wyłącznie jako akcja pomocnicza w parze decyzyjnej (jak w dialogu).',
+          'Przykłady doboru `gradientColors`. W nagłówku/stopce karty i dialogu każdy przycisk jest `flat`; akcja operacyjna dodatkowo dostaje `gradient`. Poza kartą/dialogiem gradient tylko przy parze decyzyjnej — nie gdy akcja jest jedyna na liście.',
       },
       source: {
         code: `<!-- Globalne CTA aplikacji -->
@@ -1002,6 +1002,7 @@ export const SemanticColorUsage: Story = {
   <AbyssButton
     label="Zapisz"
     icon="sym_r_save"
+    flat
     gradient
     gradient-colors="info"
     size="medium"
@@ -1014,6 +1015,7 @@ export const SemanticColorUsage: Story = {
   <AbyssButton
     label="Zmień hasło"
     icon="sym_r_lock"
+    flat
     gradient
     gradient-colors="warning"
     size="medium"
@@ -1026,6 +1028,7 @@ export const SemanticColorUsage: Story = {
   <AbyssButton
     label="Usuń"
     icon="sym_r_delete"
+    flat
     gradient
     gradient-colors="danger"
     size="medium"
@@ -1059,6 +1062,7 @@ export const SemanticColorUsage: Story = {
               <AbyssButton
                 label="Zapisz"
                 icon="sym_r_save"
+                flat
                 gradient
                 gradient-colors="info"
                 size="medium"
@@ -1075,6 +1079,7 @@ export const SemanticColorUsage: Story = {
               <AbyssButton
                 label="Zmień hasło"
                 icon="sym_r_lock"
+                flat
                 gradient
                 gradient-colors="warning"
                 size="medium"
@@ -1091,6 +1096,7 @@ export const SemanticColorUsage: Story = {
               <AbyssButton
                 label="Potwierdź"
                 icon="sym_r_check"
+                flat
                 gradient
                 gradient-colors="success"
                 size="medium"
@@ -1107,6 +1113,7 @@ export const SemanticColorUsage: Story = {
               <AbyssButton
                 label="Usuń"
                 icon="sym_r_delete"
+                flat
                 gradient
                 gradient-colors="danger"
                 size="medium"
@@ -1139,6 +1146,9 @@ export const SemanticColorUsage: Story = {
     );
     await expect(canvas.getByRole('button', { name: 'Zapisz' })).toHaveClass(
       'gradient',
+    );
+    await expect(canvas.getByRole('button', { name: 'Zapisz' })).toHaveClass(
+      'flat',
     );
     await expect(
       canvas.getByRole('button', { name: 'Zapisz ustawienia' }),

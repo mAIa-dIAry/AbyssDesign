@@ -106,6 +106,9 @@ Reguly praktyczne:
 Reguly praktyczne:
 
 - `AbyssCard` jest podstawowa jednostka budowania sekcji. Ma domyslny `padding` kontentu `16px`, naglowek z rytmem `8px` i promien `8px`.
+- Karta z tytulem **zawsze** ma ikone w `header-prepend` odpowiadajaca tematowi sekcji.
+- Akcje kontekstowe karty (odswiezenie danych, filtr, ustawienia widoku) umieszczaj w `header-append` jako płaskie przyciski ikonowe.
+- Stopka karty (`footer`, `footer-prepend`, `footer-append`) jest zarezerwowana na specyficzne sytuacje — np. niezapisane zmiany w trakcie edycji. Nie stosuj footera w standardowym ukladzie karty.
 - `AbyssDialog` ma prawo do blur i mocniejszej separacji od tla, bo jest powierzchnia tymczasowa. Karta i przycisk takiego prawa nie maja.
 - `AbyssInfo` stosuj tylko wtedy, gdy komunikat ma wyrazny tytul lub status. Sam krotki opis nie uzasadnia calloutu.
 - `AbyssTitle` rozdziela semantyke naglowka od semantyki akcji. Nie zastępuj przycisku ani calloutu ozdobnym tytulem.
@@ -133,24 +136,26 @@ Reguly praktyczne:
 - Kolory `success`, `info`, `warning`, `danger` i `hint` sa kontekstowe. W dialogu z dwiema opcjami — np. potwierdzenie i anulowanie — przycisk operacyjny dostaje kolor zalezny od wykonywanej akcji.
 - `warning` ma priorytet nad `info`, gdy chodzi o zapis lub potwierdzenie czegos istotnego.
 - Nie uzywaj wariantu gradientowego, jesli akcja jest jedyna na liscie. Wtedy wystarczy domyslny przycisk bez `gradient`.
-- W jednym bloku decyzyjnym zwykle jest jeden przycisk operacyjny z kolorem semantycznym oraz ewentualnie akcje pomocnicze bez gradientu albo w wariancie `flat`.
+- W jednym bloku decyzyjnym zwykle jest jeden przycisk operacyjny z kolorem semantycznym oraz ewentualnie akcje pomocnicze jako `flat` bez gradientu.
+- W naglowku i stopce `AbyssCard` oraz w `AbyssDialog` **wszystkie** przyciski uzywaja `flat`. Akcja operacyjna z kolorem semantycznym laczy `flat` + `gradient` + `gradientColors`.
 
 ### Warianty semantyczne
 
 | Wariant   | Uzywaj gdy                                                          | Typowe miejsca                                                                                 | Nie uzywaj gdy                                                                               |
 | --------- | ------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------- |
 | domyslny  | to jest jedyna akcja na liscie albo akcja pomocnicza bez gradientu  | pojedynczy przycisk w sekcji, anulowanie w dialogu                                             | akcja jest glowna operacyjna w parze decyzyjnej — wtedy uzyj `gradient` z kolorem semantycznym |
-| `flat`    | akcja pomocnicza w naglowku lub stopce karty albo dialogu           | `AbyssCard` header-append, footer-append; akcje w `AbyssDialog`                                 | poza naglowkiem/stopka karty i dialogiem — `flat` nie jest dozwolony nigdzie indziej         |
+| `flat`    | kazdy przycisk w naglowku lub stopce karty albo dialogu             | `AbyssCard` header-append, footer-append; akcje w `AbyssDialog`                                 | poza naglowkiem/stopka karty i dialogiem — `flat` nie jest dozwolony nigdzie indziej         |
 | `current` | element reprezentuje aktualnie aktywny kontekst lub wybrany cel     | aktywna nawigacja, aktualnie wybrany rekord lub route                                          | stan mozna wylaczyc tym samym kliknieciem, albo jest to tymczasowy toggle                    |
 | `toggled` | element jest wlaczonym przełącznikiem, ale dalej pozostaje klikalny | toolbar formatowania, aktywne filtry, segmenty wyboru                                          | nawigacja, aktywny route, decyzje jednokrotne                                                |
-| `gradient`| akcja operacyjna ma wyrazne znaczenie semantyczne                   | glowny przycisk w dialogu, globalne CTA (`theme`), kontekstowa akcja w parze decyzyjnej       | akcja jest jedyna na liscie albo tylko pomocnicza w headerze/stopce                          |
+| `gradient`| akcja operacyjna ma wyrazne znaczenie semantyczne                   | globalne CTA (`theme`) poza karta/dialogiem; w karcie/dialogu zawsze razem z `flat`             | akcja jest jedyna na liscie poza karta/dialogiem; w headerze/stopce bez `flat`               |
 
 Reguly praktyczne:
 
 - W jednym bloku tresci preferuj jedna glowna akcje operacyjna z kolorem semantycznym. Jezeli widzisz kilka gradientowych przyciskow o tym samym ciezarze, hierarchia jest nieczytelna.
-- `flat` jest wylacznie dla naglowka i stopki `AbyssCard` oraz dla akcji w `AbyssDialog`. Nie stosuj go w formularzach, listach, toolbarach ani na stronach.
+- W naglowku i stopce `AbyssCard` oraz w `AbyssDialog` kazdy przycisk jest `flat`. Akcja operacyjna dodatkowo dostaje `gradient` + `gradientColors`; akcja pomocnicza (anulowanie, ikona kontekstowa) zostaje jako samo `flat`.
+- `flat` poza karta i dialogiem nie jest dozwolony. Nie stosuj go w formularzach, listach, toolbarach ani na stronach.
 - `current` i `toggled` nie sa zamienne. `current` oznacza aktualnie wybrany kontekst, `toggled` oznacza aktywny stan, ktory mozna od razu cofnac.
-- Operacja destrukcyjna uzywa `gradientColors="danger"` na przycisku operacyjnym oraz kontekstu ryzyka przez `AbyssCard`, `AbyssInfo`, ikonografie i copy.
+- Operacja destrukcyjna w dialogu uzywa `flat` + `gradient` + `gradientColors="danger"` na przycisku operacyjnym oraz kontekstu ryzyka przez `AbyssCard`, `AbyssInfo`, ikonografie i copy.
 
 ### Modyfikatory ukladu i gestosci
 
@@ -176,23 +181,26 @@ Reguly praktyczne:
 ### 1. Karta ustawien lub formularza
 
 - Uzyj `AbyssCard` jako glownej powierzchni.
+- W `header-prepend` umiesc ikone odpowiadajaca tytulowi sekcji.
+- Kontekstowe akcje karty (odswiezenie, filtr) umiesc w `header-append` jako płaskie przyciski ikonowe.
 - Trzymaj zewnetrzny padding sekcji w rytmie `16px`.
 - Pola, przełączniki i blokowe akcje ukladaj pionowo co `12px`.
-- Glowna akcja zapisania lub przejscia dalej powinna byc jedna i najczesciej `fullWidth`.
+- Glowna akcja zapisania lub przejscia dalej powinna byc jedna i najczesciej `fullWidth` w tresci karty albo w dialogu — nie w stopce karty.
+- Nie uzywaj footera w standardowym ukladzie. Footer tylko w specyficznych sytuacjach, np. gdy uzytkownik ma niezapisane zmiany.
 - Jezeli karta ma komunikat kontekstowy, umiesc go blisko pola albo akcji, ktorej dotyczy, zamiast w osobnym odleglym calloucie.
 
 ### 2. Blok destrukcyjny
 
 - Ryzyko buduj przez kontekst: karta o wyraznym charakterze, `AbyssInfo` z tytulem ostrzegawczym, ikona ryzyka.
-- Przycisk operacyjny uzywa `gradient` z `gradientColors="danger"`.
-- Akcja anulowania w dialogu pozostaje `flat` albo domyslna, bez gradientu.
+- Przycisk operacyjny uzywa `flat` + `gradient` + `gradientColors="danger"`.
+- Akcja anulowania w dialogu pozostaje jako samo `flat`, bez gradientu.
 
 ### 3. Dialog potwierdzenia lub skupionej akcji
 
 - Uzyj `AbyssDialog`, bo jest to jedyna warstwa, ktora ma prawo do blur jako stalego srodka wyrazu.
 - Tresc dialogu trzymaj w rytmie `12px`, a cialo w paddingu `16px`.
-- Akcja operacyjna dostaje `gradient` z kolorem semantycznym zaleznie od akcji: `success` dla potwierdzenia, `info` dla zapisu, `warning` dla istotnych zmian, `danger` dla operacji nieodwracalnych.
-- Akcja anulowania lub nizszego priorytetu powinna byc `flat`.
+- Wszystkie przyciski w stopce dialogu sa `flat`. Akcja operacyjna dodatkowo dostaje `gradient` z kolorem semantycznym: `success` dla potwierdzenia, `info` dla zapisu, `warning` dla istotnych zmian, `danger` dla operacji nieodwracalnych.
+- Akcja anulowania pozostaje jako samo `flat`, bez gradientu.
 - Ikona zamkniecia nie zastępuje jawnej akcji anulowania tam, gdzie decyzja jest istotna lub nieodwracalna.
 
 ### 4. Toolbar albo segment przelaczany
@@ -214,9 +222,11 @@ Reguly praktyczne:
 
 ### Do
 
+- Uzywaj ikony w `header-prepend` przy kazdym tytule `AbyssCard`.
+- Umieszczaj kontekstowe akcje karty w `header-append` jako płaskie przyciski ikonowe.
 - Uzywaj `8px` jako domyslnego border radius dla glownych powierzchni i przyciskow.
 - Uzywaj `16px` dla paddingu kart i `12px` dla pionowego rytmu form i dialogow.
-- Traktuj `flat` jako akcje pomocnicza wylacznie w naglowku/stopce `AbyssCard` i w `AbyssDialog`.
+- Traktuj `flat` jako obowiazkowy wariant kazdego przycisku w naglowku/stopce `AbyssCard` i w `AbyssDialog`; akcje operacyjne lacz z `gradient`.
 - Traktuj `gradient` + `gradientColors` jako kontekstowa akcja operacyjna; `theme` tylko dla globalnych funkcji aplikacji.
 - Traktuj `current` jako oznaczenie aktualnego kontekstu, a `toggled` jako aktywnego, nadal klikalnego stanu.
 - Buduj ryzyko przez kontekst sekcji oraz `danger` na przycisku operacyjnym.
@@ -227,6 +237,7 @@ Reguly praktyczne:
 - Nie dokladaj blur do kart, przyciskow, stalej nawigacji i pol formularza.
 - Nie wprowadzaj lokalnych wartosci `10px`, `14px`, `20px` i podobnych, jezeli system nie przewiduje takiego stopnia.
 - Nie uzywaj `flat` poza naglowkiem/stopka `AbyssCard` i `AbyssDialog`.
+- Nie uzywaj footera `AbyssCard` w standardowym ukladzie — tylko w specyficznych sytuacjach (np. niezapisane zmiany).
 - Nie uzywaj `gradient`, gdy akcja jest jedyna na liscie.
 - Nie uzywaj `theme` dla lokalnej glownej akcji w bloku — to kolor globalnych funkcji aplikacji.
 - Nie uzywaj `current` do formatowania tekstu ani aktywnych filtrow wielokrotnego wyboru.

@@ -4,6 +4,7 @@ import { expect, fn, waitFor } from 'storybook/test';
 import AbyssButton from '@/components/ui/AbyssButton/AbyssButton.vue';
 import AbyssButtonGroup from '@/components/ui/AbyssButtonGroup/AbyssButtonGroup.vue';
 import AbyssDialog from '@/components/ui/AbyssDialog/AbyssDialog.vue';
+import type { GradientColorsInput } from '@/defines/semantic-gradients';
 import { withAbyssBackgroundDialogScope } from '@/stories/StoryDialogScopeDecorator';
 
 type AbyssDialogStoryAction = {
@@ -25,7 +26,7 @@ type AbyssDialogStoryAction = {
   flat?: boolean;
   toggled?: boolean;
   gradient?: boolean;
-  gradientColors?: string[];
+  gradientColors?: GradientColorsInput;
   closeOnClick?: boolean;
 };
 
@@ -58,6 +59,8 @@ const baseActions: AbyssDialogStoryAction[] = [
     label: 'Usuń',
     icon: 'sym_r_delete',
     flat: true,
+    gradient: true,
+    gradientColors: 'danger',
     size: 'medium',
   },
 ];
@@ -73,7 +76,12 @@ const meta: Meta<AbyssDialogStoryArgs> = {
         component:
           'Dialog Abyss oparty o q-dialog. Nagłówek i stopka używają tej samej konwencji slotów co AbyssCard: ' +
           'header-prepend, header, header-append oraz footer-prepend, footer, footer-append. ' +
-          'Props title, icon, closeButton i actions pozostają wspierane jako domyślna zawartość slotów.',
+          'Props title, icon, closeButton i actions pozostają wspierane jako domyślna zawartość slotów.\n\n' +
+          '**Przyciski w stopce** — zgodnie z konwencją AbyssButton:\n' +
+          '- każdy przycisk w stopce dialogu jest `flat`;\n' +
+          '- anulowanie: samo `flat`, bez gradientu;\n' +
+          '- akcja operacyjna: `flat` + `gradient` + `gradientColors` (`danger` dla usunięcia, `info` dla zapisu/ponowienia, `success` dla potwierdzenia, `warning` dla istotnych zmian);\n' +
+          '- pojedyncza akcja w dialogu bez pary decyzyjnej — `flat` bez gradientu.',
       },
     },
   },
@@ -185,7 +193,7 @@ export const Default: Story = {
     docs: {
       description: {
         story:
-          'Podstawowy dialog z nagłówkiem, treścią i akcjami w footer-append.',
+          'Dialog potwierdzenia usunięcia: Anuluj (`flat`) oraz Usuń (`flat` + `gradient` + `danger`).',
       },
       source: {
         code: `<script setup lang="ts">
@@ -195,7 +203,15 @@ const isOpen = ref(true);
 
 const actions = [
   { id: 'cancel', label: 'Anuluj', flat: true, size: 'medium' },
-  { id: 'confirm', label: 'Usuń', icon: 'sym_r_delete', flat: true, size: 'medium' },
+  {
+    id: 'confirm',
+    label: 'Usuń',
+    icon: 'sym_r_delete',
+    flat: true,
+    gradient: true,
+    gradientColors: 'danger',
+    size: 'medium',
+  },
 ];
 </script>
 
@@ -248,6 +264,8 @@ const actions = [
               label="Usuń"
               icon="sym_r_delete"
               flat
+              gradient
+              gradient-colors="danger"
               size="medium"
               @click="isOpen = false"
             />
@@ -264,7 +282,10 @@ const actions = [
         canvas.getByText('Czy na pewno chcesz usunąć wybraną notatkę?'),
       ).toBeVisible();
       await expect(canvas.getByRole('button', { name: 'Anuluj' })).toBeVisible();
-      await expect(canvas.getByRole('button', { name: 'Usuń' })).toBeVisible();
+      const deleteButton = canvas.getByRole('button', { name: 'Usuń' });
+      await expect(deleteButton).toBeVisible();
+      await expect(deleteButton).toHaveClass('flat');
+      await expect(deleteButton).toHaveClass('gradient');
     });
   },
 };
@@ -293,6 +314,8 @@ export const WithFooterPrepend: Story = {
         label="Usuń"
         icon="sym_r_delete"
         flat
+        gradient
+        gradient-colors="danger"
         size="medium"
         @click="isOpen = false"
       />
@@ -338,6 +361,8 @@ export const WithFooterPrepend: Story = {
                 label="Usuń"
                 icon="sym_r_delete"
                 flat
+                gradient
+                gradient-colors="danger"
                 size="medium"
                 @click="isOpen = false"
               />
@@ -354,7 +379,10 @@ export const WithFooterPrepend: Story = {
         canvas.getByText('Tej operacji nie można cofnąć.'),
       ).toBeVisible();
       await expect(canvas.getByRole('button', { name: 'Anuluj' })).toBeVisible();
-      await expect(canvas.getByRole('button', { name: 'Usuń' })).toBeVisible();
+      const deleteButton = canvas.getByRole('button', { name: 'Usuń' });
+      await expect(deleteButton).toBeVisible();
+      await expect(deleteButton).toHaveClass('flat');
+      await expect(deleteButton).toHaveClass('gradient');
     });
   },
 };
@@ -378,6 +406,8 @@ export const ScrollableContent: Story = {
         label: 'Ponów',
         icon: 'sym_r_refresh',
         flat: true,
+        gradient: true,
+        gradientColors: 'info',
         size: 'medium',
         closeOnClick: false,
       },
@@ -390,7 +420,7 @@ export const ScrollableContent: Story = {
     docs: {
       description: {
         story:
-          'Dialog z dłuższą treścią. Body ma własny scroll, więc stopka i nagłówek pozostają czytelne nawet przy większej ilości contentu.',
+          'Dialog z dłuższą treścią. Body ma własny scroll, więc stopka i nagłówek pozostają czytelne nawet przy większej ilości contentu. Akcja Ponów używa `flat` + `gradient` + `info`.',
       },
     },
   },

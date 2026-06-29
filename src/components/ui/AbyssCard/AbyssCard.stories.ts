@@ -14,15 +14,22 @@ const meta: Meta<typeof AbyssCard> = {
     docs: {
       description: {
         component:
-          'Komponent karty (AbyssCard) służy do wyświetlania zawartości w kontenerze z opcjonalnym nagłówkiem i stopką. ' +
-          'Oferuje elastyczność poprzez sloty dla nagłówka (header, header-prepend, header-append), głównej treści (content) oraz stopki (footer, footer-prepend, footer-append).',
+          'Komponent karty (AbyssCard) służy do wyświetlania zawartości w kontenerze z nagłówkiem i treścią.\n\n' +
+          '**Nagłówek** — sloty `header-prepend`, `header`, `header-append`:\n' +
+          '- Przy tytule **zawsze** umieszczaj w `header-prepend` ikonę odpowiadającą tematowi karty (`q-icon`).\n' +
+          '- Kontekstowe akcje typowe dla danej karty (np. odświeżenie danych, ustawienia widoku) umieszczaj w `header-append` jako płaskie przyciski ikonowe (`AbyssButton` + `flat`).\n' +
+          '- W nagłówku i stopce karty **każdy** przycisk jest `flat`. Akcja operacyjna z kolorem semantycznym łączy `flat` + `gradient` + `gradientColors`.\n\n' +
+          '**Stopka** — sloty `footer-prepend`, `footer`, `footer-append`:\n' +
+          '- Zarezerwowana wyłącznie na specyficzne sytuacje (np. niezapisane zmiany w trakcie edycji). **Nie stosuj footera w standardowym układzie karty.** Akcje zapisu i potwierdzenia należą do treści, dialogu albo osobnego flow — nie do stopki karty.\n\n' +
+          'Pełna matryca: `docs/architecture/abyss-design.md`.',
       },
     },
   },
   argTypes: {
     title: {
       control: 'text',
-      description: 'Tytuł wyświetlany w nagłówku karty',
+      description:
+        'Tytuł wyświetlany w nagłówku karty. Wymaga towarzyszącej ikony w slocie header-prepend.',
       table: {
         defaultValue: { summary: 'undefined' },
         type: { summary: 'string' },
@@ -46,6 +53,9 @@ export const Default: Story = {
     },
     template: `
       <AbyssCard v-bind="args">
+        <template #header-prepend>
+          <q-icon name="sym_r_article" />
+        </template>
         <template #content>
           <div>
             Treść karty
@@ -58,10 +68,13 @@ export const Default: Story = {
     docs: {
       description: {
         story:
-          'Podstawowa karta z tytułem i treścią. Separator pojawia się automatycznie między nagłówkiem a contentem.',
+          'Standardowa karta z tytułem, ikoną w header-prepend i treścią. Separator pojawia się automatycznie między nagłówkiem a contentem.',
       },
       source: {
         code: `<AbyssCard title="Przykładowa karta">
+  <template #header-prepend>
+    <q-icon name="sym_r_article" />
+  </template>
   <template #content>
     <div>
       Treść karty
@@ -91,7 +104,7 @@ export const WithoutTitle: Story = {
       <AbyssCard v-bind="args">
         <template #content>
           <div>
-            Karta bez nagłówka - wyświetla tylko treść bez separatora.
+            Karta bez nagłówka — wyświetla tylko treść bez separatora.
           </div>
         </template>
       </AbyssCard>
@@ -101,13 +114,13 @@ export const WithoutTitle: Story = {
     docs: {
       description: {
         story:
-          'Karta bez tytułu i nagłówka - wyświetla tylko zawartość slotu content.',
+          'Wyjątek bez nagłówka — tylko zawartość slotu content. Nie stosuj tego wzorca, gdy sekcja ma nazwę; wtedy tytuł wymaga ikony w header-prepend.',
       },
       source: {
         code: `<AbyssCard>
   <template #content>
     <div>
-      Karta bez nagłówka - wyświetla tylko treść bez separatora.
+      Karta bez nagłówka — wyświetla tylko treść bez separatora.
     </div>
   </template>
 </AbyssCard>`,
@@ -116,7 +129,7 @@ export const WithoutTitle: Story = {
   },
   play: async ({ canvas, canvasElement }) => {
     const content = canvas.getByText(
-      'Karta bez nagłówka - wyświetla tylko treść bez separatora.',
+      'Karta bez nagłówka — wyświetla tylko treść bez separatora.',
     );
     await expect(content).toBeVisible();
     const header = canvasElement.querySelector('.abyss-card-header');
@@ -124,10 +137,10 @@ export const WithoutTitle: Story = {
   },
 };
 
-export const WithHeaderSlots: Story = {
-  name: 'Z dodatkowymi slotami nagłówka',
+export const WithHeaderActions: Story = {
+  name: 'Z akcjami kontekstowymi w nagłówku',
   args: {
-    title: 'Tytuł karty',
+    title: 'Lista zadań',
   },
   render: (args) => ({
     components: { AbyssCard, AbyssButton, AbyssButtonGroup },
@@ -137,7 +150,7 @@ export const WithHeaderSlots: Story = {
     template: `
       <AbyssCard v-bind="args">
         <template #header-prepend>
-          <q-icon name="sym_r_description" />
+          <q-icon name="sym_r_checklist" />
         </template>
         <template #header-append>
           <AbyssButtonGroup>
@@ -145,13 +158,13 @@ export const WithHeaderSlots: Story = {
               icon="sym_r_refresh"
               flat
               size="medium"
-              aria-label="Ponów"
+              aria-label="Odśwież dane"
             />
             <AbyssButton
-              icon="sym_r_settings"
+              icon="sym_r_filter_list"
               flat
               size="medium"
-              aria-label="Ustawienia"
+              aria-label="Filtruj"
             />
             <AbyssButton
               icon="sym_r_more_vert"
@@ -163,7 +176,7 @@ export const WithHeaderSlots: Story = {
         </template>
         <template #content>
           <div>
-            Zawartość karty z dodatkowymi elementami w nagłówku.
+            Zawartość karty. Akcje kontekstowe (odświeżenie, filtr, menu) są w header-append jako ikony.
           </div>
         </template>
       </AbyssCard>
@@ -173,12 +186,12 @@ export const WithHeaderSlots: Story = {
     docs: {
       description: {
         story:
-          'Karta z wykorzystaniem slotów header-prepend i header-append do dodania ikon lub innych elementów przed i po tytule.',
+          'Standardowy nagłówek karty: ikona tematu w header-prepend, kontekstowe akcje (odświeżenie, filtr, menu) w header-append jako płaskie przyciski ikonowe.',
       },
       source: {
-        code: `<AbyssCard title="Tytuł karty">
+        code: `<AbyssCard title="Lista zadań">
   <template #header-prepend>
-    <q-icon name="sym_r_description" />
+    <q-icon name="sym_r_checklist" />
   </template>
   <template #header-append>
     <AbyssButtonGroup>
@@ -186,13 +199,13 @@ export const WithHeaderSlots: Story = {
         icon="sym_r_refresh"
         flat
         size="medium"
-        aria-label="Ponów"
+        aria-label="Odśwież dane"
       />
       <AbyssButton
-        icon="sym_r_settings"
+        icon="sym_r_filter_list"
         flat
         size="medium"
-        aria-label="Ustawienia"
+        aria-label="Filtruj"
       />
       <AbyssButton
         icon="sym_r_more_vert"
@@ -204,7 +217,7 @@ export const WithHeaderSlots: Story = {
   </template>
   <template #content>
     <div>
-      Zawartość karty z dodatkowymi elementami w nagłówku.
+      Zawartość karty.
     </div>
   </template>
 </AbyssCard>`,
@@ -212,12 +225,12 @@ export const WithHeaderSlots: Story = {
     },
   },
   play: async ({ canvas }) => {
-    const title = canvas.getByText('Tytuł karty');
+    const title = canvas.getByText('Lista zadań');
     await expect(title).toBeVisible();
-    await expect(canvas.getByRole('button', { name: 'Ponów' })).toBeVisible();
     await expect(
-      canvas.getByRole('button', { name: 'Ustawienia' }),
+      canvas.getByRole('button', { name: 'Odśwież dane' }),
     ).toBeVisible();
+    await expect(canvas.getByRole('button', { name: 'Filtruj' })).toBeVisible();
     await expect(
       canvas.getByRole('button', { name: 'Więcej opcji' }),
     ).toBeVisible();
@@ -225,9 +238,9 @@ export const WithHeaderSlots: Story = {
 };
 
 export const WithFooterSlots: Story = {
-  name: 'Z dodatkowymi slotami stopki',
+  name: 'Wyjątek — stopka przy niezapisanych zmianach',
   args: {
-    title: 'Tytuł karty',
+    title: 'Edycja profilu',
   },
   render: (args) => ({
     components: { AbyssCard, AbyssButton, AbyssButtonGroup },
@@ -236,9 +249,12 @@ export const WithFooterSlots: Story = {
     },
     template: `
       <AbyssCard v-bind="args">
+        <template #header-prepend>
+          <q-icon name="sym_r_person" />
+        </template>
         <template #content>
           <div>
-            Zawartość karty z dodatkowymi elementami w stopce.
+            Formularz edycji profilu. Stopka pojawia się tylko w specyficznych sytuacjach — tutaj przy niezapisanych zmianach.
           </div>
         </template>
         <template #footer-prepend>
@@ -250,12 +266,16 @@ export const WithFooterSlots: Story = {
               label="Zapisz"
               icon="sym_r_save"
               flat
+              gradient
+              gradient-colors="info"
               size="medium"
             />
             <AbyssButton
               label="Zastosuj"
               icon="sym_r_check"
               flat
+              gradient
+              gradient-colors="success"
               size="medium"
             />
           </AbyssButtonGroup>
@@ -267,13 +287,16 @@ export const WithFooterSlots: Story = {
     docs: {
       description: {
         story:
-          'Karta z tekstem informacyjnym w footer-prepend oraz akcjami w footer-append.',
+          'Wyjątek od standardowego układu. Footer jest zarezerwowany na specyficzne sytuacje — np. informacja o niezapisanych zmianach z akcjami zapisu (`flat` + `gradient` + `info`) i zastosowania (`flat` + `gradient` + `success`).',
       },
       source: {
-        code: `<AbyssCard title="Tytuł karty">
+        code: `<AbyssCard title="Edycja profilu">
+  <template #header-prepend>
+    <q-icon name="sym_r_person" />
+  </template>
   <template #content>
     <div>
-      Zawartość karty z dodatkowymi elementami w stopce.
+      Formularz edycji profilu.
     </div>
   </template>
   <template #footer-prepend>
@@ -300,7 +323,7 @@ export const WithFooterSlots: Story = {
     },
   },
   play: async ({ canvas }) => {
-    const title = canvas.getByText('Tytuł karty');
+    const title = canvas.getByText('Edycja profilu');
     await expect(title).toBeVisible();
     await expect(
       canvas.getByText('Masz niezapisane zmiany'),
