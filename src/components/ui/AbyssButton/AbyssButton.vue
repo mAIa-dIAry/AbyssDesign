@@ -17,7 +17,7 @@
         current: isCurrent && !gradient,
         toggled: toggled && !gradient && !isCurrent,
         embedded: embedded && !flat && !gradient && !isCurrent,
-        flat: flat && !gradient && !isCurrent,
+        flat: flat && !isCurrent,
       },
       $props.class,
     ]"
@@ -27,11 +27,27 @@
     :percentage="percentage"
     v-bind="$attrs"
   >
-    <AbyssBackground
+    <div
       v-if="gradient"
-      class="abyss-button__gradient-background"
-      :colors="resolvedGradientColors"
-    />
+      class="abyss-button__gradient-layers"
+      aria-hidden="true"
+    >
+      <AbyssBackground
+        class="abyss-button__gradient-fill"
+        :colors="resolvedGradientColors"
+      />
+      <div v-if="flat" class="abyss-button__gradient-frame" aria-hidden="true">
+        <AbyssBackground
+          class="abyss-button__gradient-frame-layer"
+          :colors="resolvedGradientColors"
+        />
+        <AbyssBackground
+          class="abyss-button__gradient-frame-layer abyss-button__gradient-frame-layer--reduced"
+          :colors="resolvedGradientColors"
+        />
+        <div class="abyss-button__gradient-active-border" aria-hidden="true" />
+      </div>
+    </div>
 
     <!-- Forward default slot -->
     <template v-if="$slots.default">
@@ -121,6 +137,122 @@ const buttonStyle = computed(() => {
 $shadow-frame-soft-inverted:
   inset 0px 1px 1px 0px rgba(0, 0, 0, 0.3),
   inset 0px 0px 0px 1px rgba(255, 255, 255, 0.06);
+
+@mixin abyss-button-gradient-inner-frame {
+  inset: var(--gradient-frame-width);
+  border-radius: calc(
+      var(--border-top-left-radius) - var(--gradient-frame-width)
+    )
+    calc(var(--border-top-right-radius) - var(--gradient-frame-width))
+    calc(var(--border-bottom-right-radius) - var(--gradient-frame-width))
+    calc(var(--border-bottom-left-radius) - var(--gradient-frame-width));
+  clip-path: inset(
+    0 round
+      calc(var(--border-top-left-radius) - var(--gradient-frame-width))
+      calc(var(--border-top-right-radius) - var(--gradient-frame-width))
+      calc(var(--border-bottom-right-radius) - var(--gradient-frame-width))
+      calc(var(--border-bottom-left-radius) - var(--gradient-frame-width))
+  );
+}
+
+@mixin abyss-button-corner-radius {
+  border-top-left-radius: var(--border-top-left-radius);
+  border-top-right-radius: var(--border-top-right-radius);
+  border-bottom-right-radius: var(--border-bottom-right-radius);
+  border-bottom-left-radius: var(--border-bottom-left-radius);
+}
+
+@mixin abyss-button-corner-clip {
+  clip-path: inset(
+    0 round var(--border-top-left-radius) var(--border-top-right-radius)
+      var(--border-bottom-right-radius) var(--border-bottom-left-radius)
+  );
+}
+
+@mixin abyss-button-gradient-frame-outer-radius-vars {
+  --gradient-frame-outer-tl: max(
+    0px,
+    calc(var(--border-top-left-radius) - var(--gradient-frame-radius-offset-outer))
+  );
+  --gradient-frame-outer-tr: max(
+    0px,
+    calc(var(--border-top-right-radius) - var(--gradient-frame-radius-offset-outer))
+  );
+  --gradient-frame-outer-br: max(
+    0px,
+    calc(
+      var(--border-bottom-right-radius) - var(--gradient-frame-radius-offset-outer)
+    )
+  );
+  --gradient-frame-outer-bl: max(
+    0px,
+    calc(
+      var(--border-bottom-left-radius) - var(--gradient-frame-radius-offset-outer)
+    )
+  );
+}
+
+@mixin abyss-button-gradient-frame-inner-radius-vars {
+  --gradient-frame-inner-tl: max(
+    0px,
+    calc(var(--border-top-left-radius) - var(--gradient-frame-radius-offset-inner))
+  );
+  --gradient-frame-inner-tr: max(
+    0px,
+    calc(var(--border-top-right-radius) - var(--gradient-frame-radius-offset-inner))
+  );
+  --gradient-frame-inner-br: max(
+    0px,
+    calc(
+      var(--border-bottom-right-radius) - var(--gradient-frame-radius-offset-inner)
+    )
+  );
+  --gradient-frame-inner-bl: max(
+    0px,
+    calc(
+      var(--border-bottom-left-radius) - var(--gradient-frame-radius-offset-inner)
+    )
+  );
+}
+
+@mixin abyss-button-gradient-frame-mask-base {
+  box-sizing: border-box;
+  padding: var(--gradient-frame-width);
+  -webkit-mask-image:
+    linear-gradient(#fff 0 0),
+    linear-gradient(#fff 0 0);
+  -webkit-mask-clip: content-box, border-box;
+  -webkit-mask-composite: xor;
+  mask-image:
+    linear-gradient(#fff 0 0),
+    linear-gradient(#fff 0 0);
+  mask-clip: content-box, border-box;
+  mask-composite: exclude;
+}
+
+@mixin abyss-button-gradient-frame-outer-radius {
+  border-top-left-radius: var(--gradient-frame-outer-tl);
+  border-top-right-radius: var(--gradient-frame-outer-tr);
+  border-bottom-right-radius: var(--gradient-frame-outer-br);
+  border-bottom-left-radius: var(--gradient-frame-outer-bl);
+}
+
+@mixin abyss-button-gradient-frame-inner-radius {
+  border-top-left-radius: var(--gradient-frame-inner-tl);
+  border-top-right-radius: var(--gradient-frame-inner-tr);
+  border-bottom-right-radius: var(--gradient-frame-inner-br);
+  border-bottom-left-radius: var(--gradient-frame-inner-bl);
+}
+
+@mixin abyss-button-gradient-frame-mask {
+  @include abyss-button-gradient-frame-mask-base;
+  @include abyss-button-gradient-frame-outer-radius;
+}
+
+@mixin abyss-button-gradient-frame-mask-reduced {
+  @include abyss-button-gradient-frame-mask-base;
+  @include abyss-button-gradient-frame-inner-radius;
+}
 
 .abyss-button {
   --font-size: 16px;
@@ -456,36 +588,30 @@ $shadow-frame-soft-inverted:
   &.gradient {
     background-color: transparent;
     --gradient-overlay: #{rgba(black, 0.5)};
+    --gradient-overlay-opacity: 0;
+    --gradient-fill-opacity: 0;
     --gradient-frame-width: 1px;
+    overflow: hidden;
 
-    &::after {
-      display: block;
-      z-index: 1;
-      inset: var(--gradient-frame-width);
-      border-radius: calc(
-          var(--border-top-left-radius) - var(--gradient-frame-width)
-        )
-        calc(var(--border-top-right-radius) - var(--gradient-frame-width))
-        calc(var(--border-bottom-right-radius) - var(--gradient-frame-width))
-        calc(var(--border-bottom-left-radius) - var(--gradient-frame-width));
-      clip-path: inset(
-        0 round
-          calc(var(--border-top-left-radius) - var(--gradient-frame-width))
-          calc(var(--border-top-right-radius) - var(--gradient-frame-width))
-          calc(var(--border-bottom-right-radius) - var(--gradient-frame-width))
-          calc(var(--border-bottom-left-radius) - var(--gradient-frame-width))
-      );
-      background: var(--gradient-overlay);
-      transition: background-color 0.3s ease-out;
-    }
-
-    .abyss-button__gradient-background {
+    .abyss-button__gradient-layers {
       position: absolute;
       inset: 0;
       z-index: 0;
       pointer-events: none;
-      border-radius: inherit;
-      clip-path: inset(0 round var(--button-border-radius));
+      overflow: hidden;
+      @include abyss-button-corner-radius;
+      @include abyss-button-corner-clip;
+    }
+
+    .abyss-button__gradient-fill {
+      position: absolute;
+      inset: 0;
+      @include abyss-button-corner-radius;
+
+      :deep(.abyss-background__stage),
+      :deep(.abyss-background__layer) {
+        @include abyss-button-corner-radius;
+      }
     }
 
     :deep(.q-btn__content) {
@@ -493,7 +619,7 @@ $shadow-frame-soft-inverted:
       z-index: auto;
     }
 
-    :deep(.q-btn__content > :not(.abyss-button__gradient-background)) {
+    :deep(.q-btn__content > :not(.abyss-button__gradient-layers)) {
       position: relative;
       z-index: 2;
     }
@@ -506,19 +632,159 @@ $shadow-frame-soft-inverted:
       opacity: 0.3;
     }
 
-    &:not([disabled], [role='progressbar'], .current) {
-      @media (hover: hover) and (pointer: fine) {
-        &:hover {
+    &:not(.flat) {
+      .abyss-button__gradient-fill {
+        opacity: 1;
+      }
+
+      &::after {
+        @include abyss-button-gradient-inner-frame;
+        display: block;
+        z-index: 1;
+        background: var(--gradient-overlay);
+        transition: background-color 0.3s ease-out;
+      }
+
+      &:not([disabled], [role='progressbar'], .current) {
+        @media (hover: hover) and (pointer: fine) {
+          &:hover {
+            --gradient-overlay: #{rgba(black, 0.45)};
+          }
+        }
+
+        &:focus-visible {
           --gradient-overlay: #{rgba(black, 0.45)};
+        }
+
+        &:active {
+          --gradient-overlay: #{rgba(black, 0.42)};
+        }
+      }
+    }
+
+    &.flat {
+      --gradient-frame-radius-offset-outer: 1px;
+      --gradient-frame-radius-offset-inner: -1px;
+      --gradient-active-border-color: #{rgba(white, 0.22)};
+      --gradient-active-border-opacity: 0;
+      @include abyss-button-gradient-frame-outer-radius-vars;
+      @include abyss-button-gradient-frame-inner-radius-vars;
+      overflow: visible;
+
+      .abyss-button__gradient-layers {
+        overflow: visible;
+        clip-path: none;
+      }
+
+      &::after {
+        @include abyss-button-gradient-inner-frame;
+        display: block;
+        z-index: 1;
+        background: var(--gradient-overlay);
+        opacity: var(--gradient-overlay-opacity);
+        transition:
+          opacity 0.2s ease-out,
+          background-color 0.3s ease-out;
+      }
+
+      .abyss-button__gradient-fill {
+        opacity: var(--gradient-fill-opacity);
+        transition: opacity 0.2s ease-out;
+      }
+
+      .abyss-button__gradient-frame {
+        position: absolute;
+        inset: 0;
+        z-index: 1;
+
+        :deep(.abyss-button__gradient-frame-layer) {
+          @include abyss-button-gradient-frame-mask;
+          position: absolute;
+          inset: 0;
+        }
+
+        :deep(.abyss-button__gradient-frame-layer--reduced) {
+          @include abyss-button-gradient-frame-mask-reduced;
+        }
+
+        :deep(.abyss-background__stage),
+        :deep(.abyss-background__layer) {
+          border-radius: inherit;
+        }
+
+        .abyss-button__gradient-active-border {
+          position: absolute;
+          inset: 0;
+          z-index: 2;
+          box-sizing: border-box;
+          pointer-events: none;
+          border: var(--gradient-frame-width) solid var(--gradient-active-border-color);
+          @include abyss-button-gradient-frame-outer-radius;
+          opacity: var(--gradient-active-border-opacity);
+          transition: opacity 0.3s ease-out;
         }
       }
 
-      &:focus-visible {
-        --gradient-overlay: #{rgba(black, 0.45)};
+      &:not([disabled], [role='progressbar'], .current) {
+        @media (hover: hover) and (pointer: fine) {
+          &:hover {
+            --gradient-fill-opacity: 1;
+            --gradient-overlay-opacity: 1;
+            --gradient-overlay: #{rgba(black, 0.45)};
+          }
+        }
+
+        &:focus-visible {
+          --gradient-fill-opacity: 1;
+          --gradient-overlay-opacity: 1;
+          --gradient-overlay: #{rgba(black, 0.45)};
+        }
+
+        &:active {
+          --gradient-fill-opacity: 1;
+          --gradient-overlay-opacity: 1;
+          --gradient-overlay: #{rgba(black, 0.42)};
+          --gradient-active-border-opacity: 1;
+        }
       }
 
-      &:active {
-        --gradient-overlay: #{rgba(black, 0.42)};
+      --border-width: 1px;
+      box-shadow: $shadow-zero;
+      transform: none;
+      border: var(--border-width) solid transparent;
+      padding: calc(var(--padding-y) - var(--border-width))
+        calc(var(--padding-x) - var(--border-width));
+
+      &.icon-only {
+        padding: calc(var(--padding-y) - var(--border-width));
+      }
+
+      &:not([disabled], [role='progressbar'], .current) {
+        @media (hover: hover) and (pointer: fine) {
+          &:hover {
+            border-color: transparent;
+            background-color: transparent;
+            box-shadow: none;
+            transform: none;
+          }
+        }
+
+        &:focus-visible {
+          border-color: transparent;
+          background-color: transparent;
+          transform: none;
+        }
+
+        &:active {
+          border-color: transparent;
+          background-color: transparent;
+          transform: none;
+        }
+      }
+
+      &[disabled] {
+        box-shadow: $shadow-zero;
+        transform: none;
       }
     }
   }

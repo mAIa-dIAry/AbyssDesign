@@ -119,7 +119,7 @@ const meta: Meta<AbyssButtonStoryArgs> = {
     flat: {
       control: 'boolean',
       description:
-        'Czy przycisk ma mieć płaski styl bez cienia i bez ruchu unoszenia, z delikatnym borderem na hover i focus.',
+        'Płaski styl bez cienia i ruchu unoszenia, z delikatnym borderem na hover i focus. Można łączyć z `gradient`.',
       table: {
         defaultValue: { summary: 'false' },
       },
@@ -244,19 +244,82 @@ const GRADIENT_COLOR_OPTIONS: GradientColorOption[] = [
   },
 ];
 
-function gradientColorOptionSourceCode(option: GradientColorOption): string {
-  return [
+function gradientColorOptionSourceCode(
+  option: GradientColorOption,
+  flat = false,
+): string {
+  const lines = [
     '<AbyssButton',
     `  label="${option.label}"`,
     '  size="big"',
     '  gradient',
+  ];
+
+  if (flat) {
+    lines.push('  flat');
+  }
+
+  lines.push(
     `  ${formatVueProp('gradientColors', option.gradientColors)}`,
     '/>',
-  ].join('\n');
+  );
+
+  return lines.join('\n');
 }
 
-function gradientColorOptionsSourceCode(): string {
-  return GRADIENT_COLOR_OPTIONS.map(gradientColorOptionSourceCode).join('\n\n');
+function gradientColorOptionsSourceCode(flat = false): string {
+  return GRADIENT_COLOR_OPTIONS.map((option) =>
+    gradientColorOptionSourceCode(option, flat),
+  ).join('\n\n');
+}
+
+function renderGradientColorOptionsStory(flat = false) {
+  return () => ({
+    components: { AbyssButton },
+    setup() {
+      return {
+        options: GRADIENT_COLOR_OPTIONS,
+        layoutStyle: sizesLayoutStyle,
+        flat,
+      };
+    },
+    template: `
+      <div :style="layoutStyle">
+        <AbyssButton
+          v-for="option in options"
+          :key="option.id"
+          :label="option.label"
+          size="big"
+          gradient
+          :flat="flat"
+          :gradient-colors="option.gradientColors"
+          :data-testid="'gradient-colors-' + option.id"
+        />
+      </div>
+    `,
+  });
+}
+
+async function playGradientColorOptions(
+  canvas: { getAllByRole: (role: string) => HTMLElement[]; getByTestId: (id: string) => HTMLElement },
+  flat = false,
+) {
+  const buttons = canvas.getAllByRole('button');
+
+  await expect(buttons).toHaveLength(GRADIENT_COLOR_OPTIONS.length);
+
+  for (const button of buttons) {
+    await expect(button).toHaveClass('gradient');
+    await expect(button).toHaveClass('size-big');
+
+    if (flat) {
+      await expect(button).toHaveClass('flat');
+    }
+  }
+
+  await expect(canvas.getByTestId('gradient-colors-theme')).toBeInTheDocument();
+  await expect(canvas.getByTestId('gradient-colors-info')).toBeInTheDocument();
+  await expect(canvas.getByTestId('gradient-colors-custom')).toBeInTheDocument();
 }
 
 function renderSizeVariants(options: {
@@ -847,6 +910,47 @@ export const Gradient: Story = {
   },
 };
 
+export const FlatGradient: Story = {
+  name: 'Gradient płaski',
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'Gradient w wariancie płaskim — bez cienia i unoszenia, z delikatnym borderem na hover i focus.',
+      },
+      source: {
+        code: sizeVariantsSourceCode({
+          getLabel: (size) => `Gradient płaski ${size}`,
+          props: {
+            iconRight: 'sym_r_note_stack_add',
+            gradient: true,
+            flat: true,
+            gradientColors: 'theme',
+          },
+        }),
+      },
+    },
+  },
+  render: renderSizeVariants({
+    getLabel: (size) => `Gradient płaski ${size}`,
+    props: {
+      iconRight: 'sym_r_note_stack_add',
+      gradient: true,
+      flat: true,
+      gradientColors: 'theme',
+    },
+  }),
+  play: async ({ canvas }) => {
+    const buttons = canvas.getAllByRole('button');
+
+    await expect(buttons).toHaveLength(3);
+    for (const button of buttons) {
+      await expect(button).toHaveClass('gradient');
+      await expect(button).toHaveClass('flat');
+    }
+  },
+};
+
 export const SemanticGradientColors: Story = {
   name: 'Opcje gradientColors',
   parameters: {
@@ -859,42 +963,24 @@ export const SemanticGradientColors: Story = {
       },
     },
   },
-  render: () => ({
-    components: { AbyssButton },
-    setup() {
-      return {
-        options: GRADIENT_COLOR_OPTIONS,
-        layoutStyle: sizesLayoutStyle,
-      };
+  render: renderGradientColorOptionsStory(),
+  play: async ({ canvas }) => playGradientColorOptions(canvas),
+};
+
+export const FlatSemanticGradientColors: Story = {
+  name: 'Opcje gradientColors (płaski)',
+  parameters: {
+    docs: {
+      description: {
+        story: `Płaski wariant (\`flat\`) dla wszystkich opcji \`gradientColors\`: semantyczne klucze (\`${SEMANTIC_GRADIENTS.map((g) => g.key).join('`, `')}\`, w tym \`theme\`) oraz własna tablica kolorów CSS.`,
+      },
+      source: {
+        code: gradientColorOptionsSourceCode(true),
+      },
     },
-    template: `
-      <div :style="layoutStyle">
-        <AbyssButton
-          v-for="option in options"
-          :key="option.id"
-          :label="option.label"
-          size="big"
-          gradient
-          :gradient-colors="option.gradientColors"
-          :data-testid="'gradient-colors-' + option.id"
-        />
-      </div>
-    `,
-  }),
-  play: async ({ canvas }) => {
-    const buttons = canvas.getAllByRole('button');
-
-    await expect(buttons).toHaveLength(GRADIENT_COLOR_OPTIONS.length);
-
-    for (const button of buttons) {
-      await expect(button).toHaveClass('gradient');
-      await expect(button).toHaveClass('size-big');
-    }
-
-    await expect(canvas.getByTestId('gradient-colors-theme')).toBeInTheDocument();
-    await expect(canvas.getByTestId('gradient-colors-info')).toBeInTheDocument();
-    await expect(canvas.getByTestId('gradient-colors-custom')).toBeInTheDocument();
   },
+  render: renderGradientColorOptionsStory(true),
+  play: async ({ canvas }) => playGradientColorOptions(canvas, true),
 };
 
 export const InteractiveLoading: Story = {

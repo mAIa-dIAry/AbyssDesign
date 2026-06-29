@@ -214,3 +214,72 @@ export const MixedStates: Story = {
     }
   },
 };
+
+export const MixedStatesFlat: Story = {
+  name: 'Zróżnicowane stany (flat)',
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'Grupa z trzema wariantami flat we wszystkich rozmiarach: zwykły, nieaktywny i gradient flat.',
+      },
+      source: {
+        code: `<AbyssButtonGroup>
+  <AbyssButton label="Aktywny" size="big" flat />
+  <AbyssButton label="Nieaktywny" size="big" flat :disable="true" />
+  <AbyssButton
+    label="Gradient"
+    size="big"
+    flat
+    gradient
+    icon-right="sym_r_note_stack_add"
+    :gradient-colors="['#FF7194', '#028096']"
+  />
+</AbyssButtonGroup>`,
+      },
+    },
+  },
+  render: () => ({
+    components: { AbyssButtonGroup, AbyssButton },
+    setup() {
+      return { sizes: BUTTON_SIZES, gradientColors: GRADIENT_COLORS };
+    },
+    template: `
+      <div style="${sizesLayoutStyle}">
+        <div v-for="size in sizes" :key="size">
+          <div style="margin-bottom: 8px; font-size: 12px; color: rgba(255,255,255,0.6);">
+            {{ 'Grupa ' + size }}
+          </div>
+          <AbyssButtonGroup>
+            <AbyssButton label="Aktywny" :size="size" flat />
+            <AbyssButton label="Nieaktywny" :size="size" flat disable />
+            <AbyssButton
+              label="Gradient"
+              :size="size"
+              flat
+              gradient
+              icon-right="sym_r_note_stack_add"
+              :gradient-colors="gradientColors"
+            />
+          </AbyssButtonGroup>
+        </div>
+      </div>
+    `,
+  }),
+  play: async ({ canvas }) => {
+    const buttons = canvas.getAllByRole('button');
+
+    await expect(buttons).toHaveLength(9);
+
+    for (let index = 0; index < 3; index += 1) {
+      const groupStart = index * 3;
+      await expect(buttons[groupStart]).toBeEnabled();
+      await expect(buttons[groupStart]).toHaveClass('flat');
+      await expect(buttons[groupStart + 1]).toBeDisabled();
+      await expect(buttons[groupStart + 1]).toHaveClass('flat');
+      await expect(buttons[groupStart + 2]).toBeEnabled();
+      await expect(buttons[groupStart + 2]).toHaveClass('flat');
+      await expect(buttons[groupStart + 2]).toHaveClass('gradient');
+    }
+  },
+};
