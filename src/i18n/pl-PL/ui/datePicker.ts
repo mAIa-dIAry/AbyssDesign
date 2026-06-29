@@ -38,4 +38,6 @@ export default {
     'Gru',
   ],
   close: 'Zamknij',
+  cancel: 'Anuluj',
+  confirm: 'Potwierdź',
 };

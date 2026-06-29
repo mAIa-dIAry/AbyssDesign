@@ -1,35 +1,60 @@
 ﻿<template>
-  <q-date
-    :model-value="modelValue"
-    @update:model-value="$emit('update:modelValue', $event)"
-    :mask="mask"
-    :today-btn="todayBtn"
-    :first-day-of-week="firstDayOfWeek"
-    :dark="dark"
-    :locale="resolvedLocale"
-    :class="['abyss-date', $props.class]"
-    :style="mergedStyle"
-    v-bind="$attrs"
-  >
-    <slot />
-
-    <div
-      v-if="!$slots.default && showCloseButton"
-      class="row items-center justify-end"
-    >
-      <AbyssButton :label="resolvedCloseLabel" @click="$emit('close')" />
+  <div class="abyss-date" :class="$props.class" :style="style">
+    <div class="abyss-date__body">
+      <q-date
+        :model-value="modelValue"
+        :mask="mask"
+        :today-btn="todayBtn"
+        :first-day-of-week="firstDayOfWeek"
+        :dark="dark"
+        :locale="resolvedLocale"
+        v-bind="$attrs"
+        @update:model-value="$emit('update:modelValue', $event)"
+      >
+        <slot />
+      </q-date>
     </div>
-  </q-date>
+
+    <template v-if="!$slots.default">
+      <AbyssSeparator />
+
+      <div class="abyss-date__footer">
+        <div class="abyss-date__footer-spacer"></div>
+        <div class="abyss-date__footer-append">
+          <slot name="footer-append">
+            <AbyssButtonGroup>
+              <AbyssButton
+                :label="resolvedCancelLabel"
+                flat
+                size="medium"
+                @click="handleCancel"
+              />
+              <AbyssButton
+                :label="resolvedConfirmLabel"
+                flat
+                gradient
+                gradient-colors="success"
+                size="medium"
+                @click="handleConfirm"
+              />
+            </AbyssButtonGroup>
+          </slot>
+        </div>
+      </div>
+    </template>
+  </div>
 </template>
 
 <script setup lang="ts">
-import { computed, watch } from 'vue';
+import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
-import {
-  DEFAULT_GRADIENT_COLORS,
-  useGradient,
-} from '@/composables/useGradient';
 import AbyssButton from '@/components/ui/AbyssButton/AbyssButton.vue';
+import AbyssButtonGroup from '@/components/ui/AbyssButtonGroup/AbyssButtonGroup.vue';
+import AbyssSeparator from '@/components/ui/AbyssSeparator/AbyssSeparator.vue';
+
+defineOptions({
+  inheritAttrs: false,
+});
 
 export interface AbyssDateProps {
   modelValue?: string | null;
@@ -37,9 +62,8 @@ export interface AbyssDateProps {
   todayBtn?: boolean;
   firstDayOfWeek?: 0 | 1 | 2 | 3 | 4 | 5 | 6;
   dark?: boolean;
-  showCloseButton?: boolean;
-  closeLabel?: string;
-  colors?: string[];
+  cancelLabel?: string;
+  confirmLabel?: string;
   locale?: {
     days: string[];
     daysShort: string[];
@@ -59,26 +83,19 @@ const props = withDefaults(defineProps<AbyssDateProps>(), {
   todayBtn: true,
   firstDayOfWeek: 1,
   dark: true,
-  showCloseButton: true,
-  closeLabel: '',
-  colors: () => DEFAULT_GRADIENT_COLORS,
+  cancelLabel: '',
+  confirmLabel: '',
   style: '',
   class: '',
 });
 
+const emit = defineEmits<{
+  'update:modelValue': [value: string | null];
+  close: [];
+  confirm: [];
+}>();
+
 const i18n = useI18n();
-
-const { gradientCss, setColors } = useGradient(props.colors);
-
-watch(
-  () => props.colors,
-  (newColors) => setColors(newColors ?? DEFAULT_GRADIENT_COLORS),
-);
-
-const mergedStyle = computed(() => [
-  props.style,
-  { '--header-gradient': gradientCss.value },
-]);
 
 function toStringArray(value: unknown): string[] {
   if (!Array.isArray(value)) {
@@ -96,55 +113,177 @@ const defaultLocale = computed(() => ({
 }));
 
 const resolvedLocale = computed(() => props.locale ?? defaultLocale.value);
-const resolvedCloseLabel = computed(
-  () => props.closeLabel || i18n.t('ui.datePicker.close'),
+const resolvedCancelLabel = computed(
+  () => props.cancelLabel || i18n.t('ui.datePicker.cancel'),
+);
+const resolvedConfirmLabel = computed(
+  () => props.confirmLabel || i18n.t('ui.datePicker.confirm'),
 );
 
-defineEmits<{
-  'update:modelValue': [value: string | null];
-  close: [];
-}>();
+function handleCancel() {
+  emit('close');
+}
+
+function handleConfirm() {
+  emit('confirm');
+  emit('close');
+}
 </script>
 
 <style scoped lang="scss">
-.abyss-date {
-  --border-radius: 16px;
-  border-radius: var(--border-radius);
-  overflow: hidden;
-  box-shadow: $shadow-dialog, $shadow-frame-medium;
+@mixin abyss-date-flat-q-btn {
+  box-shadow: $shadow-zero;
   background-color: transparent;
-  -webkit-backdrop-filter: blur(20px);
-  backdrop-filter: blur(20px);
+  border: 1px solid transparent;
+  border-radius: var(--date-btn-radius);
+  min-height: var(--date-btn-size);
+  padding: calc(var(--date-btn-padding-y) - 1px)
+    calc(var(--date-btn-padding-x) - 1px);
+  font-size: var(--date-btn-font-size);
+  line-height: var(--date-btn-line-height);
+  transition: all 0.3s ease-out;
 
-  :deep() {
-    .q-date__header {
-      background: var(--header-gradient);
-      position: relative;
-      border-top-left-radius: var(--border-radius);
-      border-top-right-radius: var(--border-radius);
-      box-shadow: $shadow-frame-medium;
+  &::before,
+  &::after {
+    display: none;
+  }
 
-      &::before {
-        content: '';
-        position: absolute;
-        inset: 0;
-        background-color: rgba(0, 0, 0, 0.5);
-        z-index: 0;
-        border-top-left-radius: var(--border-radius);
-        border-top-right-radius: var(--border-radius);
+  .q-focus-helper {
+    display: none;
+  }
+
+  .q-ripple {
+    opacity: 0.2;
+  }
+
+  &.q-btn--round,
+  &.q-date__calendar-item {
+    width: var(--date-btn-size);
+    min-width: var(--date-btn-size);
+    max-width: var(--date-btn-size);
+    height: var(--date-btn-size);
+    padding: 0;
+  }
+
+  .q-btn__content {
+    line-height: var(--date-btn-line-height);
+  }
+
+  &:not(.disabled, .q-btn--disabled, .bg-primary) {
+    @media (hover: hover) and (pointer: fine) {
+      &:hover {
+        background-color: rgba(white, 0.04);
+        border-color: rgba(white, 0.08);
+        box-shadow: none;
       }
     }
 
-    .q-date__main {
-      background-color: rgba(black, 0.5);
-      border-bottom-left-radius: var(--border-radius);
-      border-bottom-right-radius: var(--border-radius);
+    &:focus-visible {
+      background-color: rgba(white, 0.04);
+      border-color: rgba(white, 0.08);
+      box-shadow: none;
     }
 
-    .bg-primary {
+    &:active {
+      background-color: rgba(white, 0.03);
+      border-color: rgba(white, 0.22);
+      box-shadow: none;
+    }
+  }
+}
+
+.abyss-date {
+  --date-padding: 16px;
+  --border-radius: 16px;
+  --date-btn-radius: 8px;
+  --date-btn-padding-x: 12px;
+  --date-btn-padding-y: 8px;
+  --date-btn-size: 32px;
+  --date-btn-font-size: 12px;
+  --date-btn-line-height: 16px;
+
+  display: inline-flex;
+  flex-direction: column;
+  width: fit-content;
+  max-width: 100%;
+  overflow: hidden;
+  border-radius: var(--border-radius);
+  box-shadow: $shadow-dialog, $shadow-frame-medium;
+  border-bottom: 1px solid rgba(black, 0.2);
+  background-color: rgba(black, 0.25);
+  -webkit-backdrop-filter: blur(20px);
+  backdrop-filter: blur(20px);
+
+  &__footer {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    box-sizing: border-box;
+    padding: 12px var(--date-padding);
+    gap: 8px;
+    font-size: 18px;
+    min-height: 48px;
+  }
+
+  &__footer-spacer {
+    flex: 1;
+    min-width: 0;
+    min-height: 24px;
+  }
+
+  &__footer-append {
+    display: flex;
+    align-items: center;
+
+    &:empty {
+      display: none;
+    }
+
+    :deep(.abyss-button) {
+      --border-radius: var(--date-btn-radius);
+    }
+
+    :deep(.abyss-button-group) {
+      margin-top: -8px;
+      margin-bottom: -8px;
+      margin-right: -12px;
+    }
+
+    :deep(> .abyss-button) {
+      margin-top: -8px;
+      margin-bottom: -8px;
+      margin-right: -12px;
+    }
+  }
+
+  &__body {
+    min-height: 0;
+    width: fit-content;
+    max-width: 100%;
+
+    :deep(.q-date) {
+      box-shadow: none;
+      background: transparent;
+      border-radius: 0;
+    }
+
+    :deep(.q-date__header) {
+      background: transparent;
+      border-top-left-radius: var(--border-radius);
+      border-top-right-radius: var(--border-radius);
+      border-bottom: 1px solid rgba(black, 0.3);
+      box-shadow: 0 1px 0 rgba(white, 0.04);
+    }
+
+    :deep(.q-date__main) {
+      background-color: transparent;
+    }
+
+    :deep(.bg-primary) {
       --q-primary: white;
       color: black !important;
       font-weight: 600;
+      border-radius: var(--date-btn-radius);
 
       span {
         position: relative;
@@ -152,17 +291,27 @@ defineEmits<{
       }
     }
 
-    .q-btn--rectangle:not(.abyss-button) {
-      border-radius: calc(var(--border-radius) / 2);
+    :deep(.q-date__header .q-btn:not(.abyss-button)),
+    :deep(.q-date__main .q-btn:not(.abyss-button)) {
+      @include abyss-date-flat-q-btn;
     }
 
-    .q-date__today {
+    :deep(.q-date__main .q-btn.bg-primary.q-date__calendar-item) {
+      width: var(--date-btn-size);
+      min-width: var(--date-btn-size);
+      max-width: var(--date-btn-size);
+      height: var(--date-btn-size);
+      padding: 0;
+    }
+
+    :deep(.q-date__today) {
       box-shadow: none;
       outline: 1px solid rgba(white, 0.5) !important;
+      border: 2px solid transparent !important;
 
       &.bg-primary {
         outline: 1px solid white !important;
-        border: 2px solid black !important;
+        border-color: black !important;
       }
     }
   }
