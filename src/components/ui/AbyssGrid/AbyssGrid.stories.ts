@@ -1,7 +1,22 @@
 import type { Meta, StoryObj } from '@storybook/vue3';
 import { expect } from 'storybook/test';
 import AbyssGrid from '@/components/ui/AbyssGrid/AbyssGrid.vue';
+import AbyssTile from '@/components/ui/AbyssTile/AbyssTile.vue';
 import { withAbyssBackground } from '@/stories/AbyssBackgroundDecorator';
+
+interface DemoTile {
+  id: string;
+  title: string;
+  content: string;
+  monospace?: boolean;
+}
+
+const demoTiles: DemoTile[] = [
+  { id: 'phone', title: 'Urządzenie', content: 'Telefon przy kasie' },
+  { id: 'tablet', title: 'Urządzenie', content: 'Tablet magazynowy' },
+  { id: 'laptop', title: 'Urządzenie', content: 'Laptop operatora' },
+  { id: 'panel', title: 'Urządzenie', content: 'Panel ścienny' },
+];
 
 const meta: Meta<typeof AbyssGrid> = {
   title: 'UI/AbyssGrid',
@@ -12,7 +27,7 @@ const meta: Meta<typeof AbyssGrid> = {
     docs: {
       description: {
         component:
-          'Uniwersalny wrapper siatki dla treści Abyss. Używa responsywnego układu jak lista peerów w panelu synchronizacji: kolumny mają minimalną szerokość z propsa `columnSize`, a poniżej dostępnej szerokości układ schodzi do jednej kolumny bez overflow.',
+          'Uniwersalny wrapper siatki dla treści Abyss. Używa responsywnego układu jak lista peerów w panelu synchronizacji: kolumny mają minimalną szerokość z propsa `columnSize`, a poniżej dostępnej szerokości układ schodzi do jednej kolumny bez overflow. Elementy siatki prezentuj przez `AbyssTile`.',
       },
     },
   },
@@ -74,13 +89,6 @@ const meta: Meta<typeof AbyssGrid> = {
 export default meta;
 type Story = StoryObj<typeof AbyssGrid>;
 
-const demoItems = [
-  'Telefon przy kasie',
-  'Tablet magazynowy',
-  'Laptop operatora',
-  'Panel ścienny',
-];
-
 export const Default: Story = {
   name: 'Domyślny grid',
   args: {
@@ -95,32 +103,31 @@ export const Default: Story = {
     docs: {
       description: {
         story:
-          'Podstawowy przykład z kartami treści. Komponent układa elementy w responsywną siatkę i utrzymuje wygląd zgodny z panelem peerów.',
+          'Podstawowy przykład z kafelkami `AbyssTile`. Komponent układa elementy w responsywną siatkę i utrzymuje wygląd zgodny z panelem peerów.',
       },
     },
   },
   render: (args) => ({
-    components: { AbyssGrid },
+    components: { AbyssGrid, AbyssTile },
     setup() {
-      return { args, demoItems };
+      return { args, demoTiles };
     },
     template: `
       <AbyssGrid v-bind="args">
-        <article
-          v-for="item in demoItems"
-          :key="item"
-          class="abyss-grid-story-card"
+        <AbyssTile
+          v-for="tile in demoTiles"
+          :key="tile.id"
+          :title="tile.title"
+          :monospace="tile.monospace"
         >
-          <span class="abyss-grid-story-card__eyebrow">Urządzenie</span>
-          <strong class="abyss-grid-story-card__title">{{ item }}</strong>
-          <span class="abyss-grid-story-card__meta">Gotowe do synchronizacji</span>
-        </article>
+          {{ tile.content }}
+        </AbyssTile>
       </AbyssGrid>
     `,
   }),
   play: async ({ canvasElement }) => {
-    const cards = canvasElement.querySelectorAll('.abyss-grid-story-card');
-    await expect(cards).toHaveLength(4);
+    const tiles = canvasElement.querySelectorAll('.abyss-tile');
+    await expect(tiles).toHaveLength(4);
 
     const grid = canvasElement.querySelector('.abyss-grid');
     await expect(grid).not.toBeNull();
@@ -151,22 +158,25 @@ export const NarrowContainer: Story = {
     },
   },
   render: (args) => ({
-    components: { AbyssGrid },
+    components: { AbyssGrid, AbyssTile },
     setup() {
-      return { args, demoItems: demoItems.slice(0, 3) };
+      const tiles = demoTiles.slice(0, 3).map((tile) => ({
+        ...tile,
+        title: 'Tryb offline',
+        content: `${tile.content} · oczekuje na sieć`,
+      }));
+      return { args, tiles };
     },
     template: `
       <div style="max-width: 320px; width: 100%;">
         <AbyssGrid v-bind="args">
-          <article
-            v-for="item in demoItems"
-            :key="item"
-            class="abyss-grid-story-card"
+          <AbyssTile
+            v-for="tile in tiles"
+            :key="tile.id"
+            :title="tile.title"
           >
-            <span class="abyss-grid-story-card__eyebrow">Tryb offline</span>
-            <strong class="abyss-grid-story-card__title">{{ item }}</strong>
-            <span class="abyss-grid-story-card__meta">Oczekuje na sieć lokalną</span>
-          </article>
+            {{ tile.content }}
+          </AbyssTile>
         </AbyssGrid>
       </div>
     `,
@@ -201,21 +211,24 @@ export const CustomSpacing: Story = {
     },
   },
   render: (args) => ({
-    components: { AbyssGrid },
+    components: { AbyssGrid, AbyssTile },
     setup() {
-      return { args, demoItems };
+      const tiles = demoTiles.map((tile) => ({
+        ...tile,
+        title: 'Custom',
+        content: `${tile.content} · większe odstępy`,
+      }));
+      return { args, tiles };
     },
     template: `
       <AbyssGrid v-bind="args">
-        <article
-          v-for="item in demoItems"
-          :key="item"
-          class="abyss-grid-story-card"
+        <AbyssTile
+          v-for="tile in tiles"
+          :key="tile.id"
+          :title="tile.title"
         >
-          <span class="abyss-grid-story-card__eyebrow">Custom</span>
-          <strong class="abyss-grid-story-card__title">{{ item }}</strong>
-          <span class="abyss-grid-story-card__meta">Większe odstępy i wyższy wiersz</span>
-        </article>
+          {{ tile.content }}
+        </AbyssTile>
       </AbyssGrid>
     `,
   }),
@@ -249,22 +262,25 @@ export const RightAligned: Story = {
     },
   },
   render: (args) => ({
-    components: { AbyssGrid },
+    components: { AbyssGrid, AbyssTile },
     setup() {
-      return { args, demoItems: demoItems.slice(0, 3) };
+      const tiles = demoTiles.slice(0, 3).map((tile) => ({
+        ...tile,
+        title: 'Akcja',
+        content: `${tile.content} · start od prawej`,
+      }));
+      return { args, tiles };
     },
     template: `
       <div style="max-width: 760px; width: 100%;">
         <AbyssGrid v-bind="args">
-          <article
-            v-for="item in demoItems"
-            :key="item"
-            class="abyss-grid-story-card"
+          <AbyssTile
+            v-for="tile in tiles"
+            :key="tile.id"
+            :title="tile.title"
           >
-            <span class="abyss-grid-story-card__eyebrow">Akcja</span>
-            <strong class="abyss-grid-story-card__title">{{ item }}</strong>
-            <span class="abyss-grid-story-card__meta">Start od prawej krawędzi</span>
-          </article>
+            {{ tile.content }}
+          </AbyssTile>
         </AbyssGrid>
       </div>
     `,
@@ -276,9 +292,9 @@ export const RightAligned: Story = {
     const computedStyle = getComputedStyle(grid as HTMLElement);
     await expect(computedStyle.direction).toBe('rtl');
 
-    const firstCard = canvasElement.querySelector('.abyss-grid-story-card');
-    await expect(firstCard).not.toBeNull();
-    await expect(getComputedStyle(firstCard as HTMLElement).direction).toBe(
+    const firstTile = canvasElement.querySelector('.abyss-tile');
+    await expect(firstTile).not.toBeNull();
+    await expect(getComputedStyle(firstTile as HTMLElement).direction).toBe(
       'ltr',
     );
   },
@@ -303,22 +319,25 @@ export const MaxColumns: Story = {
     },
   },
   render: (args) => ({
-    components: { AbyssGrid },
+    components: { AbyssGrid, AbyssTile },
     setup() {
-      return { args, demoItems };
+      const tiles = demoTiles.map((tile) => ({
+        ...tile,
+        title: 'Limit',
+        content: `${tile.content} · max 2 kolumny`,
+      }));
+      return { args, tiles };
     },
     template: `
       <div style="max-width: 960px; width: 100%;">
         <AbyssGrid v-bind="args">
-          <article
-            v-for="item in demoItems"
-            :key="item"
-            class="abyss-grid-story-card"
+          <AbyssTile
+            v-for="tile in tiles"
+            :key="tile.id"
+            :title="tile.title"
           >
-            <span class="abyss-grid-story-card__eyebrow">Limit</span>
-            <strong class="abyss-grid-story-card__title">{{ item }}</strong>
-            <span class="abyss-grid-story-card__meta">Maksymalnie 2 kolumny</span>
-          </article>
+            {{ tile.content }}
+          </AbyssTile>
         </AbyssGrid>
       </div>
     `,
