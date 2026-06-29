@@ -1,10 +1,21 @@
 export {
   useGradient,
-  DEFAULT_GRADIENT_COLORS,
   type GradientState,
   type GradientDirection,
   type UseGradientReturn,
 } from './composables/useGradient';
+export {
+  DEFAULT_GRADIENT_COLORS,
+  THEME_GRADIENT_COLORS,
+  INFO_GRADIENT_COLORS,
+  WARNING_GRADIENT_COLORS,
+  SUCCESS_GRADIENT_COLORS,
+  DANGER_GRADIENT_COLORS,
+  HINT_GRADIENT_COLORS,
+  SEMANTIC_GRADIENT_COLOR_MAP,
+  type GradientColorPair,
+  type SemanticGradientColorKey,
+} from './defines/gradient-colors';
 export {
   useKeyboardState,
   installKeyboardState,

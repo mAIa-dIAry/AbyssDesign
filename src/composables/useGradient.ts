@@ -6,13 +6,10 @@ import {
   readonly,
   ref,
 } from 'vue';
+import { DEFAULT_GRADIENT_COLORS } from '@/defines/gradient-colors';
 import { type CssColor, isCssColor } from '@/types/color';
 
-/** Domyślne kolory gradientu aplikacji */
-export const DEFAULT_GRADIENT_COLORS: CssColor[] = [
-  'hsl(5, 100%, 78%)' as CssColor,
-  'hsl(205, 80%, 44%)' as CssColor,
-];
+export { DEFAULT_GRADIENT_COLORS } from '@/defines/gradient-colors';
 
 /** Kierunek gradientu */
 export type GradientDirection =

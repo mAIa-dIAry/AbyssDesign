@@ -3,7 +3,10 @@ import { expect, fn } from 'storybook/test';
 import { ref } from 'vue';
 import AbyssButton from '@/components/ui/AbyssButton/AbyssButton.vue';
 import { withAbyssBackground } from '@/stories/AbyssBackgroundDecorator';
-import type { GradientColorsInput } from '@/defines/semantic-gradients';
+import {
+  SEMANTIC_GRADIENTS,
+  type GradientColorsInput,
+} from '@/defines/semantic-gradients';
 
 type AbyssButtonStoryArgs = {
   label?: string;
@@ -218,6 +221,42 @@ function sizeVariantsSourceCode(options: SizeVariantConfig): string {
       '/>',
     ].join('\n');
   }).join('\n\n');
+}
+
+type GradientColorOption = {
+  id: string;
+  label: string;
+  gradientColors: GradientColorsInput;
+};
+
+const CUSTOM_GRADIENT_COLORS = ['#FF7194', '#028096'] as const;
+
+const GRADIENT_COLOR_OPTIONS: GradientColorOption[] = [
+  ...SEMANTIC_GRADIENTS.map((gradient) => ({
+    id: gradient.key,
+    label: gradient.label,
+    gradientColors: gradient.key,
+  })),
+  {
+    id: 'custom',
+    label: 'Własne kolory',
+    gradientColors: [...CUSTOM_GRADIENT_COLORS],
+  },
+];
+
+function gradientColorOptionSourceCode(option: GradientColorOption): string {
+  return [
+    '<AbyssButton',
+    `  label="${option.label}"`,
+    '  size="big"',
+    '  gradient',
+    `  ${formatVueProp('gradientColors', option.gradientColors)}`,
+    '/>',
+  ].join('\n');
+}
+
+function gradientColorOptionsSourceCode(): string {
+  return GRADIENT_COLOR_OPTIONS.map(gradientColorOptionSourceCode).join('\n\n');
 }
 
 function renderSizeVariants(options: {
@@ -805,6 +844,56 @@ export const Gradient: Story = {
     for (const button of buttons) {
       await expect(button).toHaveClass('gradient');
     }
+  },
+};
+
+export const SemanticGradientColors: Story = {
+  name: 'Opcje gradientColors',
+  parameters: {
+    docs: {
+      description: {
+        story: `Wszystkie warianty prop \`gradientColors\`: semantyczne klucze (\`${SEMANTIC_GRADIENTS.map((g) => g.key).join('`, `')}\`, w tym \`theme\` jako gradient ze store) oraz własna tablica kolorów CSS.`,
+      },
+      source: {
+        code: gradientColorOptionsSourceCode(),
+      },
+    },
+  },
+  render: () => ({
+    components: { AbyssButton },
+    setup() {
+      return {
+        options: GRADIENT_COLOR_OPTIONS,
+        layoutStyle: sizesLayoutStyle,
+      };
+    },
+    template: `
+      <div :style="layoutStyle">
+        <AbyssButton
+          v-for="option in options"
+          :key="option.id"
+          :label="option.label"
+          size="big"
+          gradient
+          :gradient-colors="option.gradientColors"
+          :data-testid="'gradient-colors-' + option.id"
+        />
+      </div>
+    `,
+  }),
+  play: async ({ canvas }) => {
+    const buttons = canvas.getAllByRole('button');
+
+    await expect(buttons).toHaveLength(GRADIENT_COLOR_OPTIONS.length);
+
+    for (const button of buttons) {
+      await expect(button).toHaveClass('gradient');
+      await expect(button).toHaveClass('size-big');
+    }
+
+    await expect(canvas.getByTestId('gradient-colors-theme')).toBeInTheDocument();
+    await expect(canvas.getByTestId('gradient-colors-info')).toBeInTheDocument();
+    await expect(canvas.getByTestId('gradient-colors-custom')).toBeInTheDocument();
   },
 };
 

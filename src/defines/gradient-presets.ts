@@ -1,9 +1,10 @@
+import { THEME_GRADIENT_COLORS } from '@/defines/gradient-colors';
 import { type CssColor, type GradientPreset } from '@/types/color';
 
 export const GRADIENT_PRESETS: GradientPreset[] = [
   {
     label: 'Default',
-    colors: ['hsl(5, 100%, 78%)' as CssColor, 'hsl(205, 80%, 44%)' as CssColor],
+    colors: [...THEME_GRADIENT_COLORS],
   },
   {
     label: 'Gold',

@@ -29,7 +29,7 @@ const semanticGradientsStoryDocs = `Stałe gradienty semantyczne z \`SEMANTIC_GR
 
 ${buildSemanticGradientsTable()}
 
-Definicje: \`SEMANTIC_GRADIENTS\` w \`@/defines/semantic-gradients\`. Gradient renderowany pod kątem \`135deg\` (domyślnie przez \`useGradient\`).
+Definicje kolorów: \`gradient-colors.ts\` w \`@/defines/gradient-colors\`. Metadane semantyczne: \`SEMANTIC_GRADIENTS\` w \`@/defines/semantic-gradients\`. Gradient renderowany pod kątem \`135deg\` (domyślnie przez \`useGradient\`).
 
 \`AbyssBackground\` i \`AbyssButton\` akceptują nazwę semantycznego gradientu jako string (np. \`colors="info"\`, \`gradient-colors="danger"\`) zamiast tablicy kolorów.`;
 
