@@ -3,10 +3,30 @@ import { expect } from 'storybook/test';
 import { ref } from 'vue';
 import { DEFAULT_GRADIENT_COLORS } from '@/composables/useGradient';
 import AbyssBackground from '@/components/ui/AbyssBackground/AbyssBackground.vue';
+import AbyssButton from '@/components/ui/AbyssButton/AbyssButton.vue';
+import AbyssButtonGroup from '@/components/ui/AbyssButtonGroup/AbyssButtonGroup.vue';
 import AbyssCard from '@/components/ui/AbyssCard/AbyssCard.vue';
 import AbyssGradientBox from '@/components/ui/AbyssGradientBox/AbyssGradientBox.vue';
 import AbyssGrid from '@/components/ui/AbyssGrid/AbyssGrid.vue';
 import { GRADIENT_PRESETS } from '@/defines/gradient-presets';
+import { SEMANTIC_GRADIENTS } from '@/defines/semantic-gradients';
+
+function buildSemanticGradientsTable(): string {
+  const rows = SEMANTIC_GRADIENTS.map(
+    ({ key, colors, description }) =>
+      `| \`${key}\` | \`${colors[0]}\` → \`${colors[1]}\` | ${description} |`,
+  ).join('\n');
+
+  return `| Klucz | Kolory | Opis |
+|---|---|---|
+${rows}`;
+}
+
+const semanticGradientsStoryDocs = `Stałe gradienty semantyczne z \`SEMANTIC_GRADIENTS\`:
+
+${buildSemanticGradientsTable()}
+
+Definicje: \`SEMANTIC_GRADIENTS\` w \`@/defines/semantic-gradients\`. Gradient renderowany pod kątem \`135deg\` (domyślnie przez \`useGradient\`).`;
 
 const meta = {
   title: 'UI/AbyssBackground',
@@ -55,6 +75,9 @@ const PRESET_GRID_STYLE = {
   inlineSize: PRESET_GRID_WIDTH,
   maxWidth: '100%',
 };
+
+const centeredWrapperStyle =
+  'box-sizing: border-box; display: flex; align-items: center; justify-content: center; width: 100%; height: 100%; padding: 24px;';
 
 export const Default: Story = {
   name: 'Domyślny gradient',
@@ -174,5 +197,67 @@ export const ColorsWatch: Story = {
     await expect(
       bg?.querySelector('.abyss-background__layer--fading'),
     ).toBeInTheDocument();
+  },
+};
+
+export const SemanticGradients: Story = {
+  name: 'Gradienty stałe (semantyczne)',
+  parameters: {
+    docs: {
+      description: {
+        story: semanticGradientsStoryDocs,
+      },
+    },
+  },
+  args: {
+    colors: [...SEMANTIC_GRADIENTS.find((g) => g.key === 'theme')!.colors],
+  },
+  render: (args) => ({
+    components: {
+      AbyssBackground,
+      AbyssCard,
+      AbyssButtonGroup,
+      AbyssButton,
+    },
+    setup() {
+      return {
+        colors: args.colors,
+        semanticGradients: SEMANTIC_GRADIENTS,
+      };
+    },
+    template: `
+      <AbyssBackground :colors="colors">
+        <div style="${centeredWrapperStyle}">
+          <AbyssCard style="width: auto; max-width: 100%;">
+            <template #content>
+              <AbyssButtonGroup>
+                <AbyssButton
+                  v-for="gradient in semanticGradients"
+                  :key="gradient.key"
+                  :label="gradient.label"
+                  size="big"
+                  gradient
+                  :gradient-colors="gradient.colors"
+                  :data-testid="'semantic-gradient-' + gradient.key"
+                />
+              </AbyssButtonGroup>
+            </template>
+          </AbyssCard>
+        </div>
+      </AbyssBackground>
+    `,
+  }),
+  play: async ({ canvasElement }) => {
+    const buttons = canvasElement.querySelectorAll('.abyss-button.gradient');
+
+    await expect(buttons).toHaveLength(SEMANTIC_GRADIENTS.length);
+
+    for (const gradient of SEMANTIC_GRADIENTS) {
+      const button = canvasElement.querySelector(
+        `[data-testid="semantic-gradient-${gradient.key}"]`,
+      );
+      await expect(button).toBeInTheDocument();
+      await expect(button).toHaveClass('size-big');
+    }
   },
 };
