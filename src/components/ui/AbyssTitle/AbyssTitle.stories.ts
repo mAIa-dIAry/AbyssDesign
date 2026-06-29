@@ -2,6 +2,7 @@ import type { Meta, StoryObj } from '@storybook/vue3';
 import { expect } from 'storybook/test';
 import { ref } from 'vue';
 import AbyssTitle from '@/components/ui/AbyssTitle/AbyssTitle.vue';
+import AbyssButton from '@/components/ui/AbyssButton/AbyssButton.vue';
 import { withAbyssBackground } from '@/stories/AbyssBackgroundDecorator';
 
 const meta: Meta<typeof AbyssTitle> = {
@@ -227,7 +228,7 @@ export const ColorsWatch: Story = {
     },
   },
   render: () => ({
-    components: { AbyssTitle },
+    components: { AbyssTitle, AbyssButton },
     setup() {
       const colors = ref(['hsl(345, 100%, 72%)', 'hsl(188, 98%, 30%)']);
       function changeColors() {
@@ -236,19 +237,16 @@ export const ColorsWatch: Story = {
       return { colors, changeColors };
     },
     template: `
-      <div style="display:flex;flex-direction:column;gap:8px;">
-        <button data-testid="change-colors" @click="changeColors">Zmień kolory</button>
+      <div style="display:flex;flex-direction:column;align-items:flex-start;gap:8px;">
+        <AbyssButton label="Zmień kolory" size="small" @click="changeColors" />
         <AbyssTitle :colors="colors" label="Tytuł z gradientem" />
       </div>
     `,
   }),
-  play: async ({ canvasElement, userEvent }) => {
+  play: async ({ canvas, canvasElement, userEvent }) => {
     const title = canvasElement.querySelector('.abyss-title') as HTMLElement;
     const styleBefore = title.getAttribute('style');
-    const btn = canvasElement.querySelector(
-      '[data-testid="change-colors"]',
-    ) as HTMLElement;
-    await userEvent.click(btn);
+    await userEvent.click(canvas.getByRole('button', { name: /zmień kolory/i }));
     await new Promise((r) => setTimeout(r, 50));
     const styleAfter = title.getAttribute('style');
     await expect(styleAfter).not.toBe(styleBefore);

@@ -2,6 +2,7 @@ import type { Meta, StoryObj } from '@storybook/vue3';
 import { expect } from 'storybook/test';
 import { ref } from 'vue';
 import AbyssGradientBox from '@/components/ui/AbyssGradientBox/AbyssGradientBox.vue';
+import AbyssButton from '@/components/ui/AbyssButton/AbyssButton.vue';
 import { withAbyssBackground } from '@/stories/AbyssBackgroundDecorator';
 import { GRADIENT_PRESETS } from 'src/defines/gradient-presets';
 
@@ -139,7 +140,7 @@ export const ColorsWatch: Story = {
     },
   },
   render: () => ({
-    components: { AbyssGradientBox },
+    components: { AbyssGradientBox, AbyssButton },
     setup() {
       const colors = ref<string[]>([
         'hsl(345, 100%, 72%)',
@@ -151,21 +152,18 @@ export const ColorsWatch: Story = {
       return { colors, changeColors };
     },
     template: `
-      <div style="display:flex;flex-direction:column;gap:8px;">
-        <button data-testid="change-colors" @click="changeColors">Zmień kolory</button>
+      <div style="display:flex;flex-direction:column;align-items:flex-start;gap:8px;">
+        <AbyssButton label="Zmień kolory" size="small" @click="changeColors" />
         <AbyssGradientBox :colors="colors" />
       </div>
     `,
   }),
-  play: async ({ canvasElement, userEvent }) => {
+  play: async ({ canvas, canvasElement, userEvent }) => {
     const box = canvasElement.querySelector(
       '.abyss-gradient-box',
     ) as HTMLElement;
     const styleBefore = box.getAttribute('style');
-    const btn = canvasElement.querySelector(
-      '[data-testid="change-colors"]',
-    ) as HTMLElement;
-    await userEvent.click(btn);
+    await userEvent.click(canvas.getByRole('button', { name: /zmień kolory/i }));
     await new Promise((r) => setTimeout(r, 50));
     const styleAfter = box.getAttribute('style');
     await expect(styleAfter).not.toBe(styleBefore);

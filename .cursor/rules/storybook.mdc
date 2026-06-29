@@ -1,0 +1,32 @@
+---
+description: Pliki stories komponentow Abyss Design
+globs: src/**/*.stories.ts
+alwaysApply: false
+---
+
+# Wytyczne: Storybook (Abyss Design)
+
+## Przyciski w stories
+
+- Używaj wyłącznie `AbyssButton` — nigdy natywnego `<button>`.
+- W układach `flex-direction: column` ustaw `align-items: flex-start` na kontenerze (lub `align-self: flex-start` na przycisku). Domyślne `align-items: stretch` rozciąga helper/trigger na całą szerokość kontenera.
+- Pełna szerokość przycisku tylko przez jawny prop `full-width` — nie przez layout flex.
+
+```html
+<!-- Dobrze -->
+<div style="display: flex; flex-direction: column; align-items: flex-start; gap: 8px;">
+  <AbyssButton label="Zmień kolory" size="small" @click="changeColors" />
+  <AbyssGradientBox :colors="colors" />
+</div>
+
+<!-- Źle — przycisk rozciąga się na całą szerokość -->
+<div style="display: flex; flex-direction: column; gap: 8px;">
+  <AbyssButton label="Zmień kolory" size="small" @click="changeColors" />
+</div>
+```
+
+## Pozostałe zasady
+
+- Prezentuj komponenty UI na tle `withAbyssBackground`.
+- W `play()` używaj `canvas.getByRole()` zamiast `querySelector`.
+- Importuj `expect` z `storybook/test`, nie z Vitest.

@@ -2,6 +2,7 @@ import type { Meta, StoryObj } from '@storybook/vue3';
 import { ref } from 'vue';
 import AbyssTimeline from '@/components/ui/AbyssTimeline/AbyssTimeline.vue';
 import AbyssTimelineItem from '@/components/ui/AbyssTimelineItem/AbyssTimelineItem.vue';
+import AbyssButton from '@/components/ui/AbyssButton/AbyssButton.vue';
 import { withAbyssBackground } from '@/stories/AbyssBackgroundDecorator';
 import { expect } from 'storybook/test';
 
@@ -370,22 +371,22 @@ export const Unmount: Story = {
     },
   },
   render: () => ({
-    components: { AbyssTimeline, AbyssTimelineItem },
+    components: { AbyssTimeline, AbyssTimelineItem, AbyssButton },
     setup() {
       const visible = ref(true);
       const d1 = new Date(2024, 2, 29, 21, 32);
       return { visible, d1 };
     },
     template: `
-      <div style="width: 360px; display: flex; flex-direction: column; gap: 8px;">
-        <button @click="visible = false" data-testid="unmount-btn">Odmontuj</button>
+      <div style="width: 360px; display: flex; flex-direction: column; align-items: flex-start; gap: 8px;">
+        <AbyssButton label="Odmontuj" size="small" @click="visible = false" />
         <AbyssTimeline v-if="visible" :auto-hide-delay="99999">
           <AbyssTimelineItem variant="datetime" :datetime="d1">Test</AbyssTimelineItem>
         </AbyssTimeline>
       </div>
     `,
   }),
-  play: async ({ canvasElement, userEvent }) => {
+  play: async ({ canvas, canvasElement, userEvent }) => {
     await new Promise((r) => setTimeout(r, 50));
     const el = canvasElement.querySelector('.abyss-timeline') as HTMLElement;
     const inner = canvasElement.querySelector(
@@ -427,10 +428,7 @@ export const Unmount: Story = {
     await expect(inner.style.transform).toBe('translateX(0px)');
 
     // Odmontuj komponent: onUnmounted → resizeObserver.disconnect() + clearTimeout(snapBackTimer)
-    const btn = canvasElement.querySelector(
-      '[data-testid="unmount-btn"]',
-    ) as HTMLElement;
-    await userEvent.click(btn);
+    await userEvent.click(canvas.getByRole('button', { name: /odmontuj/i }));
     await new Promise((r) => setTimeout(r, 50));
     await expect(canvasElement.querySelector('.abyss-timeline')).toBeNull();
   },
