@@ -31,77 +31,76 @@ const meta: Meta<typeof AbyssButtonGroup> = {
 export default meta;
 type Story = StoryObj<typeof AbyssButtonGroup>;
 
-export const Default: Story = {
-  name: 'Domyślna grupa',
+const BUTTON_SIZES = ['small', 'medium', 'big'] as const;
+
+const sizesLayoutStyle =
+  'display: flex; flex-direction: column; gap: 12px; align-items: flex-start;';
+
+const GRADIENT_COLORS = ['#FF7194', '#028096'];
+
+export const TextOnly: Story = {
+  name: 'Sam tekst',
   parameters: {
     docs: {
       description: {
         story:
-          'Podstawowa grupa przycisków z 2px odstępem, w której tylko wewnętrzne narożniki są prostowane.',
+          'Grupa przycisków z samym tekstem we wszystkich rozmiarach — wewnętrzne narożniki są prostowane.',
       },
       source: {
         code: `<AbyssButtonGroup>
-  <AbyssButton label="Pierwszy" />
-  <AbyssButton label="Drugi" />
-  <AbyssButton label="Trzeci" />
+  <AbyssButton label="Pierwszy" size="big" />
+  <AbyssButton label="Drugi" size="big" />
+  <AbyssButton label="Trzeci" size="big" />
 </AbyssButtonGroup>`,
       },
     },
   },
   render: () => ({
     components: { AbyssButtonGroup, AbyssButton },
+    setup() {
+      return { sizes: BUTTON_SIZES };
+    },
     template: `
-      <AbyssButtonGroup>
-        <AbyssButton label="Pierwszy" />
-        <AbyssButton label="Drugi" />
-        <AbyssButton label="Trzeci" />
-      </AbyssButtonGroup>
+      <div style="${sizesLayoutStyle}">
+        <div v-for="size in sizes" :key="size">
+          <div style="margin-bottom: 8px; font-size: 12px; color: rgba(255,255,255,0.6);">
+            {{ 'Grupa ' + size }}
+          </div>
+          <AbyssButtonGroup>
+            <AbyssButton label="Pierwszy" :size="size" />
+            <AbyssButton label="Drugi" :size="size" />
+            <AbyssButton label="Trzeci" :size="size" />
+          </AbyssButtonGroup>
+        </div>
+      </div>
     `,
   }),
   play: async ({ canvas }) => {
     const buttons = canvas.getAllByRole('button');
-    await expect(buttons).toHaveLength(3);
 
-    const [firstButton, middleButton, lastButton] = buttons;
-    for (const button of buttons) {
-      await expect(button).toBeVisible();
-      await expect(button).toBeEnabled();
+    await expect(buttons).toHaveLength(9);
+
+    const groups = BUTTON_SIZES.map((size) =>
+      buttons.filter((button) => button.classList.contains(`size-${size}`)),
+    );
+
+    for (const groupButtons of groups) {
+      await expect(groupButtons).toHaveLength(3);
+      for (const button of groupButtons) {
+        await expect(button).toBeVisible();
+        await expect(button).toBeEnabled();
+      }
     }
 
+    const [firstButton, middleButton, lastButton] = groups[2]!;
     const firstStyle = getComputedStyle(firstButton!);
     const middleStyle = getComputedStyle(middleButton!);
     const lastStyle = getComputedStyle(lastButton!);
 
-    await expect(firstStyle.borderRadius).toBe('8px 2px 2px 8px');
-    await expect(middleStyle.borderRadius).toBe('2px');
-    await expect(lastStyle.borderRadius).toBe('2px 8px 8px 2px');
+    await expect(firstStyle.borderRadius).toBe('8px 4px 4px 8px');
+    await expect(middleStyle.borderRadius).toBe('4px');
+    await expect(lastStyle.borderRadius).toBe('4px 8px 8px 4px');
   },
-};
-
-export const WithIcons: Story = {
-  name: 'Z ikonami',
-  parameters: {
-    docs: {
-      description: {
-        story: 'Grupa przycisków z ikonami.',
-      },
-      source: {
-        code: `<AbyssButtonGroup>
-  <AbyssButton label="Wstecz" icon="sym_r_arrow_back" />
-  <AbyssButton label="Dalej" icon-right="sym_r_arrow_forward" />
-</AbyssButtonGroup>`,
-      },
-    },
-  },
-  render: () => ({
-    components: { AbyssButtonGroup, AbyssButton },
-    template: `
-      <AbyssButtonGroup>
-        <AbyssButton label="Wstecz" icon="sym_r_arrow_back" />
-        <AbyssButton label="Dalej" icon-right="sym_r_arrow_forward" />
-      </AbyssButtonGroup>
-    `,
-  }),
 };
 
 export const IconOnly: Story = {
@@ -109,160 +108,109 @@ export const IconOnly: Story = {
   parameters: {
     docs: {
       description: {
-        story: 'Grupa przycisków zawierających tylko ikony.',
+        story: 'Grupa przycisków z samymi ikonami we wszystkich rozmiarach.',
       },
       source: {
         code: `<AbyssButtonGroup>
-  <AbyssButton icon="sym_r_format_bold" />
-  <AbyssButton icon="sym_r_format_italic" />
-  <AbyssButton icon="sym_r_format_underlined" />
-  <AbyssButton icon="sym_r_format_strikethrough" />
+  <AbyssButton icon="sym_r_format_bold" size="big" />
+  <AbyssButton icon="sym_r_format_italic" size="big" />
+  <AbyssButton icon="sym_r_format_underlined" size="big" />
+  <AbyssButton icon="sym_r_format_strikethrough" size="big" />
 </AbyssButtonGroup>`,
       },
     },
   },
   render: () => ({
     components: { AbyssButtonGroup, AbyssButton },
+    setup() {
+      return { sizes: BUTTON_SIZES };
+    },
     template: `
-      <AbyssButtonGroup>
-        <AbyssButton icon="sym_r_format_bold" />
-        <AbyssButton icon="sym_r_format_italic" />
-        <AbyssButton icon="sym_r_format_underlined" />
-        <AbyssButton icon="sym_r_format_strikethrough" />
-      </AbyssButtonGroup>
+      <div style="${sizesLayoutStyle}">
+        <div v-for="size in sizes" :key="size">
+          <div style="margin-bottom: 8px; font-size: 12px; color: rgba(255,255,255,0.6);">
+            {{ 'Grupa ' + size }}
+          </div>
+          <AbyssButtonGroup>
+            <AbyssButton icon="sym_r_format_bold" :size="size" />
+            <AbyssButton icon="sym_r_format_italic" :size="size" />
+            <AbyssButton icon="sym_r_format_underlined" :size="size" />
+            <AbyssButton icon="sym_r_format_strikethrough" :size="size" />
+          </AbyssButtonGroup>
+        </div>
+      </div>
     `,
   }),
   play: async ({ canvas }) => {
     const buttons = canvas.getAllByRole('button');
+
+    await expect(buttons).toHaveLength(12);
     for (const button of buttons) {
       await expect(button).toHaveClass('icon-only');
     }
   },
 };
 
-export const ManyButtons: Story = {
-  name: 'Wiele przycisków',
-  parameters: {
-    docs: {
-      description: {
-        story: 'Grupa z większą liczbą przycisków.',
-      },
-      source: {
-        code: `<AbyssButtonGroup>
-  <AbyssButton label="1" />
-  <AbyssButton label="2" />
-  <AbyssButton label="3" />
-  <AbyssButton label="4" />
-  <AbyssButton label="5" />
-  <AbyssButton label="6" />
-</AbyssButtonGroup>`,
-      },
-    },
-  },
-  render: () => ({
-    components: { AbyssButtonGroup, AbyssButton },
-    template: `
-      <AbyssButtonGroup>
-        <AbyssButton label="1" />
-        <AbyssButton label="2" />
-        <AbyssButton label="3" />
-        <AbyssButton label="4" />
-        <AbyssButton label="5" />
-        <AbyssButton label="6" />
-      </AbyssButtonGroup>
-    `,
-  }),
-};
-
-export const WithDisabled: Story = {
-  name: 'Z nieaktywnym przyciskiem',
-  parameters: {
-    docs: {
-      description: {
-        story: 'Grupa przycisków z jednym nieaktywnym przyciskiem.',
-      },
-      source: {
-        code: `<AbyssButtonGroup>
-  <AbyssButton label="Aktywny" />
-  <AbyssButton label="Nieaktywny" :disable="true" />
-  <AbyssButton label="Aktywny" />
-</AbyssButtonGroup>`,
-      },
-    },
-  },
-  render: () => ({
-    components: { AbyssButtonGroup, AbyssButton },
-    template: `
-      <AbyssButtonGroup>
-        <AbyssButton label="Aktywny" />
-        <AbyssButton label="Nieaktywny" :disable="true" />
-        <AbyssButton label="Aktywny" />
-      </AbyssButtonGroup>
-    `,
-  }),
-  play: async ({ canvas }) => {
-    const buttons = canvas.getAllByRole('button');
-    await expect(buttons[0]).toBeEnabled();
-    await expect(buttons[1]).toBeDisabled();
-    await expect(buttons[2]).toBeEnabled();
-  },
-};
-
-export const SmallSize: Story = {
-  name: 'Mały rozmiar',
-  parameters: {
-    docs: {
-      description: {
-        story: 'Grupa przycisków w małym rozmiarze.',
-      },
-      source: {
-        code: `<AbyssButtonGroup>
-  <AbyssButton label="Mały 1" size="small" />
-  <AbyssButton label="Mały 2" size="small" />
-  <AbyssButton label="Mały 3" size="small" />
-</AbyssButtonGroup>`,
-      },
-    },
-  },
-  render: () => ({
-    components: { AbyssButtonGroup, AbyssButton },
-    template: `
-      <AbyssButtonGroup>
-        <AbyssButton label="Mały 1" size="small" />
-        <AbyssButton label="Mały 2" size="small" />
-        <AbyssButton label="Mały 3" size="small" />
-      </AbyssButtonGroup>
-    `,
-  }),
-  play: async ({ canvas }) => {
-    const buttons = canvas.getAllByRole('button');
-    for (const button of buttons) {
-      await expect(button).toHaveClass('size-small');
-    }
-  },
-};
-
-export const SingleButton: Story = {
-  name: 'Pojedynczy przycisk',
+export const MixedStates: Story = {
+  name: 'Zróżnicowane stany',
   parameters: {
     docs: {
       description: {
         story:
-          'Grupa z jednym przyciskiem - zachowuje oryginalne zaokrąglenie narożników.',
+          'Grupa z trzema wariantami we wszystkich rozmiarach: zwykły, nieaktywny i gradient.',
       },
       source: {
         code: `<AbyssButtonGroup>
-  <AbyssButton label="Pojedynczy" />
+  <AbyssButton label="Aktywny" size="big" />
+  <AbyssButton label="Nieaktywny" size="big" :disable="true" />
+  <AbyssButton
+    label="Gradient"
+    size="big"
+    gradient
+    icon-right="sym_r_note_stack_add"
+    :gradient-colors="['#FF7194', '#028096']"
+  />
 </AbyssButtonGroup>`,
       },
     },
   },
   render: () => ({
     components: { AbyssButtonGroup, AbyssButton },
+    setup() {
+      return { sizes: BUTTON_SIZES, gradientColors: GRADIENT_COLORS };
+    },
     template: `
-      <AbyssButtonGroup>
-        <AbyssButton label="Pojedynczy" />
-      </AbyssButtonGroup>
+      <div style="${sizesLayoutStyle}">
+        <div v-for="size in sizes" :key="size">
+          <div style="margin-bottom: 8px; font-size: 12px; color: rgba(255,255,255,0.6);">
+            {{ 'Grupa ' + size }}
+          </div>
+          <AbyssButtonGroup>
+            <AbyssButton label="Aktywny" :size="size" />
+            <AbyssButton label="Nieaktywny" :size="size" disable />
+            <AbyssButton
+              label="Gradient"
+              :size="size"
+              gradient
+              icon-right="sym_r_note_stack_add"
+              :gradient-colors="gradientColors"
+            />
+          </AbyssButtonGroup>
+        </div>
+      </div>
     `,
   }),
+  play: async ({ canvas }) => {
+    const buttons = canvas.getAllByRole('button');
+
+    await expect(buttons).toHaveLength(9);
+
+    for (let index = 0; index < 3; index += 1) {
+      const groupStart = index * 3;
+      await expect(buttons[groupStart]).toBeEnabled();
+      await expect(buttons[groupStart + 1]).toBeDisabled();
+      await expect(buttons[groupStart + 2]).toBeEnabled();
+      await expect(buttons[groupStart + 2]).toHaveClass('gradient');
+    }
+  },
 };
