@@ -17,20 +17,22 @@ const meta: Meta<typeof AbyssInfo> = {
       description: {
         component:
           'Komponent informacyjny AbyssInfo służy do wyświetlania komunikatów kontekstowych: ' +
-          'informacji, ostrzeżeń, błędów, potwierdzeń i wiadomości neutralnych. ' +
-          'Posiada **wymagany** tytuł, opcjonalną ikonę oraz domyślny slot na treść.\n\n' +
-          '> Jeśli sekcja nie ma własnego `title`, nie używaj `AbyssInfo` jako samego ozdobnego wrappera. ' +
-          'Dla zwykłych opisów i hintów używaj zwykłego tekstu zamiast calloutu.\n\n' +
+          'informacji, ostrzeżeń, błędów, potwierdzeń i hintów. ' +
+          'Posiada **wymaganą** ikonę, **wymaganą** treść w domyślnym slocie oraz opcjonalny tytuł. ' +
+          'Tło używa semantycznego gradientu (`info`, `warning`, `danger`, `success`, `hint`); ' +
+          'lewa kolumna z ikoną pokazuje gradient bez overlay, prawy panel ma półprzezroczysty overlay z białym tytułem i treścią.\n\n' +
+          '> Użycie bez ikony lub bez treści w slocie jest niedozwolone. ' +
+          'Jeśli komunikat nie wymaga calloutu z ikoną, używaj zwykłego tekstu zamiast `AbyssInfo`.\n\n' +
           '### Zalecane ikony i etykiety\n\n' +
           '> Ikony poniżej należą do zestawu Material Symbols, ale **nie posiadają wariantu `sym_r_`** — ' +
           'należy używać ich bez prefixu.\n\n' +
-          '| `type`    | `icon`         | Zalecana etykieta (`title`)        |\n' +
+          '| `type`    | `icon`         | Opcjonalna etykieta (`title`)      |\n' +
           '|-----------|----------------|------------------------------------|\n' +
           "| `info`    | `info`         | `t('common.labels.info')`          |\n" +
           "| `warning` | `warning`      | `t('common.labels.warning')`       |\n" +
           "| `danger`  | `error`        | `t('common.labels.error')`         |\n" +
           "| `success` | `check_circle` | `t('common.labels.success')`       |\n" +
-          "| `neutral` | *(opcjonalnie)*| `t('common.labels.info')`          |\n\n" +
+          "| `hint`    | `lightbulb`    | *(opcjonalnie)*                    |\n\n" +
           '```html\n' +
           '<AbyssInfo type="info"    icon="info"         :title="t(\'common.labels.info\')">\n' +
           '<AbyssInfo type="warning" icon="warning"      :title="t(\'common.labels.warning\')">\n' +
@@ -43,28 +45,27 @@ const meta: Meta<typeof AbyssInfo> = {
   argTypes: {
     type: {
       control: 'select',
-      options: ['info', 'warning', 'danger', 'success', 'neutral'],
-      description: 'Typ komunikatu determinujący kolor akcentu',
+      options: ['info', 'warning', 'danger', 'success', 'hint'],
+      description: 'Typ komunikatu determinujący semantyczny gradient tła',
       table: {
         defaultValue: { summary: 'info' },
         type: {
-          summary: "'info' | 'warning' | 'danger' | 'success' | 'neutral'",
+          summary: "'info' | 'warning' | 'danger' | 'success' | 'hint'",
         },
       },
     },
     title: {
       control: 'text',
       description:
-        'Wymagany tytuł wyświetlany pogrubioną czcionką w kolorze akcentu',
+        'Opcjonalny tytuł wyświetlany pogrubioną białą czcionką w panelu z overlay',
       table: {
-        type: { summary: 'string' },
+        type: { summary: 'string | undefined' },
       },
     },
     icon: {
       control: 'text',
-      description: 'Nazwa ikony Material Symbols Rounded (np. info)',
+      description: 'Wymagana nazwa ikony Material Symbols Rounded (np. info)',
       table: {
-        defaultValue: { summary: 'undefined' },
         type: { summary: 'string' },
       },
     },
@@ -131,8 +132,8 @@ export const AllTypes: Story = {
         <AbyssInfo type="danger" title="Błąd" icon="error">
           Wystąpił błąd — operacja nie powiodła się.
         </AbyssInfo>
-        <AbyssInfo type="neutral" title="Notatka">
-          Dodatkowa informacja bez kontekstu ważności.
+        <AbyssInfo type="hint" title="Hint" icon="lightbulb">
+          Dodatkowa informacja lub wskazówka bez kontekstu ważności.
         </AbyssInfo>
       </div>
     `,
@@ -159,7 +160,7 @@ export const AllTypes: Story = {
   <!-- treść -->
 </AbyssInfo>
 
-<AbyssInfo type="neutral" title="Notatka">
+<AbyssInfo type="hint" title="Hint" icon="lightbulb">
   <!-- treść -->
 </AbyssInfo>`,
       },
@@ -174,32 +175,39 @@ export const AllTypes: Story = {
   },
 };
 
-export const TitleOnly: Story = {
-  name: 'Tylko tytuł',
+export const WithoutTitle: Story = {
+  name: 'Bez tytułu',
   args: {
-    type: 'warning',
-    title: 'Brak treści — tylko tytuł',
+    type: 'hint',
+    icon: 'lightbulb',
   },
   render: (args) => ({
     components: { AbyssInfo },
     setup() {
       return { args };
     },
-    template: `<AbyssInfo v-bind="args" />`,
+    template: `
+      <AbyssInfo v-bind="args">
+        Krótki komunikat bez osobnego tytułu — treść w slocie wystarczy.
+      </AbyssInfo>
+    `,
   }),
   parameters: {
     docs: {
       description: {
-        story: 'Komponent bez slotu — wyświetla wyłącznie tytuł i ikonę.',
+        story:
+          'Tytuł jest opcjonalny. Wymagane pozostają ikona i treść w domyślnym slocie.',
       },
       source: {
-        code: `<AbyssInfo type="warning" title="Brak treści — tylko tytuł" />`,
+        code: `<AbyssInfo type="hint" icon="lightbulb">
+  Krótki komunikat bez osobnego tytułu.
+</AbyssInfo>`,
       },
     },
   },
   play: async ({ canvas }) => {
-    const title = canvas.getByText('Brak treści — tylko tytuł');
-    await expect(title).toBeVisible();
+    const content = canvas.getByText(/Krótki komunikat/);
+    await expect(content).toBeVisible();
   },
 };
 
