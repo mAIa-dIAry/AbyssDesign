@@ -1,9 +1,10 @@
 import type { Meta, StoryObj } from '@storybook/vue3';
-import { ref, watch } from 'vue';
-import { expect, fn, waitFor, within } from 'storybook/test';
+import { ref } from 'vue';
+import { expect, fn, waitFor } from 'storybook/test';
 import AbyssButton from '@/components/ui/AbyssButton/AbyssButton.vue';
+import AbyssButtonGroup from '@/components/ui/AbyssButtonGroup/AbyssButtonGroup.vue';
 import AbyssDialog from '@/components/ui/AbyssDialog/AbyssDialog.vue';
-import { withAbyssBackground } from '@/stories/AbyssBackgroundDecorator';
+import { withAbyssBackgroundDialogScope } from '@/stories/StoryDialogScopeDecorator';
 
 type AbyssDialogStoryAction = {
   id: string;
@@ -21,6 +22,7 @@ type AbyssDialogStoryAction = {
   loading?: boolean;
   percentage?: number;
   embedded?: boolean;
+  flat?: boolean;
   toggled?: boolean;
   gradient?: boolean;
   gradientColors?: string[];
@@ -48,13 +50,15 @@ const baseActions: AbyssDialogStoryAction[] = [
   {
     id: 'cancel',
     label: 'Anuluj',
-    embedded: true,
+    flat: true,
+    size: 'medium',
   },
   {
     id: 'confirm',
     label: 'Usuń',
     icon: 'sym_r_delete',
-    gradient: true,
+    flat: true,
+    size: 'medium',
   },
 ];
 
@@ -62,12 +66,14 @@ const meta: Meta<AbyssDialogStoryArgs> = {
   title: 'UI/AbyssDialog',
   component: AbyssDialog,
   tags: ['autodocs'],
-  decorators: [withAbyssBackground],
+  decorators: [withAbyssBackgroundDialogScope],
   parameters: {
     docs: {
       description: {
         component:
-          'Minimalny dialog Abyss oparty o q-dialog. Renderuje nagłówek sterowany propsami, opcjonalne przewijane body z domyślnego slotu oraz stopkę z listą akcji renderowanych jako grupa AbyssButton.',
+          'Dialog Abyss oparty o q-dialog. Nagłówek i stopka używają tej samej konwencji slotów co AbyssCard: ' +
+          'header-prepend, header, header-append oraz footer-prepend, footer, footer-append. ' +
+          'Props title, icon, closeButton i actions pozostają wspierane jako domyślna zawartość slotów.',
       },
     },
   },
@@ -98,7 +104,7 @@ const meta: Meta<AbyssDialogStoryArgs> = {
     },
     closeButton: {
       control: 'boolean',
-      description: 'Pokazuje przycisk zamknięcia w nagłówku.',
+      description: 'Pokazuje przycisk zamknięcia w header-append.',
       table: {
         defaultValue: { summary: 'false' },
         type: { summary: 'boolean' },
@@ -123,7 +129,7 @@ const meta: Meta<AbyssDialogStoryArgs> = {
     actions: {
       control: 'object',
       description:
-        'Lista akcji renderowanych w stopce jako grupa przycisków AbyssButton.',
+        'Lista akcji renderowanych w footer-append jako grupa AbyssButton.',
       table: {
         defaultValue: { summary: '[]' },
         type: { summary: 'AbyssDialogAction[]' },
@@ -153,7 +159,7 @@ const meta: Meta<AbyssDialogStoryArgs> = {
     },
   },
   args: {
-    modelValue: false,
+    modelValue: true,
     title: 'Usuń notatkę',
     icon: 'sym_r_warning',
     closeButton: true,
@@ -170,28 +176,31 @@ const meta: Meta<AbyssDialogStoryArgs> = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 
+const openDialogTriggerStyle =
+  'display: flex; align-items: center; justify-content: center; min-height: 120px;';
+
 export const Default: Story = {
   name: 'Domyślny',
   parameters: {
     docs: {
       description: {
         story:
-          'Podstawowy dialog z nagłówkiem, przewijanym body i dwiema akcjami w stopce. Story odwzorowuje typowy przykład z dokumentacji q-dialog: otwarcie z przycisku i zamknięcie akcją.',
+          'Podstawowy dialog z nagłówkiem, treścią i akcjami w footer-append.',
       },
       source: {
         code: `<script setup lang="ts">
 import { ref } from 'vue';
 
-const isOpen = ref(false);
+const isOpen = ref(true);
 
 const actions = [
-  { id: 'cancel', label: 'Anuluj', embedded: true },
-  { id: 'confirm', label: 'Usuń', icon: 'sym_r_delete', gradient: true },
+  { id: 'cancel', label: 'Anuluj', flat: true, size: 'medium' },
+  { id: 'confirm', label: 'Usuń', icon: 'sym_r_delete', flat: true, size: 'medium' },
 ];
 </script>
 
 <template>
-  <AbyssButton label="Otwórz dialog" @click="isOpen = true" />
+  <AbyssButton v-if="!isOpen" label="Otwórz dialog" @click="isOpen = true" />
 
   <AbyssDialog
     v-model="isOpen"
@@ -206,74 +215,146 @@ const actions = [
       },
     },
   },
-  render: (args) => ({
-    components: { AbyssButton, AbyssDialog },
+  render: () => ({
+    components: { AbyssDialog, AbyssButton, AbyssButtonGroup },
     setup() {
-      const isOpen = ref(args.modelValue ?? false);
+      const isOpen = ref(true);
 
-      watch(
-        () => args.modelValue,
-        (value) => {
-          isOpen.value = value ?? false;
-        },
-      );
-
-      function handleAction(action: AbyssDialogStoryAction) {
-        void args.onAction(action);
-      }
-
-      function handleClose() {
-        void args.onClose();
-      }
-
-      return {
-        args,
-        isOpen,
-        handleAction,
-        handleClose,
-      };
+      return { isOpen };
     },
     template: `
-      <div style="min-height: 120px; display: flex; align-items: center; justify-content: center;">
-        <AbyssButton label="Otwórz dialog" @click="isOpen = true" />
-      </div>
+      <div>
+        <div v-if="!isOpen" style="${openDialogTriggerStyle}">
+          <AbyssButton label="Otwórz dialog" @click="isOpen = true" />
+        </div>
 
-      <AbyssDialog
+        <AbyssDialog
         v-model="isOpen"
-        :title="args.title"
-        :icon="args.icon"
-        :close-button="args.closeButton"
-        :close-button-icon="args.closeButtonIcon"
-        :close-button-aria-label="args.closeButtonAriaLabel"
-        :actions="args.actions"
-        :class="args.class"
-        :style="args.style"
-        @action="handleAction"
-        @close="handleClose"
+        title="Usuń notatkę"
+        icon="sym_r_warning"
+        close-button
       >
         <p>Czy na pewno chcesz usunąć wybraną notatkę?</p>
+
+        <template #footer-append>
+          <AbyssButtonGroup>
+            <AbyssButton
+              label="Anuluj"
+              flat
+              size="medium"
+              @click="isOpen = false"
+            />
+            <AbyssButton
+              label="Usuń"
+              icon="sym_r_delete"
+              flat
+              size="medium"
+              @click="isOpen = false"
+            />
+          </AbyssButtonGroup>
+        </template>
       </AbyssDialog>
+      </div>
     `,
   }),
-  play: async ({ args, canvas, canvasElement, userEvent }) => {
-    const trigger = canvas.getByRole('button', { name: /otwórz dialog/i });
-    const page = within(canvasElement.ownerDocument.body);
-
-    await userEvent.click(trigger);
-
+  play: async ({ canvas }) => {
     await waitFor(async () => {
-      await expect(page.getByText('Usuń notatkę')).toBeVisible();
+      await expect(canvas.getByText('Usuń notatkę')).toBeVisible();
       await expect(
-        page.getByText('Czy na pewno chcesz usunąć wybraną notatkę?'),
+        canvas.getByText('Czy na pewno chcesz usunąć wybraną notatkę?'),
       ).toBeVisible();
+      await expect(canvas.getByRole('button', { name: 'Anuluj' })).toBeVisible();
+      await expect(canvas.getByRole('button', { name: 'Usuń' })).toBeVisible();
     });
+  },
+};
 
-    await userEvent.click(page.getByRole('button', { name: /anuluj/i }));
+export const WithFooterPrepend: Story = {
+  name: 'Z tekstem informacyjnym w stopce',
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'Dialog z tekstem informacyjnym w slocie footer-prepend po lewej stronie stopki.',
+      },
+      source: {
+        code: `<AbyssButton v-if="!isOpen" label="Otwórz dialog" @click="isOpen = true" />
 
-    await expect(args.onAction).toHaveBeenCalledOnce();
-    await expect(args.onClose).toHaveBeenCalledOnce();
+<AbyssDialog v-model="isOpen" title="Usuń notatkę" icon="sym_r_warning" close-button>
+  <p>Czy na pewno chcesz usunąć wybraną notatkę?</p>
+
+  <template #footer-prepend>
+    Tej operacji nie można cofnąć.
+  </template>
+  <template #footer-append>
+    <AbyssButtonGroup>
+      <AbyssButton label="Anuluj" flat size="medium" @click="isOpen = false" />
+      <AbyssButton
+        label="Usuń"
+        icon="sym_r_delete"
+        flat
+        size="medium"
+        @click="isOpen = false"
+      />
+    </AbyssButtonGroup>
+  </template>
+</AbyssDialog>`,
+      },
+    },
+  },
+  render: () => ({
+    components: { AbyssDialog, AbyssButton, AbyssButtonGroup },
+    setup() {
+      const isOpen = ref(true);
+
+      return { isOpen };
+    },
+    template: `
+      <div>
+        <div v-if="!isOpen" style="${openDialogTriggerStyle}">
+          <AbyssButton label="Otwórz dialog" @click="isOpen = true" />
+        </div>
+
+        <AbyssDialog
+          v-model="isOpen"
+          title="Usuń notatkę"
+          icon="sym_r_warning"
+          close-button
+        >
+          <p>Czy na pewno chcesz usunąć wybraną notatkę?</p>
+
+          <template #footer-prepend>
+            Tej operacji nie można cofnąć.
+          </template>
+          <template #footer-append>
+            <AbyssButtonGroup>
+              <AbyssButton
+                label="Anuluj"
+                flat
+                size="medium"
+                @click="isOpen = false"
+              />
+              <AbyssButton
+                label="Usuń"
+                icon="sym_r_delete"
+                flat
+                size="medium"
+                @click="isOpen = false"
+              />
+            </AbyssButtonGroup>
+          </template>
+        </AbyssDialog>
+      </div>
+    `,
+  }),
+  play: async ({ canvas }) => {
     await waitFor(async () => {
-      await expect(page.queryByText('Usuń notatkę')).not.toBeInTheDocument();
+      await expect(canvas.getByText('Usuń notatkę')).toBeVisible();
+      await expect(
+        canvas.getByText('Tej operacji nie można cofnąć.'),
+      ).toBeVisible();
+      await expect(canvas.getByRole('button', { name: 'Anuluj' })).toBeVisible();
+      await expect(canvas.getByRole('button', { name: 'Usuń' })).toBeVisible();
     });
   },
 };
@@ -281,18 +362,23 @@ const actions = [
 export const ScrollableContent: Story = {
   name: 'Z przewijanym body',
   args: {
+    modelValue: true,
     title: 'Szczegóły synchronizacji',
     icon: 'sym_r_sync',
+    closeButton: true,
     actions: [
       {
         id: 'close',
         label: 'Zamknij',
+        flat: true,
+        size: 'medium',
       },
       {
         id: 'retry',
         label: 'Ponów',
         icon: 'sym_r_refresh',
-        gradient: true,
+        flat: true,
+        size: 'medium',
         closeOnClick: false,
       },
     ],
@@ -306,51 +392,17 @@ export const ScrollableContent: Story = {
         story:
           'Dialog z dłuższą treścią. Body ma własny scroll, więc stopka i nagłówek pozostają czytelne nawet przy większej ilości contentu.',
       },
-      source: {
-        code: `<script setup lang="ts">
-import { ref } from 'vue';
-
-const isOpen = ref(false);
-
-const actions = [
-  { id: 'close', label: 'Zamknij' },
-  { id: 'retry', label: 'Ponów', icon: 'sym_r_refresh', gradient: true, closeOnClick: false },
-];
-</script>
-
-<template>
-  <AbyssButton label="Pokaż szczegóły" @click="isOpen = true" />
-
-  <AbyssDialog
-    v-model="isOpen"
-    title="Szczegóły synchronizacji"
-    icon="sym_r_sync"
-    :close-button="true"
-    :actions="actions"
-    :style="{ width: '560px' }"
-  >
-    <!-- długa treść dialogu -->
-  </AbyssDialog>
-</template>`,
-      },
     },
   },
   render: (args) => ({
-    components: { AbyssButton, AbyssDialog },
+    components: { AbyssDialog, AbyssButton },
     setup() {
-      const isOpen = ref(args.modelValue ?? false);
+      const isOpen = ref(true);
       const paragraphs = Array.from({ length: 12 }, (_, index) => ({
         id: index + 1,
         title: `Sekcja ${index + 1}`,
         text: 'Synchronizacja utrzymuje stan sesji, kolejki wysyłki i potwierdzenia urządzenia w jednym, przewijanym kontenerze dialogu.',
       }));
-
-      watch(
-        () => args.modelValue,
-        (value) => {
-          isOpen.value = value ?? false;
-        },
-      );
 
       function handleAction(action: AbyssDialogStoryAction) {
         void args.onAction(action);
@@ -369,11 +421,12 @@ const actions = [
       };
     },
     template: `
-      <div style="min-height: 120px; display: flex; align-items: center; justify-content: center;">
-        <AbyssButton label="Pokaż szczegóły" @click="isOpen = true" />
-      </div>
+      <div>
+        <div v-if="!isOpen" style="${openDialogTriggerStyle}">
+          <AbyssButton label="Otwórz dialog" @click="isOpen = true" />
+        </div>
 
-      <AbyssDialog
+        <AbyssDialog
         v-model="isOpen"
         :title="args.title"
         :icon="args.icon"
@@ -391,27 +444,26 @@ const actions = [
           <p style="margin: 8px 0 0;">{{ paragraph.text }}</p>
         </section>
       </AbyssDialog>
+      </div>
     `,
   }),
-  play: async ({ args, canvas, canvasElement, userEvent }) => {
-    const trigger = canvas.getByRole('button', { name: /pokaż szczegóły/i });
-    const page = within(canvasElement.ownerDocument.body);
-
-    await userEvent.click(trigger);
-
+  play: async ({ args, canvas, userEvent }) => {
     await waitFor(async () => {
-      await expect(page.getByText('Szczegóły synchronizacji')).toBeVisible();
-      await expect(page.getByText('Sekcja 1')).toBeVisible();
-      await expect(page.getByText('Sekcja 12')).toBeVisible();
+      await expect(canvas.getByText('Szczegóły synchronizacji')).toBeVisible();
+      await expect(canvas.getByText('Sekcja 1')).toBeVisible();
+      await expect(canvas.getByText('Sekcja 12')).toBeVisible();
     });
 
-    await userEvent.click(page.getByRole('button', { name: /zamknij/i }));
+    await userEvent.click(canvas.getByRole('button', { name: /zamknij/i }));
 
     await expect(args.onAction).toHaveBeenCalledOnce();
     await waitFor(async () => {
       await expect(
-        page.queryByText('Szczegóły synchronizacji'),
+        canvas.queryByText('Szczegóły synchronizacji'),
       ).not.toBeInTheDocument();
+      await expect(
+        canvas.getByRole('button', { name: /otwórz dialog/i }),
+      ).toBeVisible();
     });
   },
 };
@@ -419,13 +471,16 @@ const actions = [
 export const WithoutBody: Story = {
   name: 'Bez body',
   args: {
+    modelValue: true,
     title: 'Szybka akcja',
     icon: 'sym_r_bolt',
+    closeButton: true,
     actions: [
       {
         id: 'dismiss',
         label: 'Rozumiem',
-        gradient: true,
+        flat: true,
+        size: 'medium',
       },
     ],
   },
@@ -435,40 +490,12 @@ export const WithoutBody: Story = {
         story:
           'Jeżeli domyślny slot nie zawiera treści, komponent pomija render body i zostawia tylko nagłówek ze stopką rozdzielone separatorem.',
       },
-      source: {
-        code: `<script setup lang="ts">
-import { ref } from 'vue';
-
-const isOpen = ref(false);
-
-const actions = [{ id: 'dismiss', label: 'Rozumiem', gradient: true }];
-</script>
-
-<template>
-  <AbyssButton label="Pokaż szybki dialog" @click="isOpen = true" />
-
-  <AbyssDialog
-    v-model="isOpen"
-    title="Szybka akcja"
-    icon="sym_r_bolt"
-    :close-button="true"
-    :actions="actions"
-  />
-</template>`,
-      },
     },
   },
   render: (args) => ({
-    components: { AbyssButton, AbyssDialog },
+    components: { AbyssDialog, AbyssButton },
     setup() {
-      const isOpen = ref(args.modelValue ?? false);
-
-      watch(
-        () => args.modelValue,
-        (value) => {
-          isOpen.value = value ?? false;
-        },
-      );
+      const isOpen = ref(true);
 
       function handleAction(action: AbyssDialogStoryAction) {
         void args.onAction(action);
@@ -486,11 +513,12 @@ const actions = [{ id: 'dismiss', label: 'Rozumiem', gradient: true }];
       };
     },
     template: `
-      <div style="min-height: 120px; display: flex; align-items: center; justify-content: center;">
-        <AbyssButton label="Pokaż szybki dialog" @click="isOpen = true" />
-      </div>
+      <div>
+        <div v-if="!isOpen" style="${openDialogTriggerStyle}">
+          <AbyssButton label="Otwórz dialog" @click="isOpen = true" />
+        </div>
 
-      <AbyssDialog
+        <AbyssDialog
         v-model="isOpen"
         :title="args.title"
         :icon="args.icon"
@@ -503,28 +531,25 @@ const actions = [{ id: 'dismiss', label: 'Rozumiem', gradient: true }];
         @action="handleAction"
         @close="handleClose"
       />
+      </div>
     `,
   }),
   play: async ({ args, canvas, canvasElement, userEvent }) => {
-    const trigger = canvas.getByRole('button', {
-      name: /pokaż szybki dialog/i,
-    });
-    const page = within(canvasElement.ownerDocument.body);
-
-    await userEvent.click(trigger);
-
     await waitFor(async () => {
-      await expect(page.getByText('Szybka akcja')).toBeVisible();
+      await expect(canvas.getByText('Szybka akcja')).toBeVisible();
     });
     await expect(
-      canvasElement.ownerDocument.body.querySelector('.abyss-dialog__body'),
+      canvasElement.querySelector('.abyss-dialog__body'),
     ).toBeNull();
 
-    await userEvent.click(page.getByRole('button', { name: /rozumiem/i }));
+    await userEvent.click(canvas.getByRole('button', { name: /rozumiem/i }));
 
     await expect(args.onAction).toHaveBeenCalledOnce();
     await waitFor(async () => {
-      await expect(page.queryByText('Szybka akcja')).not.toBeInTheDocument();
+      await expect(canvas.queryByText('Szybka akcja')).not.toBeInTheDocument();
+      await expect(
+        canvas.getByRole('button', { name: /otwórz dialog/i }),
+      ).toBeVisible();
     });
   },
 };

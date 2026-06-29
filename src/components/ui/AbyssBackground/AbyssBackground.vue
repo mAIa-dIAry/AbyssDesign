@@ -21,10 +21,11 @@
 
 <script setup lang="ts">
 import { computed, onUnmounted, ref, watch } from 'vue';
+import { useGradient } from '@/composables/useGradient';
 import {
-  DEFAULT_GRADIENT_COLORS,
-  useGradient,
-} from '@/composables/useGradient';
+  resolveGradientColors,
+  type GradientColorsInput,
+} from '@/defines/semantic-gradients';
 
 interface FadingGradientLayer {
   id: number;
@@ -34,14 +35,14 @@ interface FadingGradientLayer {
 const BACKGROUND_FADE_DURATION_MS = 3000;
 
 interface Props {
-  colors?: string[];
+  colors?: GradientColorsInput;
 }
 
-const props = withDefaults(defineProps<Props>(), {
-  colors: () => DEFAULT_GRADIENT_COLORS,
-});
+const props = defineProps<Props>();
 
-const { gradientCss, gradientStyle, setColors } = useGradient(props.colors);
+const resolvedColors = computed(() => resolveGradientColors(props.colors));
+
+const { gradientCss, gradientStyle, setColors } = useGradient(resolvedColors.value);
 const fadingLayers = ref<FadingGradientLayer[]>([]);
 const fadingLayerTimeoutIds = new Map<number, number>();
 const currentLayerStyle = computed(() => ({
@@ -93,7 +94,7 @@ function queueFadingLayer(previousGradientCss: string): void {
 }
 
 watch(
-  () => props.colors,
+  resolvedColors,
   (newColors) => {
     const previousGradientCss = gradientCss.value;
     setColors(newColors);
@@ -104,6 +105,7 @@ watch(
 
     queueFadingLayer(previousGradientCss);
   },
+  { deep: true },
 );
 
 onUnmounted(() => {

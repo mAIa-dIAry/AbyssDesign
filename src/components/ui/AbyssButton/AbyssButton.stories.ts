@@ -3,6 +3,7 @@ import { expect, fn } from 'storybook/test';
 import { ref } from 'vue';
 import AbyssButton from '@/components/ui/AbyssButton/AbyssButton.vue';
 import { withAbyssBackground } from '@/stories/AbyssBackgroundDecorator';
+import type { GradientColorsInput } from '@/defines/semantic-gradients';
 
 type AbyssButtonStoryArgs = {
   label?: string;
@@ -23,7 +24,7 @@ type AbyssButtonStoryArgs = {
   flat?: boolean;
   toggled?: boolean;
   gradient?: boolean;
-  gradientColors?: string[];
+  gradientColors?: GradientColorsInput;
   onClick?: ReturnType<typeof fn>;
 };
 
@@ -139,8 +140,9 @@ const meta: Meta<AbyssButtonStoryArgs> = {
     gradientColors: {
       control: 'object',
       description:
-        'Kolory gradientu dla przycisku gradient jako tablica (nadpisują kolory motywu). Obsługiwane formaty: HSL, HSLA, HEX, RGB, RGBA.',
+        'Kolory gradientu jako tablica CSS albo nazwa semantycznego gradientu: `info`, `warning`, `success`, `danger`, `hint`, `theme`. Tablica nadpisuje kolory motywu. Obsługiwane formaty kolorów: HSL, HSLA, HEX, RGB, RGBA.',
       table: {
+        type: { summary: 'string[] | SemanticGradientKey' },
         defaultValue: { summary: 'undefined' },
       },
     },
@@ -163,6 +165,60 @@ const sizesLayoutStyle =
 
 const fullWidthLayoutStyle =
   'display: flex; flex-direction: column; gap: 12px; width: 100%; max-width: 360px;';
+
+type SizeVariantConfig = {
+  getLabel?: (size: ButtonSize) => string;
+  props?: Record<string, unknown>;
+};
+
+function toKebabCase(value: string): string {
+  return value.replace(/([A-Z])/g, '-$1').toLowerCase();
+}
+
+function formatVueProp(key: string, value: unknown): string {
+  const attr = toKebabCase(key);
+
+  if (value === true) {
+    return attr;
+  }
+
+  if (typeof value === 'string') {
+    return `${attr}="${value}"`;
+  }
+
+  if (typeof value === 'number') {
+    return `:${attr}="${value}"`;
+  }
+
+  if (Array.isArray(value)) {
+    const items = value.map((item) =>
+      typeof item === 'string' ? `'${item}'` : String(item),
+    );
+    return `:${attr}="[${items.join(', ')}]"`;
+  }
+
+  return `:${attr}="${JSON.stringify(value)}"`;
+}
+
+function sizeVariantsSourceCode(options: SizeVariantConfig): string {
+  const getLabel =
+    options.getLabel ?? ((size: ButtonSize) => `Przycisk ${size}`);
+  const props = options.props ?? {};
+
+  return BUTTON_SIZES.map((size) => {
+    const propLines = Object.entries(props).map(
+      ([key, value]) => `  ${formatVueProp(key, value)}`,
+    );
+
+    return [
+      '<AbyssButton',
+      `  label="${getLabel(size)}"`,
+      `  size="${size}"`,
+      ...propLines,
+      '/>',
+    ].join('\n');
+  }).join('\n\n');
+}
 
 function renderSizeVariants(options: {
   wrapperStyle?: string;
@@ -209,6 +265,9 @@ export const Default: Story = {
       description: {
         story: 'Przycisk tekstowy we wszystkich rozmiarach: small, medium i big.',
       },
+      source: {
+        code: sizeVariantsSourceCode({}),
+      },
     },
   },
   render: () => ({
@@ -247,6 +306,15 @@ export const Current: Story = {
         story:
           'Przycisk w stanie "current" we wszystkich rozmiarach — reprezentuje aktualnie wybrany element lub aktywną opcję.',
       },
+      source: {
+        code: sizeVariantsSourceCode({
+          getLabel: (size) => `Wybrany ${size}`,
+          props: {
+            icon: 'sym_r_check',
+            current: true,
+          },
+        }),
+      },
     },
   },
   render: renderSizeVariants({
@@ -273,6 +341,15 @@ export const Disabled: Story = {
       description: {
         story:
           'Przycisk w stanie nieaktywnym we wszystkich rozmiarach — nie można z nim wchodzić w interakcję.',
+      },
+      source: {
+        code: sizeVariantsSourceCode({
+          getLabel: (size) => `Nieaktywny ${size}`,
+          props: {
+            icon: 'sym_r_block',
+            disable: true,
+          },
+        }),
       },
     },
   },
@@ -303,6 +380,13 @@ export const IconOnly: Story = {
       description: {
         story:
           'Przycisk zawierający tylko ikonę bez tekstu we wszystkich rozmiarach. Automatycznie dostosowuje padding.',
+      },
+      source: {
+        code: `<AbyssButton icon="sym_r_favorite" size="small" />
+
+<AbyssButton icon="sym_r_favorite" size="medium" />
+
+<AbyssButton icon="sym_r_favorite" size="big" />`,
       },
     },
   },
@@ -339,6 +423,13 @@ export const WithIcon: Story = {
       description: {
         story:
           'Przycisk z ikoną po lewej i tekstem we wszystkich rozmiarach.',
+      },
+      source: {
+        code: sizeVariantsSourceCode({
+          props: {
+            icon: 'sym_r_check_box',
+          },
+        }),
       },
     },
   },
@@ -377,6 +468,13 @@ export const WithIconRight: Story = {
         story:
           'Przycisk z ikoną po prawej stronie tekstu we wszystkich rozmiarach.',
       },
+      source: {
+        code: sizeVariantsSourceCode({
+          props: {
+            iconRight: 'sym_r_arrow_forward',
+          },
+        }),
+      },
     },
   },
   render: () => ({
@@ -414,6 +512,14 @@ export const WithBothIcons: Story = {
         story:
           'Przycisk z ikonami po lewej i prawej stronie tekstu we wszystkich rozmiarach.',
       },
+      source: {
+        code: sizeVariantsSourceCode({
+          props: {
+            icon: 'sym_r_arrow_back',
+            iconRight: 'sym_r_arrow_forward',
+          },
+        }),
+      },
     },
   },
   render: () => ({
@@ -444,6 +550,15 @@ export const FullWidth: Story = {
         story:
           'Przycisk rozciągnięty na pełną szerokość kontenera we wszystkich rozmiarach.',
       },
+      source: {
+        code: sizeVariantsSourceCode({
+          getLabel: (size) => `Pełna szerokość ${size}`,
+          props: {
+            icon: 'sym_r_arrow_forward',
+            fullWidth: true,
+          },
+        }),
+      },
     },
   },
   render: renderSizeVariants({
@@ -471,6 +586,43 @@ export const LoadingWithPercentage: Story = {
       description: {
         story:
           'Przycisk w stanie ładowania z paskiem postępu we wszystkich rozmiarach.',
+      },
+      source: {
+        code: `<AbyssButton
+  label="Zapisz small"
+  size="small"
+  loading
+  :percentage="65"
+>
+  <template #loading>
+    <q-spinner-gears class="on-left" />
+    Przetwarzanie...
+  </template>
+</AbyssButton>
+
+<AbyssButton
+  label="Zapisz medium"
+  size="medium"
+  loading
+  :percentage="65"
+>
+  <template #loading>
+    <q-spinner-gears class="on-left" />
+    Przetwarzanie...
+  </template>
+</AbyssButton>
+
+<AbyssButton
+  label="Zapisz big"
+  size="big"
+  loading
+  :percentage="65"
+>
+  <template #loading>
+    <q-spinner-gears class="on-left" />
+    Przetwarzanie...
+  </template>
+</AbyssButton>`,
       },
     },
   },
@@ -514,6 +666,15 @@ export const Flat: Story = {
         story:
           'Przycisk w płaskim stylu we wszystkich rozmiarach — transparentne tło, bez cienia i ruchu unoszenia.',
       },
+      source: {
+        code: sizeVariantsSourceCode({
+          getLabel: (size) => `Płaski ${size}`,
+          props: {
+            icon: 'sym_r_arrow_forward',
+            flat: true,
+          },
+        }),
+      },
     },
   },
   render: renderSizeVariants({
@@ -541,6 +702,15 @@ export const Embedded: Story = {
         story:
           'Przycisk wtopiony w tło we wszystkich rozmiarach — transparentny, z cieniem i unoszeniem podczas interakcji.',
       },
+      source: {
+        code: sizeVariantsSourceCode({
+          getLabel: (size) => `Wtopiony ${size}`,
+          props: {
+            icon: 'sym_r_arrow_forward',
+            embedded: true,
+          },
+        }),
+      },
     },
   },
   render: renderSizeVariants({
@@ -567,6 +737,15 @@ export const Toggled: Story = {
       description: {
         story:
           'Przycisk w trybie przełączonym we wszystkich rozmiarach — ciemniejsze tło sygnalizuje aktywny stan.',
+      },
+      source: {
+        code: sizeVariantsSourceCode({
+          getLabel: (size) => `Aktywny ${size}`,
+          props: {
+            icon: 'sym_r_format_bold',
+            toggled: true,
+          },
+        }),
       },
     },
   },
@@ -597,7 +776,17 @@ export const Gradient: Story = {
     docs: {
       description: {
         story:
-          'Przycisk z gradientowym tłem we wszystkich rozmiarach.',
+          'Przycisk z gradientowym tłem we wszystkich rozmiarach. Można podać tablicę kolorów albo nazwę semantycznego gradientu.',
+      },
+      source: {
+        code: sizeVariantsSourceCode({
+          getLabel: (size) => `Gradient ${size}`,
+          props: {
+            iconRight: 'sym_r_note_stack_add',
+            gradient: true,
+            gradientColors: 'theme',
+          },
+        }),
       },
     },
   },
@@ -606,7 +795,7 @@ export const Gradient: Story = {
     props: {
       iconRight: 'sym_r_note_stack_add',
       gradient: true,
-      gradientColors: ['#FF7194', '#028096'],
+      gradientColors: 'theme',
     },
   }),
   play: async ({ canvas }) => {
@@ -626,6 +815,46 @@ export const InteractiveLoading: Story = {
       description: {
         story:
           'Kliknięcie uruchamia symulowane ładowanie (3 s) we wszystkich rozmiarach.',
+      },
+      source: {
+        code: `<AbyssButton
+  label="Zapisz small"
+  icon="sym_r_save"
+  size="small"
+  :loading="loading"
+  @click="handleClick"
+>
+  <template #loading>
+    <q-spinner-gears class="on-left" />
+    Przetwarzanie...
+  </template>
+</AbyssButton>
+
+<AbyssButton
+  label="Zapisz medium"
+  icon="sym_r_save"
+  size="medium"
+  :loading="loading"
+  @click="handleClick"
+>
+  <template #loading>
+    <q-spinner-gears class="on-left" />
+    Przetwarzanie...
+  </template>
+</AbyssButton>
+
+<AbyssButton
+  label="Zapisz big"
+  icon="sym_r_save"
+  size="big"
+  :loading="loading"
+  @click="handleClick"
+>
+  <template #loading>
+    <q-spinner-gears class="on-left" />
+    Przetwarzanie...
+  </template>
+</AbyssButton>`,
       },
     },
   },

@@ -15,6 +15,15 @@ export {
   GRADIENT_PRESETS,
   DEFAULT_GRADIENT_PRESET,
 } from './defines/gradient-presets';
+export {
+  SEMANTIC_GRADIENTS,
+  findSemanticGradient,
+  isSemanticGradientKey,
+  resolveGradientColors,
+  type GradientColorsInput,
+  type SemanticGradient,
+  type SemanticGradientKey,
+} from './defines/semantic-gradients';
 export type { CssColor, GradientPreset } from './types/color';
 export type { AbyssChartLabel } from './types/abyss-chart';
 export { PIN_LENGTH } from './utils/pinCode';

@@ -64,3 +64,42 @@ export function findSemanticGradient(
 ): SemanticGradient | undefined {
   return SEMANTIC_GRADIENTS.find((gradient) => gradient.key === key);
 }
+
+const SEMANTIC_GRADIENT_KEY_SET = new Set<string>(
+  SEMANTIC_GRADIENTS.map((gradient) => gradient.key),
+);
+
+export function isSemanticGradientKey(
+  value: string,
+): value is SemanticGradientKey {
+  return SEMANTIC_GRADIENT_KEY_SET.has(value);
+}
+
+/** Tablica kolorów CSS albo nazwa semantycznego gradientu (np. `info`, `danger`). */
+export type GradientColorsInput = string[] | SemanticGradientKey;
+
+/**
+ * Rozwiązuje `gradientColors` / `colors` do tablicy kolorów CSS.
+ * Akceptuje tablicę kolorów lub klucz z {@link SEMANTIC_GRADIENTS}.
+ */
+export function resolveGradientColors(
+  input?: GradientColorsInput,
+): CssColor[] {
+  if (input === undefined) {
+    return [...DEFAULT_GRADIENT_COLORS];
+  }
+
+  if (typeof input === 'string') {
+    const gradient = findSemanticGradient(input);
+
+    if (!gradient) {
+      throw new Error(
+        `resolveGradientColors: unknown semantic gradient "${input}"`,
+      );
+    }
+
+    return [...gradient.colors];
+  }
+
+  return input as CssColor[];
+}

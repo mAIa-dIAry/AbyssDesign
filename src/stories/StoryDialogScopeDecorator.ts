@@ -3,6 +3,10 @@ import type { Decorator } from '@storybook/vue3';
 import AbyssBackground from '@/components/ui/AbyssBackground/AbyssBackground.vue';
 
 const DIALOG_PORTAL_SELECTOR = '[id^="q-portal--dialog--"]';
+const DIALOG_SCOPE_SELECTOR = '.abyss-bg-decorator--dialog-scope';
+
+let bodyObserver: MutationObserver | null = null;
+let observerRefCount = 0;
 
 /** Quasar blokuje scroll body przez q-body--prevent-scroll — w Docs to blokuje całą stronę. */
 function releaseStorybookBodyScrollLock(): void {
@@ -15,15 +19,72 @@ function releaseStorybookBodyScrollLock(): void {
   (document as Document & { qScrollPrevented?: boolean }).qScrollPrevented = false;
 }
 
-function reparentDialogPortal(scope: HTMLElement): void {
-  if (scope.querySelector(DIALOG_PORTAL_SELECTOR)) {
+function getPortalHost(scope: HTMLElement): HTMLElement {
+  const existingHost = scope.querySelector<HTMLElement>(
+    '.abyss-bg-decorator__portal-host',
+  );
+  if (existingHost) {
+    return existingHost;
+  }
+
+  const host = document.createElement('div');
+  host.className = 'abyss-bg-decorator__portal-host';
+  scope.appendChild(host);
+  return host;
+}
+
+/**
+ * Przypisuje osierocone portale q-dialog z body do brakujących scope'ów
+ * w kolejności DOM — w Docs autodocs renderuje wiele story naraz.
+ */
+function syncDialogPortals(): void {
+  releaseStorybookBodyScrollLock();
+
+  const scopes = Array.from(
+    document.querySelectorAll<HTMLElement>(DIALOG_SCOPE_SELECTOR),
+  );
+  const orphanPortals = Array.from(
+    document.body.querySelectorAll<HTMLElement>(DIALOG_PORTAL_SELECTOR),
+  ).filter((portal) => portal.parentElement === document.body);
+  const scopesWithoutPortal = scopes.filter(
+    (scope) => !scope.querySelector(DIALOG_PORTAL_SELECTOR),
+  );
+
+  orphanPortals.forEach((portal, index) => {
+    const scope = scopesWithoutPortal[index];
+    if (!scope) {
+      return;
+    }
+
+    getPortalHost(scope).appendChild(portal);
+  });
+}
+
+function ensureBodyObserver(): void {
+  if (bodyObserver) {
     return;
   }
 
-  const portal = document.body.querySelector(DIALOG_PORTAL_SELECTOR);
-  if (portal?.parentElement === document.body) {
-    scope.appendChild(portal);
+  bodyObserver = new MutationObserver(() => {
+    syncDialogPortals();
+  });
+  bodyObserver.observe(document.body, { childList: true });
+}
+
+function releaseBodyObserver(): void {
+  observerRefCount = Math.max(0, observerRefCount - 1);
+
+  if (observerRefCount === 0 && bodyObserver) {
+    bodyObserver.disconnect();
+    bodyObserver = null;
   }
+}
+
+function schedulePortalSync(): void {
+  syncDialogPortals();
+  requestAnimationFrame(() => syncDialogPortals());
+  window.setTimeout(() => syncDialogPortals(), 50);
+  window.setTimeout(() => syncDialogPortals(), 250);
 }
 
 /**
@@ -35,24 +96,21 @@ export const withAbyssBackgroundDialogScope: Decorator = () => ({
   components: { AbyssBackground },
   setup() {
     const scopeRef = ref<HTMLElement | null>(null);
-    let timeoutId = 0;
+    const timeoutIds: number[] = [];
 
     onMounted(async () => {
+      observerRefCount += 1;
+      ensureBodyObserver();
+
       await nextTick();
-      releaseStorybookBodyScrollLock();
+      schedulePortalSync();
 
-      const scope = scopeRef.value;
-      if (!scope) {
-        return;
-      }
-
-      reparentDialogPortal(scope);
-      requestAnimationFrame(() => reparentDialogPortal(scope));
-      timeoutId = window.setTimeout(() => reparentDialogPortal(scope), 50);
+      timeoutIds.push(window.setTimeout(() => syncDialogPortals(), 500));
     });
 
     onUnmounted(() => {
-      window.clearTimeout(timeoutId);
+      timeoutIds.forEach((timeoutId) => window.clearTimeout(timeoutId));
+      releaseBodyObserver();
       releaseStorybookBodyScrollLock();
     });
 

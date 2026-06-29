@@ -8,24 +8,30 @@
     @hide="emit('close')"
   >
     <div class="abyss-dialog" :class="$props.class" :style="style">
-      <div v-if="hasHeader" class="abyss-dialog__header">
-        <AbyssTitle
-          v-if="hasTitle"
-          class="abyss-dialog__title"
-          :icon="icon"
-          :label="title"
-        />
-        <div v-else class="abyss-dialog__title-spacer" />
-
-        <AbyssButton
-          v-if="closeButton"
-          class="abyss-dialog__close"
-          :icon="closeButtonIcon"
-          :aria-label="closeButtonAriaLabel"
-          flat
-          @click="emit('update:modelValue', false)"
-        />
-      </div>
+      <slot name="header">
+        <div v-if="hasHeader" class="abyss-dialog__header">
+          <div class="abyss-dialog__header-prepend">
+            <slot name="header-prepend">
+              <q-icon v-if="icon" :name="icon" />
+            </slot>
+          </div>
+          <div class="abyss-dialog__title">
+            <slot name="header">{{ title }}</slot>
+          </div>
+          <div class="abyss-dialog__header-append">
+            <slot name="header-append">
+              <AbyssButton
+                v-if="closeButton"
+                :icon="closeButtonIcon"
+                :aria-label="closeButtonAriaLabel"
+                flat
+                size="medium"
+                @click="emit('update:modelValue', false)"
+              />
+            </slot>
+          </div>
+        </div>
+      </slot>
 
       <AbyssSeparator v-if="hasHeader && (hasBody || hasFooter)" />
 
@@ -35,16 +41,26 @@
 
       <AbyssSeparator v-if="hasBody && hasFooter" />
 
-      <div v-if="hasFooter" class="abyss-dialog__footer">
-        <AbyssButtonGroup>
-          <AbyssButton
-            v-for="action in actions"
-            :key="action.id"
-            v-bind="getActionButtonProps(action)"
-            @click="handleActionClick(action)"
-          />
-        </AbyssButtonGroup>
-      </div>
+      <slot name="footer">
+        <div v-if="hasFooter" class="abyss-dialog__footer">
+          <div class="abyss-dialog__footer-prepend">
+            <slot name="footer-prepend"></slot>
+          </div>
+          <div class="abyss-dialog__footer-spacer"></div>
+          <div class="abyss-dialog__footer-append">
+            <slot name="footer-append">
+              <AbyssButtonGroup v-if="actions.length">
+                <AbyssButton
+                  v-for="action in actions"
+                  :key="action.id"
+                  v-bind="getActionButtonProps(action)"
+                  @click="handleActionClick(action)"
+                />
+              </AbyssButtonGroup>
+            </slot>
+          </div>
+        </div>
+      </slot>
     </div>
   </q-dialog>
 </template>
@@ -54,7 +70,7 @@ import { computed, useSlots } from 'vue';
 import AbyssButton from '@/components/ui/AbyssButton/AbyssButton.vue';
 import AbyssButtonGroup from '@/components/ui/AbyssButtonGroup/AbyssButtonGroup.vue';
 import AbyssSeparator from '@/components/ui/AbyssSeparator/AbyssSeparator.vue';
-import AbyssTitle from '@/components/ui/AbyssTitle/AbyssTitle.vue';
+import type { GradientColorsInput } from '@/defines/semantic-gradients';
 
 defineOptions({
   inheritAttrs: false,
@@ -78,9 +94,10 @@ export interface AbyssDialogAction {
   loading?: boolean;
   percentage?: number;
   embedded?: boolean;
+  flat?: boolean;
   toggled?: boolean;
   gradient?: boolean;
-  gradientColors?: string[];
+  gradientColors?: GradientColorsInput;
   closeOnClick?: boolean;
 }
 
@@ -118,10 +135,27 @@ const emit = defineEmits<{
 
 const slots = useSlots();
 
-const hasTitle = computed(() => !!props.title);
-const hasHeader = computed(() => hasTitle.value || props.closeButton);
+const hasHeader = computed(() => {
+  return !!(
+    props.title ||
+    props.icon ||
+    props.closeButton ||
+    slots['header-prepend'] ||
+    slots['header-append'] ||
+    slots.header
+  );
+});
+
 const hasBody = computed(() => !!slots.default);
-const hasFooter = computed(() => props.actions.length > 0);
+
+const hasFooter = computed(() => {
+  return !!(
+    slots.footer ||
+    slots['footer-prepend'] ||
+    slots['footer-append'] ||
+    props.actions.length
+  );
+});
 
 function handleActionClick(action: AbyssDialogAction) {
   emit('action', action);
@@ -147,6 +181,7 @@ function getActionButtonProps(
       loading: action.loading,
       percentage: action.percentage,
       embedded: action.embedded,
+      flat: action.flat,
       toggled: action.toggled,
       gradient: action.gradient,
       gradientColors: action.gradientColors,
@@ -157,6 +192,8 @@ function getActionButtonProps(
 
 <style scoped lang="scss">
 .abyss-dialog {
+  --dialog-padding: 16px;
+
   width: min(640px, calc(100vw - 32px));
   max-width: calc(100vw - 32px);
   max-height: calc(100vh - 32px);
@@ -174,31 +211,87 @@ function getActionButtonProps(
   &__footer {
     display: flex;
     align-items: center;
-    gap: 12px;
-    padding: 8px 16px;
+    padding: 12px var(--dialog-padding);
+    gap: 8px;
+    font-size: 18px;
+    min-height: 48px;
   }
 
-  &__header {
-    padding-right: 8px;
+  &__header-prepend,
+  &__header-append,
+  &__footer-prepend,
+  &__footer-append {
+    display: flex;
+    align-items: center;
+
+    &:empty {
+      display: none;
+    }
+
+    :deep(.abyss-button) {
+      --border-radius: 12px;
+    }
+  }
+
+  &__header-prepend {
+    :deep(.q-icon) {
+      font-size: 24px;
+      width: 24px;
+      height: 24px;
+    }
+  }
+
+  &__header-append,
+  &__footer-append {
+    :deep(.abyss-button-group) {
+      margin-top: -8px;
+      margin-bottom: -8px;
+      margin-right: -12px;
+    }
+
+    :deep(> .abyss-button) {
+      margin-top: -8px;
+      margin-bottom: -8px;
+      margin-right: -12px;
+    }
+  }
+
+  &__footer-prepend {
+    font-size: 14px;
+    line-height: 20px;
+    font-weight: 400;
+    opacity: 0.6;
+
+    :deep(.abyss-button-group),
+    :deep(> .abyss-button) {
+      margin-top: -8px;
+      margin-bottom: -8px;
+      margin-left: -12px;
+      opacity: 1;
+    }
   }
 
   &__title,
-  &__title-spacer {
+  &__footer-spacer {
     flex: 1;
     min-width: 0;
+    min-height: 24px;
   }
 
-  &__close {
-    // flex-shrink: 0;
+  &__title {
+    font-weight: 500;
+    line-height: 24px;
   }
 
   &__body {
     min-height: 0;
     overflow: auto;
-    padding: 16px;
+    padding: var(--dialog-padding);
     display: flex;
     flex-direction: column;
     gap: 12px;
+    font-size: 14px;
+    line-height: 20px;
     @include scrollbar;
 
     :slotted(form) {
@@ -216,10 +309,6 @@ function getActionButtonProps(
         margin-bottom: 0;
       }
     }
-  }
-
-  &__footer {
-    justify-content: flex-end;
   }
 
   &--compact {

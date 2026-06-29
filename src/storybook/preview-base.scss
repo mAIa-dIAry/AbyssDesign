@@ -357,9 +357,18 @@ body.sb-show-main:not(:has(.docs-story)) {
     width: 100%;
     min-height: unset !important;
     height: auto !important;
+    overflow: visible;
 
     .abyss-bg-decorator__content {
       min-height: unset !important;
+    }
+
+    .abyss-bg-decorator__portal-host {
+      position: relative;
+      z-index: 3;
+      display: flex;
+      justify-content: center;
+      width: 100%;
     }
 
     [id^='q-portal--dialog--'] {
@@ -375,9 +384,15 @@ body.sb-show-main:not(:has(.docs-story)) {
   .docs-story:has(.abyss-bg-decorator--dialog-scope) {
     height: auto !important;
     min-height: 0 !important;
+    overflow: visible;
 
     > div {
       background: transparent;
+      overflow: visible;
+    }
+
+    .innerZoomElementWrapper {
+      overflow: visible !important;
     }
   }
 

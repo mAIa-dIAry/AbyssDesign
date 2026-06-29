@@ -30,7 +30,7 @@
     <AbyssBackground
       v-if="gradient"
       class="abyss-button__gradient-background"
-      :colors="gradientColors"
+      :colors="resolvedGradientColors"
     />
 
     <!-- Forward default slot -->
@@ -50,7 +50,10 @@
 <script setup lang="ts">
 import { computed, inject, ref } from 'vue';
 import AbyssBackground from '@/components/ui/AbyssBackground/AbyssBackground.vue';
-import { DEFAULT_GRADIENT_COLORS } from '@/composables/useGradient';
+import {
+  resolveGradientColors,
+  type GradientColorsInput,
+} from '@/defines/semantic-gradients';
 import { NAVIGATION_CURRENT_ROUTE_KEY } from '@/components/ui/AbyssNavigation/navigationContext';
 
 export interface AbyssButtonProps {
@@ -73,7 +76,7 @@ export interface AbyssButtonProps {
   flat?: boolean;
   toggled?: boolean;
   gradient?: boolean;
-  gradientColors?: string[];
+  gradientColors?: GradientColorsInput;
 }
 
 const props = withDefaults(defineProps<AbyssButtonProps>(), {
@@ -105,8 +108,8 @@ const isCurrent = computed(
       props.route === injectedCurrentRoute.value),
 );
 
-const gradientColors = computed(
-  () => props.gradientColors ?? DEFAULT_GRADIENT_COLORS,
+const resolvedGradientColors = computed(() =>
+  resolveGradientColors(props.gradientColors),
 );
 
 const buttonStyle = computed(() => {
