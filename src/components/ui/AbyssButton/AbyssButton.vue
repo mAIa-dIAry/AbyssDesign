@@ -206,6 +206,22 @@ $shadow-frame-soft-inverted:
     }
   }
 
+  &.full-width {
+    width: 100%;
+
+    &.size-small,
+    &.size-medium,
+    &.size-big {
+      height: 100%;
+    }
+
+    &.icon-only {
+      min-width: 0;
+      width: 100%;
+      height: 100%;
+    }
+  }
+
   :deep() {
     .q-focus-helper {
       display: none;

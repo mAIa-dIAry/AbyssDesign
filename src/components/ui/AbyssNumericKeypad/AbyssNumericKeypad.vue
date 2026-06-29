@@ -12,6 +12,7 @@
         class="abyss-numeric-keypad__key"
         :label="key.value"
         embedded
+        full-width
         :disable="disable"
         @click="emit('digit', key.value)"
       />
@@ -20,6 +21,7 @@
         class="abyss-numeric-keypad__key"
         icon="sym_r_backspace"
         embedded
+        full-width
         :disable="disable || !canBackspace"
         :aria-label="backspaceLabel"
         @click="emit('backspace')"
@@ -29,6 +31,7 @@
         class="abyss-numeric-keypad__key abyss-numeric-keypad__key--shuffle"
         icon="sym_r_shuffle"
         embedded
+        full-width
         :disable="disable"
         :aria-label="shuffleLabel"
         @click="handleShuffle"
@@ -155,15 +158,25 @@ function handleShuffle(): void {
 
 <style scoped lang="scss">
 .abyss-numeric-keypad {
+  --key-size: 52px;
+
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-auto-rows: var(--key-size);
   gap: 10px;
   width: min(100%, 280px);
+  align-items: stretch;
+
+  :deep(.abyss-numeric-keypad__key.abyss-button) {
+    &[disabled] {
+      transform: none;
+    }
+  }
 
   &__key {
-    min-height: 52px;
-
     &--spacer {
+      display: block;
+      min-height: var(--key-size);
       visibility: hidden;
       pointer-events: none;
     }
