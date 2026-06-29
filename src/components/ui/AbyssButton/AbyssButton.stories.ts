@@ -2,6 +2,7 @@ import type { Meta, StoryObj } from '@storybook/vue3';
 import { expect, fn } from 'storybook/test';
 import { ref } from 'vue';
 import AbyssButton from '@/components/ui/AbyssButton/AbyssButton.vue';
+import AbyssButtonGroup from '@/components/ui/AbyssButtonGroup/AbyssButtonGroup.vue';
 import { withAbyssBackground } from '@/stories/AbyssBackgroundDecorator';
 import {
   SEMANTIC_GRADIENTS,
@@ -35,6 +36,24 @@ const meta: Meta<AbyssButtonStoryArgs> = {
   title: 'UI/AbyssButton',
   component: AbyssButton,
   tags: ['autodocs'],
+  parameters: {
+    docs: {
+      description: {
+        component:
+          'Przycisk Abyss z wariantami rozmiaru, stanu (`current`, `toggled`, `loading`) oraz kolorem semantycznym przez `gradient` + `gradientColors`.\n\n' +
+          '**Kolory semantyczne** — ustawiane przez `gradient` i `gradientColors`:\n' +
+          '- `theme` — najistotniejsze funkcje globalne aplikacji (np. dodanie notatki, aktualizacja subskrypcji). To nie jest domyślna pierwsza akcja w bloku, lecz główna akcja na skalę całej aplikacji.\n' +
+          '- `success` — akceptacja i potwierdzenie.\n' +
+          '- `info` — zapis i edycja.\n' +
+          '- `warning` — akcje wymagające uwagi (np. zmiana hasła). Ma priorytet nad `info` przy zapisie lub potwierdzeniu czegoś istotnego.\n' +
+          '- `danger` — operacje nieodwracalne (np. usunięcie danych).\n' +
+          '- `hint` — akcje informacyjne lub prowadzące do pobocznego procesu.\n\n' +
+          'Kolory `success`, `info`, `warning`, `danger` i `hint` są kontekstowe — w dialogu z potwierdzeniem i anulowaniem przycisk operacyjny dostaje kolor zależny od wykonywanej akcji. Nie używaj wariantu gradientowego, jeśli akcja jest jedyna na liście.\n\n' +
+          '**`flat`** — wyłącznie w nagłówku i stopce `AbyssCard` oraz w `AbyssDialog`. Nie stosuj go nigdzie indziej.\n\n' +
+          'Pełna matryca decyzyjna: `docs/architecture/abyss-design.md`.',
+      },
+    },
+  },
   argTypes: {
     label: {
       control: 'text',
@@ -119,7 +138,7 @@ const meta: Meta<AbyssButtonStoryArgs> = {
     flat: {
       control: 'boolean',
       description:
-        'Płaski styl bez cienia i ruchu unoszenia, z delikatnym borderem na hover i focus. Można łączyć z `gradient`.',
+        'Płaski styl bez cienia i unoszenia. Dozwolony wyłącznie w nagłówku/stopce `AbyssCard` i w `AbyssDialog`. Można łączyć z `gradient`.',
       table: {
         defaultValue: { summary: 'false' },
       },
@@ -135,7 +154,7 @@ const meta: Meta<AbyssButtonStoryArgs> = {
     gradient: {
       control: 'boolean',
       description:
-        'Czy przycisk ma mieć gradientowe tło oparte na kolorach motywu',
+        'Włącza gradientowe tło. Używaj dla kontekstowej akcji operacyjnej (`gradientColors`) lub globalnego CTA (`theme`). Nie stosuj, gdy akcja jest jedyna na liście.',
       table: {
         defaultValue: { summary: 'false' },
       },
@@ -143,7 +162,7 @@ const meta: Meta<AbyssButtonStoryArgs> = {
     gradientColors: {
       control: 'object',
       description:
-        'Kolory gradientu jako tablica CSS albo nazwa semantycznego gradientu: `info`, `warning`, `success`, `danger`, `hint`, `theme`. Tablica nadpisuje kolory motywu. Obsługiwane formaty kolorów: HSL, HSLA, HEX, RGB, RGBA.',
+        'Kolor semantyczny akcji: `theme` (globalne CTA), `success` (potwierdzenie), `info` (zapis/edycja), `warning` (uwaga, istotne zmiany), `danger` (nieodwracalne), `hint` (informacja/poboczny proces). Tablica CSS nadpisuje kolory motywu.',
       table: {
         type: { summary: 'string[] | SemanticGradientKey' },
         defaultValue: { summary: 'undefined' },
@@ -766,7 +785,7 @@ export const Flat: Story = {
     docs: {
       description: {
         story:
-          'Przycisk w płaskim stylu we wszystkich rozmiarach — transparentne tło, bez cienia i ruchu unoszenia.',
+          'Przycisk w płaskim stylu — dozwolony wyłącznie w nagłówku/stopce `AbyssCard` i w `AbyssDialog`. Transparentne tło, bez cienia i ruchu unoszenia.',
       },
       source: {
         code: sizeVariantsSourceCode({
@@ -951,12 +970,188 @@ export const FlatGradient: Story = {
   },
 };
 
+const semanticUsageLayoutStyle =
+  'display: flex; flex-direction: column; gap: 24px; align-items: flex-start; width: 100%; max-width: 520px;';
+
+const semanticUsageRowStyle =
+  'display: flex; flex-direction: column; gap: 8px; width: 100%;';
+
+const semanticUsageActionsStyle =
+  'display: flex; gap: 12px; justify-content: flex-end; width: 100%;';
+
+export const SemanticColorUsage: Story = {
+  name: 'Zastosowanie kolorów semantycznych',
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'Przykłady doboru `gradientColors` w kontekście oraz reguła: bez gradientu, gdy akcja jest jedyna na liście. `flat` pokazany wyłącznie jako akcja pomocnicza w parze decyzyjnej (jak w dialogu).',
+      },
+      source: {
+        code: `<!-- Globalne CTA aplikacji -->
+<AbyssButton
+  label="Dodaj notatkę"
+  icon-right="sym_r_note_stack_add"
+  gradient
+  gradient-colors="theme"
+/>
+
+<!-- Dialog: zapis -->
+<AbyssButtonGroup>
+  <AbyssButton label="Anuluj" flat size="medium" />
+  <AbyssButton
+    label="Zapisz"
+    icon="sym_r_save"
+    gradient
+    gradient-colors="info"
+    size="medium"
+  />
+</AbyssButtonGroup>
+
+<!-- Dialog: istotna zmiana — warning ma priorytet nad info -->
+<AbyssButtonGroup>
+  <AbyssButton label="Anuluj" flat size="medium" />
+  <AbyssButton
+    label="Zmień hasło"
+    icon="sym_r_lock"
+    gradient
+    gradient-colors="warning"
+    size="medium"
+  />
+</AbyssButtonGroup>
+
+<!-- Dialog: operacja nieodwracalna -->
+<AbyssButtonGroup>
+  <AbyssButton label="Anuluj" flat size="medium" />
+  <AbyssButton
+    label="Usuń"
+    icon="sym_r_delete"
+    gradient
+    gradient-colors="danger"
+    size="medium"
+  />
+</AbyssButtonGroup>
+
+<!-- Jedyna akcja na liście — bez gradientu -->
+<AbyssButton label="Zapisz ustawienia" icon="sym_r_save" />`,
+      },
+    },
+  },
+  render: () => ({
+    components: { AbyssButton, AbyssButtonGroup },
+    template: `
+      <div style="${semanticUsageLayoutStyle}">
+        <div style="${semanticUsageRowStyle}">
+          <strong>Globalne CTA — theme</strong>
+          <AbyssButton
+            label="Dodaj notatkę"
+            icon-right="sym_r_note_stack_add"
+            gradient
+            gradient-colors="theme"
+          />
+        </div>
+
+        <div style="${semanticUsageRowStyle}">
+          <strong>Dialog — zapis (info)</strong>
+          <div style="${semanticUsageActionsStyle}">
+            <AbyssButtonGroup>
+              <AbyssButton label="Anuluj" flat size="medium" />
+              <AbyssButton
+                label="Zapisz"
+                icon="sym_r_save"
+                gradient
+                gradient-colors="info"
+                size="medium"
+              />
+            </AbyssButtonGroup>
+          </div>
+        </div>
+
+        <div style="${semanticUsageRowStyle}">
+          <strong>Dialog — istotna zmiana (warning)</strong>
+          <div style="${semanticUsageActionsStyle}">
+            <AbyssButtonGroup>
+              <AbyssButton label="Anuluj" flat size="medium" />
+              <AbyssButton
+                label="Zmień hasło"
+                icon="sym_r_lock"
+                gradient
+                gradient-colors="warning"
+                size="medium"
+              />
+            </AbyssButtonGroup>
+          </div>
+        </div>
+
+        <div style="${semanticUsageRowStyle}">
+          <strong>Dialog — potwierdzenie (success)</strong>
+          <div style="${semanticUsageActionsStyle}">
+            <AbyssButtonGroup>
+              <AbyssButton label="Anuluj" flat size="medium" />
+              <AbyssButton
+                label="Potwierdź"
+                icon="sym_r_check"
+                gradient
+                gradient-colors="success"
+                size="medium"
+              />
+            </AbyssButtonGroup>
+          </div>
+        </div>
+
+        <div style="${semanticUsageRowStyle}">
+          <strong>Dialog — operacja nieodwracalna (danger)</strong>
+          <div style="${semanticUsageActionsStyle}">
+            <AbyssButtonGroup>
+              <AbyssButton label="Anuluj" flat size="medium" />
+              <AbyssButton
+                label="Usuń"
+                icon="sym_r_delete"
+                gradient
+                gradient-colors="danger"
+                size="medium"
+              />
+            </AbyssButtonGroup>
+          </div>
+        </div>
+
+        <div style="${semanticUsageRowStyle}">
+          <strong>Poboczny proces (hint)</strong>
+          <AbyssButton
+            label="Dowiedz się więcej"
+            icon-right="sym_r_help"
+            gradient
+            gradient-colors="hint"
+            flat
+          />
+        </div>
+
+        <div style="${semanticUsageRowStyle}">
+          <strong>Jedyna akcja na liście — bez gradientu</strong>
+          <AbyssButton label="Zapisz ustawienia" icon="sym_r_save" />
+        </div>
+      </div>
+    `,
+  }),
+  play: async ({ canvas }) => {
+    await expect(canvas.getByRole('button', { name: 'Dodaj notatkę' })).toHaveClass(
+      'gradient',
+    );
+    await expect(canvas.getByRole('button', { name: 'Zapisz' })).toHaveClass(
+      'gradient',
+    );
+    await expect(
+      canvas.getByRole('button', { name: 'Zapisz ustawienia' }),
+    ).not.toHaveClass('gradient');
+  },
+};
+
 export const SemanticGradientColors: Story = {
   name: 'Opcje gradientColors',
   parameters: {
     docs: {
       description: {
-        story: `Wszystkie warianty prop \`gradientColors\`: semantyczne klucze (\`${SEMANTIC_GRADIENTS.map((g) => g.key).join('`, `')}\`, w tym \`theme\` jako gradient ze store) oraz własna tablica kolorów CSS.`,
+        story: `Wszystkie warianty prop \`gradientColors\`: \`${SEMANTIC_GRADIENTS.map((g) => g.key).join('`, `')}\` oraz własna tablica kolorów CSS. Zobacz story „Zastosowanie kolorów semantycznych” i opisy w \`semantic-gradients.ts\`.`,
       },
       source: {
         code: gradientColorOptionsSourceCode(),

@@ -36,8 +36,8 @@ Najwazniejsze zasady interpretacji:
 3. `backdrop-filter: blur()` jest zarezerwowany dla warstw tymczasowych nad trescia, takich jak dialogi, modale, menu i tooltipy. Nie stosuj blur na przyciskach, kartach, nawigacji i polach formularza.
 4. Nie wprowadzaj lokalnych skal spacingu ani nowych promieni naroznikow tylko dla jednego widoku. Jezeli wartosc nie miesci sie w obecnym systemie, to jest sygnal do zmiany systemowej, a nie do lokalnego obejscia.
 5. Kazdy kontener powinien miec jedna czytelna hierarchie akcji. Uzytkownik ma od razu widziec, ktora akcja jest glowna, ktora wspierajaca, a ktora tylko stanem.
-6. Operacje destrukcyjne wyrazaj przede wszystkim przez kontekst powierzchni i copy, a nie przez tworzenie osobnego czerwonego wariantu przycisku. W Abyss sygnal ryzyka pochodzi z karty, informacji i ikonografii.
-7. Nazwy wariantow przycisku sa semantyczne i musza pozostac spójne z API: `flat`, `current`, `toggled`, `special`, `fullWidth`, `size="small"`.
+6. Operacje destrukcyjne oznaczaj kolorem `danger` na przycisku operacyjnym oraz buduj kontekst ryzyka przez kartę, `AbyssInfo`, ikonografię i copy.
+7. Nazwy wariantów przycisku sa semantyczne i musza pozostac spójne z API: `flat`, `current`, `toggled`, `gradient`, `gradientColors`, `fullWidth`, `size="small"`.
 
 ---
 
@@ -114,22 +114,43 @@ Reguly praktyczne:
 
 ## Matryca przyciskow
 
+### Kolory semantyczne (`gradient` + `gradientColors`)
+
+Kolory semantyczne nadaja sie przez `gradient` oraz `gradientColors`. Sluza do rozroznienia znaczenia akcji operacyjnej w danym kontekscie — w klasycznym sensie primary z Bootstrapa, a nie jako globalne CTA calej aplikacji.
+
+| Klucz     | Kiedy uzywac                                                                                              | Przyklady                                                                 | Nie uzywaj gdy                                                                                    |
+| --------- | --------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------- |
+| `theme`   | najistotniejsza funkcja globalna w calej aplikacji                                                        | dodanie notatki w dzienniku, aktualizacja subskrypcji                     | akcja jest tylko glowna w jednym bloku, dialogu lub formularzu                                    |
+| `success` | akceptacja lub potwierdzenie czegos                                                                       | zatwierdzenie wyboru, potwierdzenie zgody                                 | zapis, edycja albo operacja destrukcyjna                                                          |
+| `info`    | zapis i edycja                                                                                            | zapisz zmiany, edytuj profil                                              | operacja wymaga szczegolnej uwagi — wtedy `warning` ma priorytet                                  |
+| `warning` | akcje wymagajace uwagi lub zapis/potwierdzenie czegos istotnego                                           | zmiana hasla, potwierdzenie istotnej zmiany                               | zwykly zapis bez podwyzszonego ryzyka                                                             |
+| `danger`  | operacje nieodwracalne                                                                                    | usuniecie danych, trwale usuniecie konta                                  | akcja jest odwracalna albo tylko informacyjna                                                     |
+| `hint`    | akcje informacyjne lub prowadzace do pobocznego procesu                                                  | dowiedz sie wiecej, przejdz do pomocy, otworz szczegoly                   | glowna decyzja w dialogu, zapis, potwierdzenie albo destrukcja                                    |
+
+Reguly praktyczne:
+
+- `theme` jest zarezerwowany dla najwazniejszych funkcji na skale calej aplikacji. To nie jest domyslna pierwsza akcja w bloku — to glowna akcja globalna.
+- Kolory `success`, `info`, `warning`, `danger` i `hint` sa kontekstowe. W dialogu z dwiema opcjami — np. potwierdzenie i anulowanie — przycisk operacyjny dostaje kolor zalezny od wykonywanej akcji.
+- `warning` ma priorytet nad `info`, gdy chodzi o zapis lub potwierdzenie czegos istotnego.
+- Nie uzywaj wariantu gradientowego, jesli akcja jest jedyna na liscie. Wtedy wystarczy domyslny przycisk bez `gradient`.
+- W jednym bloku decyzyjnym zwykle jest jeden przycisk operacyjny z kolorem semantycznym oraz ewentualnie akcje pomocnicze bez gradientu albo w wariancie `flat`.
+
 ### Warianty semantyczne
 
 | Wariant   | Uzywaj gdy                                                          | Typowe miejsca                                                                                 | Nie uzywaj gdy                                                                               |
 | --------- | ------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------- |
-| domyslny  | to jest glowna akcja w danym bloku                                  | formularze, karty ustawien, dialogi, decyzje binarne                                           | akcja jest wyraznie poboczna, opcjonalna albo tylko zmienia lokalny stan                     |
-| `flat`    | akcja ma nizszy priorytet niz glowna decyzja                        | akcje pomocnicze, wtórne rozwidlenie flow, opcjonalne potwierdzenie, niski priorytet w dialogu | akcja ma konkurowac z glownym CTA albo ma byc jedynym sygnalem na ekranie                    |
+| domyslny  | to jest jedyna akcja na liscie albo akcja pomocnicza bez gradientu  | pojedynczy przycisk w sekcji, anulowanie w dialogu                                             | akcja jest glowna operacyjna w parze decyzyjnej — wtedy uzyj `gradient` z kolorem semantycznym |
+| `flat`    | akcja pomocnicza w naglowku lub stopce karty albo dialogu           | `AbyssCard` header-append, footer-append; akcje w `AbyssDialog`                                 | poza naglowkiem/stopka karty i dialogiem — `flat` nie jest dozwolony nigdzie indziej         |
 | `current` | element reprezentuje aktualnie aktywny kontekst lub wybrany cel     | aktywna nawigacja, aktualnie wybrany rekord lub route                                          | stan mozna wylaczyc tym samym kliknieciem, albo jest to tymczasowy toggle                    |
 | `toggled` | element jest wlaczonym przełącznikiem, ale dalej pozostaje klikalny | toolbar formatowania, aktywne filtry, segmenty wyboru                                          | nawigacja, aktywny route, decyzje jednokrotne                                                |
-| `special` | potrzebny jest pojedynczy, rzadki akcent premium lub motywiczny     | wyroznione CTA, akcja otwierajaca glowny kreator, miejsce swiadomie akcentowane kolorem        | wiecej niz jeden akcent w jednej sekcji, zwykle akcje formularzowe, wszystkie CTA na ekranie |
+| `gradient`| akcja operacyjna ma wyrazne znaczenie semantyczne                   | glowny przycisk w dialogu, globalne CTA (`theme`), kontekstowa akcja w parze decyzyjnej       | akcja jest jedyna na liscie albo tylko pomocnicza w headerze/stopce                          |
 
 Reguly praktyczne:
 
-- W jednym bloku tresci preferuj jedna glowna akcje. Jezeli widzisz trzy przyciski o tym samym wizualnym ciezarze, to znaczy, ze hierarchia jest nieczytelna.
+- W jednym bloku tresci preferuj jedna glowna akcje operacyjna z kolorem semantycznym. Jezeli widzisz kilka gradientowych przyciskow o tym samym ciezarze, hierarchia jest nieczytelna.
+- `flat` jest wylacznie dla naglowka i stopki `AbyssCard` oraz dla akcji w `AbyssDialog`. Nie stosuj go w formularzach, listach, toolbarach ani na stronach.
 - `current` i `toggled` nie sa zamienne. `current` oznacza aktualnie wybrany kontekst, `toggled` oznacza aktywny stan, ktory mozna od razu cofnac.
-- `special` jest akcentem, nie codziennym wariantem. Jedna sekcja, jeden akcent, jeden powod.
-- Operacja destrukcyjna nie potrzebuje osobnego czerwonego przycisku. Najpierw buduj kontekst ryzyka przez `AbyssCard`, `AbyssInfo`, ikonografie i copy.
+- Operacja destrukcyjna uzywa `gradientColors="danger"` na przycisku operacyjnym oraz kontekstu ryzyka przez `AbyssCard`, `AbyssInfo`, ikonografie i copy.
 
 ### Modyfikatory ukladu i gestosci
 
@@ -163,14 +184,15 @@ Reguly praktyczne:
 ### 2. Blok destrukcyjny
 
 - Ryzyko buduj przez kontekst: karta o wyraznym charakterze, `AbyssInfo` z tytulem ostrzegawczym, ikona ryzyka.
-- Sam przycisk destrukcyjny pozostaje w domyslnym wariancie, ale jest jednoznacznie opisany i osadzony w ostrzegajacej powierzchni.
-- Nie tworz lokalnych czerwonych gradientow, nowych kolorow obramowan ani nowych glow dla przycisku tylko po to, by zaznaczyc ryzyko.
+- Przycisk operacyjny uzywa `gradient` z `gradientColors="danger"`.
+- Akcja anulowania w dialogu pozostaje `flat` albo domyslna, bez gradientu.
 
 ### 3. Dialog potwierdzenia lub skupionej akcji
 
 - Uzyj `AbyssDialog`, bo jest to jedyna warstwa, ktora ma prawo do blur jako stalego srodka wyrazu.
 - Tresc dialogu trzymaj w rytmie `12px`, a cialo w paddingu `16px`.
-- Glowna akcja w dialogu moze byc domyslna i `fullWidth`, a akcja nizszego priorytetu powinna byc `flat` albo osobnym przyciskiem zamkniecia.
+- Akcja operacyjna dostaje `gradient` z kolorem semantycznym zaleznie od akcji: `success` dla potwierdzenia, `info` dla zapisu, `warning` dla istotnych zmian, `danger` dla operacji nieodwracalnych.
+- Akcja anulowania lub nizszego priorytetu powinna byc `flat`.
 - Ikona zamkniecia nie zastępuje jawnej akcji anulowania tam, gdzie decyzja jest istotna lub nieodwracalna.
 
 ### 4. Toolbar albo segment przelaczany
@@ -194,16 +216,19 @@ Reguly praktyczne:
 
 - Uzywaj `8px` jako domyslnego border radius dla glownych powierzchni i przyciskow.
 - Uzywaj `16px` dla paddingu kart i `12px` dla pionowego rytmu form i dialogow.
-- Traktuj `flat` jako akcje wtórna, a nie jako losowy styl alternatywny.
+- Traktuj `flat` jako akcje pomocnicza wylacznie w naglowku/stopce `AbyssCard` i w `AbyssDialog`.
+- Traktuj `gradient` + `gradientColors` jako kontekstowa akcja operacyjna; `theme` tylko dla globalnych funkcji aplikacji.
 - Traktuj `current` jako oznaczenie aktualnego kontekstu, a `toggled` jako aktywnego, nadal klikalnego stanu.
-- Buduj ryzyko przez kontekst sekcji, nie przez wymyslanie nowego wariantu przycisku.
+- Buduj ryzyko przez kontekst sekcji oraz `danger` na przycisku operacyjnym.
 - Uzywaj `AbyssInfo` tylko dla nazwanych komunikatow.
 
 ### Don't
 
 - Nie dokladaj blur do kart, przyciskow, stalej nawigacji i pol formularza.
 - Nie wprowadzaj lokalnych wartosci `10px`, `14px`, `20px` i podobnych, jezeli system nie przewiduje takiego stopnia.
-- Nie lacz kilku akcentow `special` w jednej sekcji lub jednym widoku.
+- Nie uzywaj `flat` poza naglowkiem/stopka `AbyssCard` i `AbyssDialog`.
+- Nie uzywaj `gradient`, gdy akcja jest jedyna na liscie.
+- Nie uzywaj `theme` dla lokalnej glownej akcji w bloku — to kolor globalnych funkcji aplikacji.
 - Nie uzywaj `current` do formatowania tekstu ani aktywnych filtrow wielokrotnego wyboru.
 - Nie uzywaj `icon-only` dla akcji o niejasnej albo nieodwracalnej konsekwencji.
 - Nie buduj recznie pseudo-grup przyciskow przez marginesy i lokalne radiusy, gdy istnieje `AbyssButtonGroup`.
@@ -213,7 +238,7 @@ Reguly praktyczne:
 ## Referencyjne implementacje
 
 - `AbyssButton` — [`src/components/ui/AbyssButton/AbyssButton.vue`](../../src/components/ui/AbyssButton/AbyssButton.vue)
-  Definicja wariantow `flat`, `current`, `toggled`, `special`, rozmiarow i modyfikatorow.
+  Definicja wariantow `flat`, `current`, `toggled`, `gradient`, `gradientColors`, rozmiarow i modyfikatorow.
 - `AbyssButton` stories — [`src/components/ui/AbyssButton/AbyssButton.stories.ts`](../../src/components/ui/AbyssButton/AbyssButton.stories.ts)
   Opisy semantyki wariantow i ich intencji projektowej.
 - `AbyssCard` — [`src/components/ui/AbyssCard/AbyssCard.vue`](../../src/components/ui/AbyssCard/AbyssCard.vue)

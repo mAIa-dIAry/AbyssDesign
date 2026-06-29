@@ -19,37 +19,42 @@ export const SEMANTIC_GRADIENTS: SemanticGradient[] = [
   {
     key: 'info',
     label: 'Info',
-    description: 'Błękit → granat — komunikaty informacyjne.',
+    description:
+      'Zapis i edycja — kontekstowa akcja operacyjna w dialogu lub formularzu.',
     colors: [...SEMANTIC_GRADIENT_COLOR_MAP.info],
   },
   {
     key: 'warning',
     label: 'Warning',
-    description: 'Żółty → pomarańczowy — ostrzeżenia i stany wymagające uwagi.',
+    description:
+      'Akcje wymagające uwagi (np. zmiana hasła). Ma priorytet nad info przy zapisie lub potwierdzeniu czegoś istotnego.',
     colors: [...SEMANTIC_GRADIENT_COLOR_MAP.warning],
   },
   {
     key: 'success',
     label: 'Success',
-    description: 'Limonka → turkus — potwierdzenia i pozytywne wyniki.',
+    description: 'Akceptacja i potwierdzenie — kontekstowa akcja operacyjna.',
     colors: [...SEMANTIC_GRADIENT_COLOR_MAP.success],
   },
   {
     key: 'danger',
     label: 'Danger',
-    description: 'Ciemny pomarańcz → czerwień — błędy i destrukcyjne akcje.',
+    description:
+      'Operacje nieodwracalne (np. usunięcie danych) — kontekstowa akcja operacyjna.',
     colors: [...SEMANTIC_GRADIENT_COLOR_MAP.danger],
   },
   {
     key: 'hint',
     label: 'Hint',
-    description: 'Róż → purpura — podpowiedzi i stany pomocnicze.',
+    description:
+      'Akcje informacyjne lub prowadzące do pobocznego procesu.',
     colors: [...SEMANTIC_GRADIENT_COLOR_MAP.hint],
   },
   {
     key: 'theme',
     label: 'Theme',
-    description: 'Domyślny gradient motywu aplikacji.',
+    description:
+      'Najistotniejsze funkcje globalne aplikacji (np. dodanie notatki, aktualizacja subskrypcji). Nie jest to domyślna pierwsza akcja w bloku.',
     colors: [...SEMANTIC_GRADIENT_COLOR_MAP.theme],
   },
 ];
