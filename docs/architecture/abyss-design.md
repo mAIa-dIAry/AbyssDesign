@@ -231,6 +231,7 @@ Reguly praktyczne:
 - Traktuj `current` jako oznaczenie aktualnego kontekstu, a `toggled` jako aktywnego, nadal klikalnego stanu.
 - Buduj ryzyko przez kontekst sekcji oraz `danger` na przycisku operacyjnym.
 - Uzywaj `AbyssInfo` tylko dla nazwanych komunikatow.
+- Uzywaj `AbyssDate` i `AbyssTime` (albo `AbyssInput` z `type="date"`, `type="time"`, `type="datetime-local"`) jako jedynego sposobu wyboru daty i czasu.
 
 ### Don't
 
@@ -243,6 +244,7 @@ Reguly praktyczne:
 - Nie uzywaj `current` do formatowania tekstu ani aktywnych filtrow wielokrotnego wyboru.
 - Nie uzywaj `icon-only` dla akcji o niejasnej albo nieodwracalnej konsekwencji.
 - Nie buduj recznie pseudo-grup przyciskow przez marginesy i lokalne radiusy, gdy istnieje `AbyssButtonGroup`.
+- Nie uzywaj natywnych selektorow daty ani czasu przegladarki/OS (`input type="date"`, `type="time"`, `type="datetime-local"` z wbudowanym UI systemowym). Zawsze uruchamiaj dokladnie `AbyssDate` / `AbyssTime` — bezposrednio lub przez `AbyssInput` z odpowiednim `type`.
 
 ---
 

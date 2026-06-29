@@ -1,35 +1,60 @@
 ﻿<template>
-  <q-time
-    :model-value="modelValue"
-    @update:model-value="$emit('update:modelValue', $event)"
-    :mask="mask"
-    :format24h="format24h"
-    :now-btn="nowBtn"
-    :dark="dark"
-    :locale="resolvedLocale"
-    :class="['abyss-time', $props.class]"
-    :style="mergedStyle"
-    v-bind="$attrs"
-  >
-    <slot />
-
-    <div
-      v-if="!$slots.default && showCloseButton"
-      class="row items-center justify-end"
-    >
-      <AbyssButton :label="resolvedCloseLabel" @click="$emit('close')" />
+  <div class="abyss-time" :class="$props.class" :style="style">
+    <div class="abyss-time__body">
+      <q-time
+        :model-value="modelValue"
+        :mask="mask"
+        :format24h="format24h"
+        :now-btn="nowBtn"
+        :dark="dark"
+        :locale="resolvedLocale"
+        v-bind="$attrs"
+        @update:model-value="$emit('update:modelValue', $event)"
+      >
+        <slot />
+      </q-time>
     </div>
-  </q-time>
+
+    <template v-if="!$slots.default">
+      <AbyssSeparator />
+
+      <div class="abyss-time__footer">
+        <div class="abyss-time__footer-spacer"></div>
+        <div class="abyss-time__footer-append">
+          <slot name="footer-append">
+            <AbyssButtonGroup>
+              <AbyssButton
+                :label="resolvedCancelLabel"
+                flat
+                size="medium"
+                @click="handleCancel"
+              />
+              <AbyssButton
+                :label="resolvedConfirmLabel"
+                flat
+                gradient
+                gradient-colors="success"
+                size="medium"
+                @click="handleConfirm"
+              />
+            </AbyssButtonGroup>
+          </slot>
+        </div>
+      </div>
+    </template>
+  </div>
 </template>
 
 <script setup lang="ts">
-import { computed, watch } from 'vue';
+import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
-import {
-  DEFAULT_GRADIENT_COLORS,
-  useGradient,
-} from '@/composables/useGradient';
 import AbyssButton from '@/components/ui/AbyssButton/AbyssButton.vue';
+import AbyssButtonGroup from '@/components/ui/AbyssButtonGroup/AbyssButtonGroup.vue';
+import AbyssSeparator from '@/components/ui/AbyssSeparator/AbyssSeparator.vue';
+
+defineOptions({
+  inheritAttrs: false,
+});
 
 export interface AbyssTimeProps {
   modelValue?: string | null;
@@ -37,9 +62,8 @@ export interface AbyssTimeProps {
   format24h?: boolean;
   nowBtn?: boolean;
   dark?: boolean;
-  showCloseButton?: boolean;
-  closeLabel?: string;
-  colors?: string[];
+  cancelLabel?: string;
+  confirmLabel?: string;
   locale?: {
     days: string[];
     daysShort: string[];
@@ -59,26 +83,19 @@ const props = withDefaults(defineProps<AbyssTimeProps>(), {
   format24h: true,
   nowBtn: true,
   dark: true,
-  showCloseButton: true,
-  closeLabel: '',
-  colors: () => DEFAULT_GRADIENT_COLORS,
+  cancelLabel: '',
+  confirmLabel: '',
   style: '',
   class: '',
 });
 
+const emit = defineEmits<{
+  'update:modelValue': [value: string | null];
+  close: [];
+  confirm: [];
+}>();
+
 const i18n = useI18n();
-
-const { gradientCss, setColors } = useGradient(props.colors);
-
-watch(
-  () => props.colors,
-  (newColors) => setColors(newColors ?? DEFAULT_GRADIENT_COLORS),
-);
-
-const mergedStyle = computed(() => [
-  props.style,
-  { '--header-gradient': gradientCss.value },
-]);
 
 function toStringArray(value: unknown): string[] {
   if (!Array.isArray(value)) {
@@ -96,43 +113,167 @@ const defaultLocale = computed(() => ({
 }));
 
 const resolvedLocale = computed(() => props.locale ?? defaultLocale.value);
-const resolvedCloseLabel = computed(
-  () => props.closeLabel || i18n.t('ui.datePicker.close'),
+const resolvedCancelLabel = computed(
+  () => props.cancelLabel || i18n.t('ui.datePicker.cancel'),
+);
+const resolvedConfirmLabel = computed(
+  () => props.confirmLabel || i18n.t('ui.datePicker.confirm'),
 );
 
-defineEmits<{
-  'update:modelValue': [value: string | null];
-  close: [];
-}>();
+function handleCancel() {
+  emit('close');
+}
+
+function handleConfirm() {
+  emit('confirm');
+  emit('close');
+}
 </script>
 
 <style scoped lang="scss">
-.abyss-time {
-  --border-radius: 16px;
-  border-radius: var(--border-radius);
-  overflow: hidden;
-  box-shadow: $shadow-dialog, $shadow-frame-medium;
+@mixin abyss-time-flat-q-btn {
+  box-shadow: $shadow-zero;
   background-color: transparent;
+  border: 1px solid transparent;
+  border-radius: var(--time-btn-radius);
+  min-height: var(--time-btn-size);
+  padding: calc(var(--time-btn-padding-y) - 1px)
+    calc(var(--time-btn-padding-x) - 1px);
+  font-size: var(--time-btn-font-size);
+  line-height: var(--time-btn-line-height);
+  transition: all 0.3s ease-out;
+
+  &::before,
+  &::after {
+    display: none;
+  }
+
+  .q-focus-helper {
+    display: none;
+  }
+
+  .q-ripple {
+    opacity: 0.2;
+  }
+
+  &.q-btn--round,
+  &.q-time__clock-position {
+    width: var(--time-btn-size);
+    min-width: var(--time-btn-size);
+    max-width: var(--time-btn-size);
+    height: var(--time-btn-size);
+    padding: 0;
+    border-radius: 50%;
+  }
+
+  .q-btn__content {
+    line-height: var(--time-btn-line-height);
+  }
+
+  &:not(.disabled, .q-btn--disabled, .q-time__clock-position--active) {
+    @media (hover: hover) and (pointer: fine) {
+      &:hover {
+        background-color: rgba(white, 0.04);
+        border-color: rgba(white, 0.08);
+        box-shadow: none;
+      }
+    }
+
+    &:focus-visible {
+      background-color: rgba(white, 0.04);
+      border-color: rgba(white, 0.08);
+      box-shadow: none;
+    }
+
+    &:active {
+      background-color: rgba(white, 0.03);
+      border-color: rgba(white, 0.22);
+      box-shadow: none;
+    }
+  }
+}
+
+.abyss-time {
+  --time-padding: 16px;
+  --border-radius: 16px;
+  --time-btn-radius: 8px;
+  --time-btn-padding-x: 12px;
+  --time-btn-padding-y: 8px;
+  --time-btn-size: 32px;
+  --time-btn-font-size: 12px;
+  --time-btn-line-height: 16px;
+
+  display: inline-flex;
+  flex-direction: column;
+  width: fit-content;
+  max-width: 100%;
+  overflow: hidden;
+  border-radius: var(--border-radius);
+  box-shadow: $shadow-dialog, $shadow-frame-medium;
+  border-bottom: 1px solid rgba(black, 0.2);
+  background-color: rgba(black, 0.25);
   -webkit-backdrop-filter: blur(20px);
   backdrop-filter: blur(20px);
 
-  :deep() {
-    .q-time__header {
-      background: var(--header-gradient);
-      position: relative;
+  &__footer {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    box-sizing: border-box;
+    padding: 12px var(--time-padding);
+    gap: 8px;
+    font-size: 18px;
+    min-height: 48px;
+  }
+
+  &__footer-spacer {
+    flex: 1;
+    min-width: 0;
+    min-height: 24px;
+  }
+
+  &__footer-append {
+    display: flex;
+    align-items: center;
+
+    &:empty {
+      display: none;
+    }
+
+    :deep(.abyss-button) {
+      --border-radius: var(--time-btn-radius);
+    }
+
+    :deep(.abyss-button-group) {
+      margin-top: -8px;
+      margin-bottom: -8px;
+      margin-right: -12px;
+    }
+
+    :deep(> .abyss-button) {
+      margin-top: -8px;
+      margin-bottom: -8px;
+      margin-right: -12px;
+    }
+  }
+
+  &__body {
+    min-height: 0;
+    width: fit-content;
+    max-width: 100%;
+
+    :deep(.q-time) {
+      box-shadow: none;
+      background: transparent;
+      border-radius: 0;
+    }
+
+    :deep(.q-time__header) {
+      background: transparent;
       border-top-left-radius: var(--border-radius);
       border-top-right-radius: var(--border-radius);
-      box-shadow: $shadow-frame-medium;
-
-      &::before {
-        content: '';
-        position: absolute;
-        inset: 0;
-        background-color: rgba(0, 0, 0, 0.5);
-        z-index: 0;
-        border-top-left-radius: var(--border-radius);
-        border-top-right-radius: var(--border-radius);
-      }
+      border-bottom: 1px solid rgba(black, 0.3);
+      box-shadow: 0 1px 0 rgba(white, 0.04);
 
       .q-time__header-label {
         position: inherit;
@@ -140,25 +281,48 @@ defineEmits<{
       }
     }
 
-    .q-time__main {
-      background-color: rgba(black, 0.5);
-      border-bottom-left-radius: var(--border-radius);
-      border-bottom-right-radius: var(--border-radius);
+    :deep(.q-time__main) {
+      background-color: transparent;
     }
 
-    .q-time__clock-pointer {
+    :deep(.q-time__container-child) {
+      background-color: rgba(white, 0.02);
+      border: 1px solid rgba(white, 0.06);
+      box-shadow: none;
+    }
+
+    :deep(.q-time__clock-pointer) {
       --q-primary: white;
     }
 
-    .q-time__clock-position--active {
+    :deep(.q-time__clock-position--active) {
       background-color: white;
       color: black;
       font-weight: 600;
+      border-radius: 50%;
     }
 
-    .q-time__now-button {
-      --q-primary: #{rgba(white, 0.05)};
-      box-shadow: $shadow-base;
+    :deep(.q-time__header .q-btn:not(.abyss-button)) {
+      @include abyss-time-flat-q-btn;
+    }
+
+    :deep(.q-time__main .q-btn:not(.abyss-button)) {
+      @include abyss-time-flat-q-btn;
+      border-radius: 50%;
+    }
+
+    :deep(.q-time__main .q-btn.q-time__clock-position) {
+      width: var(--time-btn-size);
+      min-width: var(--time-btn-size);
+      max-width: var(--time-btn-size);
+      height: var(--time-btn-size);
+      padding: 0;
+    }
+
+    :deep(.q-time__now-button) {
+      --q-primary: transparent;
+      box-shadow: none;
+      border-radius: 50%;
     }
   }
 }
