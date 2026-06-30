@@ -237,7 +237,6 @@ const SecurityTabPreview = defineComponent({
           <AbyssToggle
             v-model="appLockEnabled"
             label="Wymagaj biometrii przy otwarciu"
-            left-label
           />
         </template>
       </AbyssCard>
@@ -393,7 +392,6 @@ const AccessibilityTabPreview = defineComponent({
           <AbyssToggle
             v-model="shortcutEnabled"
             label="Włącz skrót globalny"
-            left-label
           />
 
           <div class="abyss-settings-story__keybind">Ctrl + Shift + M</div>
@@ -416,14 +414,12 @@ const AccessibilityTabPreview = defineComponent({
           <AbyssToggle
             v-model="launchAtStartup"
             label="Uruchamiaj przy starcie systemu"
-            left-label
           />
 
           <AbyssToggle
             v-model="launchMinimized"
             label="Startuj zminimalizowaną"
             :disable="launchMinimizedDisabled"
-            left-label
           />
         </template>
       </AbyssCard>

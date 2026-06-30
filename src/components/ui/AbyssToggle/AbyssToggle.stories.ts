@@ -41,7 +41,7 @@ const meta: Meta<typeof AbyssToggle> = {
     docs: {
       description: {
         component:
-          'Komponent toggle (przełącznik) z supportem dla stanu nieokreślonego (indeterminate), własnych wartości i różnych ikon dla każdego stanu.\n\n**Zalecenie:** W kontekście formularzy i ustawień aplikacji zawsze używaj atrybutu `left-label`, aby etykieta wyświetlała się po lewej stronie, a przełącznik po prawej. To standardowa konwencja w Abyss Design System, zapewniająca spójny układ elementów formularza.',
+          'Komponent toggle (przełącznik) z supportem dla stanu nieokreślonego (indeterminate), własnych wartości i różnych ikon dla każdego stanu.\n\n**Domyślnie** etykieta wyświetla się po lewej stronie, a przełącznik po prawej — standardowy układ w formularzach i ustawieniach Abyss Design System. Użyj `right-label`, aby odwrócić kolejność.',
       },
     },
   },
@@ -56,9 +56,9 @@ const meta: Meta<typeof AbyssToggle> = {
       control: 'text',
       description: 'Etykieta wyświetlana obok toggle',
     },
-    leftLabel: {
+    rightLabel: {
       control: 'boolean',
-      description: 'Czy etykieta ma być wyświetlana po lewej stronie toggle',
+      description: 'Czy etykieta ma być wyświetlana po prawej stronie toggle',
       table: {
         defaultValue: { summary: 'false' },
       },
@@ -153,7 +153,6 @@ export const Default: Story = {
         code: `<AbyssToggle
   v-model="notifications"
   label="Włącz powiadomienia"
-  left-label
   icon="sym_r_notifications"
 />`,
       },
@@ -162,7 +161,6 @@ export const Default: Story = {
   args: {
     modelValue: false,
     label: 'Włącz powiadomienia',
-    leftLabel: true,
     icon: 'sym_r_notifications',
   },
   render: (args) => ({
@@ -204,7 +202,6 @@ export const IndeterminateState: Story = {
         code: `<AbyssToggle
   v-model="lunchStatus"
   label="Czy jadłeś dzisiaj lunch?"
-  left-label
   toggle-indeterminate
   :indeterminate-value="null"
   indeterminate-icon="sym_r_remove"
@@ -217,7 +214,6 @@ export const IndeterminateState: Story = {
   args: {
     modelValue: null,
     label: 'Czy jadłeś dzisiaj lunch?',
-    leftLabel: true,
     toggleIndeterminate: true,
     indeterminateValue: null,
     indeterminateIcon: 'sym_r_remove',
@@ -266,7 +262,6 @@ export const WithCustomValues: Story = {
         code: `<AbyssToggle
   v-model="answer"
   label="Czy jadłeś dzisiaj lunch?"
-  left-label
   toggle-indeterminate
   true-value="yes"
   false-value="no"
@@ -281,7 +276,6 @@ export const WithCustomValues: Story = {
   args: {
     modelValue: 'maybe',
     label: 'Czy jadłeś dzisiaj lunch?',
-    leftLabel: true,
     toggleIndeterminate: true,
     trueValue: 'yes',
     falseValue: 'no',
@@ -366,7 +360,6 @@ export const ToggleOrder: Story = {
         <AbyssToggle
           v-model="modelTF"
           label="Kolejność 'tf' (false -> true)"
-          left-label
           toggle-order="tf"
           indeterminate-icon="sym_r_remove"
           checked-icon="sym_r_check"
@@ -377,7 +370,6 @@ export const ToggleOrder: Story = {
         <AbyssToggle
           v-model="modelFT"
           label="Kolejność 'ft' (true -> false)"
-          left-label
           toggle-order="ft"
           indeterminate-icon="sym_r_remove"
           checked-icon="sym_r_check"
@@ -388,7 +380,6 @@ export const ToggleOrder: Story = {
         <AbyssToggle
           v-model="modelTFIndet"
           label="'tf' + indeterminate (null -> false -> true -> null)"
-          left-label
           toggle-order="tf"
           toggle-indeterminate
           indeterminate-icon="sym_r_remove"
@@ -400,7 +391,6 @@ export const ToggleOrder: Story = {
         <AbyssToggle
           v-model="modelFTIndet"
           label="'ft' + indeterminate (null -> true -> false -> null)"
-          left-label
           toggle-order="ft"
           toggle-indeterminate
           indeterminate-icon="sym_r_remove"
@@ -427,7 +417,6 @@ export const WithIcons: Story = {
         code: `<AbyssToggle
   v-model="darkMode"
   label="Tryb jasny/ciemny"
-  left-label
   checked-icon="sym_r_light_mode"
   unchecked-icon="sym_r_dark_mode"
 />
@@ -435,7 +424,6 @@ export const WithIcons: Story = {
 <AbyssToggle
   v-model="playing"
   label="Odtwarzanie muzyki"
-  left-label
   checked-icon="sym_r_play_arrow"
   unchecked-icon="sym_r_pause"
 />`,
@@ -455,7 +443,6 @@ export const WithIcons: Story = {
         <AbyssToggle
           v-model="model1"
           label="Tryb jasny/ciemny"
-          left-label
           checked-icon="sym_r_light_mode"
           unchecked-icon="sym_r_dark_mode"
         />
@@ -463,7 +450,6 @@ export const WithIcons: Story = {
         <AbyssToggle
           v-model="model2"
           label="Odtwarzanie muzyki"
-          left-label
           checked-icon="sym_r_play_arrow"
           unchecked-icon="sym_r_pause"
         />
@@ -471,7 +457,6 @@ export const WithIcons: Story = {
         <AbyssToggle
           v-model="model3"
           label="Mikrofon"
-          left-label
           checked-icon="sym_r_mic"
           unchecked-icon="sym_r_mic_off"
         />
@@ -494,7 +479,6 @@ export const WithSingleIcon: Story = {
         code: `<AbyssToggle
   v-model="notifications"
   label="Powiadomienia"
-  left-label
   icon="sym_r_notifications"
 />`,
       },
@@ -503,7 +487,6 @@ export const WithSingleIcon: Story = {
   args: {
     modelValue: false,
     label: 'Powiadomienia',
-    leftLabel: true,
     icon: 'sym_r_notifications',
   },
   render: (args) => ({
@@ -528,20 +511,20 @@ export const LabelPosition: Story = {
     docs: {
       description: {
         story:
-          'Domyślnie etykieta jest wyświetlana po prawej stronie toggle. Użyj `left-label` aby umieścić ją po lewej stronie.',
+          'Domyślnie etykieta jest wyświetlana po lewej stronie toggle. Użyj `right-label`, aby umieścić ją po prawej.',
       },
       source: {
-        code: `<!-- Etykieta po lewej -->
+        code: `<!-- Etykieta po lewej (domyślnie) -->
 <AbyssToggle
   v-model="model"
   label="Etykieta po lewej"
-  left-label
 />
 
-<!-- Etykieta po prawej (domyślnie) -->
+<!-- Etykieta po prawej -->
 <AbyssToggle
   v-model="model"
   label="Etykieta po prawej"
+  right-label
 />`,
       },
     },
@@ -558,13 +541,13 @@ export const LabelPosition: Story = {
         <AbyssToggle
           v-model="model1"
           label="Etykieta po lewej"
-          left-label
           icon="sym_r_check"
         />
 
         <AbyssToggle
           v-model="model2"
           label="Etykieta po prawej"
+          right-label
           icon="sym_r_check"
         />
       </StoryWrapper>
@@ -586,7 +569,6 @@ export const Disabled: Story = {
         code: `<AbyssToggle
   v-model="model"
   label="Disabled toggle"
-  left-label
   disable
 />`,
       },
@@ -605,7 +587,6 @@ export const Disabled: Story = {
         <AbyssToggle
           v-model="model1"
           label="Disabled (off)"
-          left-label
           disable
           icon="sym_r_check"
         />
@@ -613,7 +594,6 @@ export const Disabled: Story = {
         <AbyssToggle
           v-model="model2"
           label="Disabled (on)"
-          left-label
           disable
           icon="sym_r_check"
         />
@@ -621,7 +601,6 @@ export const Disabled: Story = {
         <AbyssToggle
           v-model="model3"
           label="Disabled (indeterminate)"
-          left-label
           disable
           toggle-indeterminate
           indeterminate-icon="sym_r_remove"

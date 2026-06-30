@@ -263,7 +263,6 @@ export const InFormContext: Story = {
             <AbyssToggle
               v-model="notifications"
               label="Powiadomienia e-mail"
-              left-label
             />
             <AbyssInfo
               v-if="notifications"
@@ -318,7 +317,7 @@ function validate() {
     <template #content>
       <AbyssInput v-model="name" label="Nazwa użytkownika" :error="nameError" :error-message="nameErrorMsg" @blur="validate" />
       <AbyssInput v-model="password" label="Hasło" type="password" />
-      <AbyssToggle v-model="notifications" label="Powiadomienia e-mail" left-label />
+      <AbyssToggle v-model="notifications" label="Powiadomienia e-mail" />
 
       <AbyssInfo v-if="notifications" type="info" icon="info" title="Powiadomienia włączone">
         Będziesz otrzymywać e-maile o aktywności na koncie.

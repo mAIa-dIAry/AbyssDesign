@@ -3,7 +3,7 @@
     :model-value="modelValue"
     @update:model-value="$emit('update:modelValue', $event)"
     :label="label"
-    :left-label="leftLabel"
+    :left-label="!rightLabel"
     :icon="icon"
     :checked-icon="checkedIcon"
     :unchecked-icon="uncheckedIcon"
@@ -29,7 +29,7 @@
 export interface AbyssToggleProps {
   modelValue?: unknown;
   label?: string;
-  leftLabel?: boolean;
+  rightLabel?: boolean;
   icon?: string;
   checkedIcon?: string;
   uncheckedIcon?: string;
@@ -49,7 +49,7 @@ export interface AbyssToggleProps {
 
 withDefaults(defineProps<AbyssToggleProps>(), {
   label: '',
-  leftLabel: false,
+  rightLabel: false,
   icon: '',
   checkedIcon: '',
   uncheckedIcon: '',
