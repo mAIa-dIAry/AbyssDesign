@@ -186,6 +186,7 @@ Reguly praktyczne:
 - Trzymaj zewnetrzny padding sekcji w rytmie `16px`.
 - Pola, przełączniki i blokowe akcje ukladaj pionowo co `12px`.
 - Glowna akcja zapisania lub przejscia dalej powinna byc jedna i najczesciej `fullWidth` w tresci karty albo w dialogu — nie w stopce karty.
+- Ustawianie lub zmiana hasla zawsze odbywa sie w dedykowanym `AbyssDialog`. W karcie zostaw tylko trigger (np. „Zmien haslo”, „Resetowanie hasla”); pola nowego lub obecnego hasla nie umieszczaj inline w karcie ustawien. Wyjatek stanowi wyłacznie logowanie (pole biezacego hasla w formularzu auth).
 - Nie uzywaj footera w standardowym ukladzie. Footer tylko w specyficznych sytuacjach, np. gdy uzytkownik ma niezapisane zmiany.
 - Jezeli karta ma komunikat kontekstowy, umiesc go blisko pola albo akcji, ktorej dotyczy, zamiast w osobnym odleglym calloucie.
 
@@ -232,6 +233,7 @@ Reguly praktyczne:
 - Buduj ryzyko przez kontekst sekcji oraz `danger` na przycisku operacyjnym.
 - Uzywaj `AbyssInfo` tylko dla nazwanych komunikatow.
 - Uzywaj `AbyssDate` i `AbyssTime` (albo `AbyssInput` z `type="date"`, `type="time"`, `type="datetime-local"`) jako jedynego sposobu wyboru daty i czasu.
+- Ustawiaj i zmieniaj haslo wylacznie w dedykowanym `AbyssDialog`; w karcie zostaw tylko trigger otwierajacy dialog.
 
 ### Don't
 
@@ -244,6 +246,7 @@ Reguly praktyczne:
 - Nie uzywaj `current` do formatowania tekstu ani aktywnych filtrow wielokrotnego wyboru.
 - Nie uzywaj `icon-only` dla akcji o niejasnej albo nieodwracalnej konsekwencji.
 - Nie buduj recznie pseudo-grup przyciskow przez marginesy i lokalne radiusy, gdy istnieje `AbyssButtonGroup`.
+- Nie umieszczaj pol ustawiania lub zmiany hasla inline w `AbyssCard` — zawsze uzyj dedykowanego `AbyssDialog` (wyjatek: pole biezacego hasla przy logowaniu).
 - Nie uzywaj natywnych selektorow daty ani czasu przegladarki/OS (`input type="date"`, `type="time"`, `type="datetime-local"` z wbudowanym UI systemowym). Zawsze uruchamiaj dokladnie `AbyssDate` / `AbyssTime` — bezposrednio lub przez `AbyssInput` z odpowiednim `type`.
 
 ---

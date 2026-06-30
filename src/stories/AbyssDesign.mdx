@@ -61,7 +61,7 @@ import { Meta } from '@storybook/addon-docs/blocks';
 
       <section className="abyss-feature-item">
         <h3>Formularze i wybór</h3>
-        <p>AbyssInput, AbyssSelect, AbyssDate, AbyssTime, AbyssSlider, AbyssRange</p>
+        <p>AbyssForm, AbyssInput, AbyssSelect, AbyssDate, AbyssTime, AbyssSlider, AbyssRange</p>
         <p>
           Dla daty i czasu zawsze używaj <span className="abyss-inline-code">AbyssDate</span>
           {' / '}
@@ -71,6 +71,11 @@ import { Meta } from '@storybook/addon-docs/blocks';
           {' z odpowiednim '}
           <span className="abyss-inline-code">type</span>
           ). Nigdy nie uruchamiaj natywnych selektorów systemowych.
+        </p>
+        <p>
+          Ustawianie lub zmiana hasła zawsze odbywa się w dedykowanym{' '}
+          <span className="abyss-inline-code">AbyssDialog</span>
+          . W karcie zostaw wyłącznie trigger; pola hasła inline są dozwolone tylko przy logowaniu.
         </p>
       </section>
 

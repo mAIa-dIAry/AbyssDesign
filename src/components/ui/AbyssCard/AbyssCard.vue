@@ -151,6 +151,7 @@ const hasFooter = computed(() => {
     padding: var(--card-padding);
     display: flex;
     flex-direction: column;
+    gap: 12px;
     font-size: 14px;
     line-height: 20px;
     min-height: 0;
