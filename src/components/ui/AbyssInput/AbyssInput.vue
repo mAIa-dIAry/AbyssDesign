@@ -75,6 +75,7 @@
             />
             <AbyssButton
               v-if="type === 'password'"
+              flat
               :size="buttonSize"
               :icon="
                 isPasswordVisible ? 'sym_r_visibility' : 'sym_r_visibility_off'
@@ -92,6 +93,7 @@
             />
             <AbyssButton
               v-if="type === 'date' || type === 'datetime-local'"
+              flat
               :size="buttonSize"
               icon="sym_r_calendar_month"
               class="icon-button"
@@ -114,6 +116,7 @@
             </AbyssButton>
             <AbyssButton
               v-if="type === 'time' || type === 'datetime-local'"
+              flat
               :size="buttonSize"
               icon="sym_r_schedule"
               class="icon-button"
@@ -424,42 +427,6 @@ function handleInputBlur() {
     align-items: start;
     gap: var(--gap);
     width: 100%;
-
-    :deep(.icon-button.abyss-button:not(.size-small)) {
-      box-shadow: $shadow-zero;
-      background-color: transparent;
-      padding: 8px;
-      min-height: 40px;
-      border-radius: 6px;
-
-      &:hover,
-      &:focus-visible {
-        background-color: rgba(white, 0.04);
-        box-shadow: $shadow-hover;
-      }
-
-      &:active {
-        background-color: rgba(white, 0.03);
-        box-shadow: $shadow-active;
-      }
-    }
-
-    :deep(.icon-button.abyss-button.size-small) {
-      box-shadow: $shadow-zero;
-      background-color: transparent;
-      border-radius: calc(var(--border-radius) - 2px);
-
-      &:hover,
-      &:focus-visible {
-        background-color: rgba(white, 0.04);
-        box-shadow: $shadow-hover;
-      }
-
-      &:active {
-        background-color: rgba(white, 0.03);
-        box-shadow: $shadow-active;
-      }
-    }
 
     .icon-prepend {
       display: block;

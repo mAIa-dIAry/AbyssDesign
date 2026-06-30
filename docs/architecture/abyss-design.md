@@ -144,7 +144,7 @@ Reguly praktyczne:
 | Wariant   | Uzywaj gdy                                                          | Typowe miejsca                                                                                 | Nie uzywaj gdy                                                                               |
 | --------- | ------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------- |
 | domyslny  | to jest jedyna akcja na liscie albo akcja pomocnicza bez gradientu  | pojedynczy przycisk w sekcji, anulowanie w dialogu                                             | akcja jest glowna operacyjna w parze decyzyjnej — wtedy uzyj `gradient` z kolorem semantycznym |
-| `flat`    | kazdy przycisk w naglowku lub stopce karty albo dialogu             | `AbyssCard` header-append, footer-append; akcje w `AbyssDialog`                                 | poza naglowkiem/stopka karty i dialogiem — `flat` nie jest dozwolony nigdzie indziej         |
+| `flat`    | kazdy przycisk w naglowku lub stopce karty albo dialogu; ikony w slotach `AbyssInput` | `AbyssCard` header-append, footer-append; akcje w `AbyssDialog`; `#prepend` / `#append` w `AbyssInput` | poza naglowkiem/stopka karty, dialogiem i slotami `AbyssInput` — `flat` nie jest dozwolony nigdzie indziej |
 | `current` | element reprezentuje aktualnie aktywny kontekst lub wybrany cel     | aktywna nawigacja, aktualnie wybrany rekord lub route                                          | stan mozna wylaczyc tym samym kliknieciem, albo jest to tymczasowy toggle                    |
 | `toggled` | element jest wlaczonym przełącznikiem, ale dalej pozostaje klikalny | toolbar formatowania, aktywne filtry, segmenty wyboru                                          | nawigacja, aktywny route, decyzje jednokrotne                                                |
 | `gradient`| akcja operacyjna ma wyrazne znaczenie semantyczne                   | globalne CTA (`theme`) poza karta/dialogiem; w karcie/dialogu zawsze razem z `flat`             | akcja jest jedyna na liscie poza karta/dialogiem; w headerze/stopce bez `flat`               |
@@ -153,7 +153,7 @@ Reguly praktyczne:
 
 - W jednym bloku tresci preferuj jedna glowna akcje operacyjna z kolorem semantycznym. Jezeli widzisz kilka gradientowych przyciskow o tym samym ciezarze, hierarchia jest nieczytelna.
 - W naglowku i stopce `AbyssCard` oraz w `AbyssDialog` kazdy przycisk jest `flat`. Akcja operacyjna dodatkowo dostaje `gradient` + `gradientColors`; akcja pomocnicza (anulowanie, ikona kontekstowa) zostaje jako samo `flat`.
-- `flat` poza karta i dialogiem nie jest dozwolony. Nie stosuj go w formularzach, listach, toolbarach ani na stronach.
+- `flat` poza karta, dialogiem i slotami `AbyssInput` nie jest dozwolony. Nie stosuj go w formularzach, listach, toolbarach ani na stronach — wyjatkiem sa wyłacznie ikony w `#prepend` / `#append` pola `AbyssInput` (zawsze `flat`, nigdy `embedded`).
 - `current` i `toggled` nie sa zamienne. `current` oznacza aktualnie wybrany kontekst, `toggled` oznacza aktywny stan, ktory mozna od razu cofnac.
 - Operacja destrukcyjna w dialogu uzywa `flat` + `gradient` + `gradientColors="danger"` na przycisku operacyjnym oraz kontekstu ryzyka przez `AbyssCard`, `AbyssInfo`, ikonografie i copy.
 
@@ -239,7 +239,7 @@ Reguly praktyczne:
 
 - Nie dokladaj blur do kart, przyciskow, stalej nawigacji i pol formularza.
 - Nie wprowadzaj lokalnych wartosci `10px`, `14px`, `20px` i podobnych, jezeli system nie przewiduje takiego stopnia.
-- Nie uzywaj `flat` poza naglowkiem/stopka `AbyssCard` i `AbyssDialog`.
+- Nie uzywaj `flat` poza naglowkiem/stopka `AbyssCard`, `AbyssDialog` i slotami `#prepend` / `#append` w `AbyssInput`.
 - Nie uzywaj footera `AbyssCard` w standardowym ukladzie — tylko w specyficznych sytuacjach (np. niezapisane zmiany).
 - Nie uzywaj `gradient`, gdy akcja jest jedyna na liscie.
 - Nie uzywaj `theme` dla lokalnej glownej akcji w bloku — to kolor globalnych funkcji aplikacji.

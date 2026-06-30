@@ -118,6 +118,7 @@ export const Password: Story = {
     const input = canvas.getByPlaceholderText('Wprowadź hasło...');
     await expect(input).toHaveAttribute('type', 'password');
     const toggleButton = canvas.getByRole('button');
+    await expect(toggleButton).toHaveClass('flat');
     await userEvent.click(toggleButton);
     await expect(input).toHaveAttribute('type', 'text');
     await userEvent.click(toggleButton);
@@ -161,6 +162,7 @@ export const Search: Story = {
   play: async ({ args, canvas, userEvent }) => {
     const searchButton = canvas.getByRole('button');
     await expect(searchButton).toBeVisible();
+    await expect(searchButton).toHaveClass('flat');
     await userEvent.click(searchButton);
     await expect(args.onSearch).toHaveBeenCalledOnce();
   },
@@ -367,6 +369,7 @@ export const Date: Story = {
   play: async ({ args, canvas, userEvent }) => {
     const calendarButton = canvas.getByRole('button');
     await expect(calendarButton).toBeVisible();
+    await expect(calendarButton).toHaveClass('flat');
     await userEvent.click(calendarButton);
 
     // Popup jest teleportowany do body — szukamy pierwszego dnia w kalendarzu
@@ -406,6 +409,7 @@ export const Time: Story = {
   play: async ({ args, canvas, userEvent }) => {
     const clockButton = canvas.getByRole('button');
     await expect(clockButton).toBeVisible();
+    await expect(clockButton).toHaveClass('flat');
     await userEvent.click(clockButton);
 
     // Popup jest teleportowany do body — klikamy pierwszą pozycję na tarczy zegara
@@ -446,6 +450,9 @@ export const DateTime: Story = {
     const buttons = canvas.getAllByRole('button');
     // datetime-local ma dwa przyciski: kalendarz i zegar
     await expect(buttons).toHaveLength(2);
+    for (const button of buttons) {
+      await expect(button).toHaveClass('flat');
+    }
     const [calendarButton, clockButton] = buttons as [HTMLElement, HTMLElement];
 
     // Otwórz picker daty i kliknij dzień (handleDateUpdate — datetime-local branch)
@@ -857,5 +864,6 @@ export const SmallFlat: Story = {
     await expect(container).toHaveClass('abyss-input-container--size-small');
     await expect(input).toHaveClass('abyss-input--flat');
     await expect(button).toHaveClass('size-small');
+    await expect(button).toHaveClass('flat');
   },
 };
