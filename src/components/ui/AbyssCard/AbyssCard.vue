@@ -152,6 +152,10 @@ const hasFooter = computed(() => {
     line-height: 20px;
     min-height: 0;
 
+    > :slotted(*) {
+      margin: 0;
+    }
+
     :deep(.abyss-separator) {
       margin-left: calc(var(--card-padding) * -1);
       margin-right: calc(var(--card-padding) * -1);
