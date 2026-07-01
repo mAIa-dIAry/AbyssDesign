@@ -1,87 +1,75 @@
 <template>
-  <div
+  <component
+    :is="type"
     class="abyss-title"
-    :class="`abyss-title--${size}`"
-    :style="hasGradient ? { '--title-gradient': gradientCss } : {}"
+    :class="`abyss-title--${type}`"
   >
-    <span
-      class="abyss-title__content"
-      :class="{ 'abyss-title__content--gradient': hasGradient }"
-    >
-      <q-icon v-if="icon" :name="icon" class="abyss-title__icon" />
-      <slot>{{ label }}</slot>
+    <span class="abyss-title__content">
+      <span class="abyss-title__row">
+        <q-icon v-if="icon" :name="icon" class="abyss-title__icon" />
+        <span class="abyss-title__text">
+          <span class="abyss-title__text-label">
+            <slot>{{ label }}</slot>
+          </span>
+        </span>
+      </span>
     </span>
-    <div v-if="separator" class="abyss-title__separator" />
-  </div>
+  </component>
 </template>
 
 <script setup lang="ts">
-import { computed, watch } from 'vue';
-import {
-  DEFAULT_GRADIENT_COLORS,
-  useGradient,
-} from '@/composables/useGradient';
-
-export type AbyssTitleSize = 'lg' | 'md' | 'sm';
+export type AbyssTitleType = 'h1' | 'h2' | 'h3' | 'h4' | 'h5' | 'h6';
 
 export interface AbyssTitleProps {
-  size?: AbyssTitleSize;
+  type?: AbyssTitleType;
   icon?: string;
   label?: string;
-  separator?: boolean;
-  colors?: string[];
 }
 
-const props = withDefaults(defineProps<AbyssTitleProps>(), {
-  size: 'md',
-  separator: false,
+withDefaults(defineProps<AbyssTitleProps>(), {
+  type: 'h2',
 });
-
-const hasGradient = computed(
-  () => Array.isArray(props.colors) && props.colors.length >= 2,
-);
-
-const { gradientCss, setColors } = useGradient(DEFAULT_GRADIENT_COLORS);
-
-watch(
-  () => props.colors,
-  (newColors) => {
-    if (newColors && newColors.length >= 2) {
-      setColors(newColors);
-    }
-  },
-  { immediate: true },
-);
 </script>
 
 <style scoped lang="scss">
 .abyss-title {
-  --font-size: 18px;
-  --font-weight: 600;
-  --icon-size: 22px;
-  --title-gradient: none;
+  --abyss-title-heading-step: 0.25rem;
+  --abyss-title-h1-size: 24px;
+  --abyss-title-h2-size: calc(
+    var(--abyss-title-h1-size) - var(--abyss-title-heading-step)
+  );
+  --abyss-title-h3-size: calc(
+    var(--abyss-title-h2-size) - var(--abyss-title-heading-step)
+  );
+  --abyss-title-h4-size: calc(
+    var(--abyss-title-h3-size) - var(--abyss-title-heading-step)
+  );
+  --abyss-title-h1-underline-width: 98px;
 
   display: flex;
   align-items: center;
   gap: 8px;
-  color: white;
-  line-height: 1.3;
-  font-size: var(--font-size);
-  font-weight: var(--font-weight);
+  margin: 0;
   width: 100%;
+  line-height: 1.35;
+  text-transform: none;
+  letter-spacing: normal;
 
   &__content {
-    display: flex;
-    align-items: center;
-    gap: 8px;
+    min-width: 0;
+    display: contents;
+  }
 
-    &--gradient {
-      background: var(--title-gradient);
-      -webkit-background-clip: text;
-      background-clip: text;
-      color: transparent;
-      font-weight: 800;
-    }
+  &__row {
+    display: contents;
+  }
+
+  &__text {
+    min-width: 0;
+  }
+
+  &__text-label {
+    min-width: 0;
   }
 
   &__icon {
@@ -90,28 +78,207 @@ watch(
     position: static;
   }
 
-  &__separator {
-    flex: 1;
-    height: 1px;
-    background-color: rgba(white, 0.12);
-  }
-
-  &--lg {
-    --font-size: 20px;
-    --font-weight: 500;
+  &--h1 {
+    --font-size: var(--abyss-title-h1-size);
+    --font-weight: 300;
     --icon-size: 32px;
+    display: block;
+    line-height: 32px;
+    color: white;
+
+    .abyss-title__content {
+      display: inline-flex;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 8px;
+      max-width: 100%;
+    }
+
+    .abyss-title__row {
+      display: inline-flex;
+      align-items: flex-start;
+      gap: 8px;
+    }
+
+    .abyss-title__content::after {
+      content: '';
+      display: block;
+      flex: none;
+      width: var(--abyss-title-h1-underline-width);
+      height: 1px;
+      background-color: currentColor;
+    }
   }
 
-  &--md {
+  &--h2 {
+    --font-size: var(--abyss-title-h2-size);
+    --font-weight: 400;
+    --icon-size: 24px;
+    line-height: 24px;
+    color: white;
+  }
+
+  &--h3 {
     --font-size: 18px;
-    --font-weight: 500;
-    --icon-size: 25px;
+    --font-weight: 400;
+    --icon-size: 22px;
+    line-height: 22px;
+    color: rgba(white, 0.8);
+
+    .abyss-title__content {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      width: 100%;
+      min-width: 0;
+    }
+
+    .abyss-title__row {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      flex: none;
+    }
+
+    .abyss-title__content::after {
+      content: '';
+      flex: 1;
+      min-width: 0;
+      height: 1px;
+      align-self: center;
+      background-color: rgba(white, 0.12);
+    }
   }
 
-  &--sm {
+  &--h4 {
     --font-size: 16px;
-    --font-weight: 700;
+    --font-weight: 500;
     --icon-size: 20px;
+    line-height: 20px;
+    text-transform: uppercase;
+    color: rgba(white, 0.6);
+
+    .abyss-title__text-label {
+      position: relative;
+      top: 1px;
+      font-weight: 600;
+    }
   }
+
+  &--h5 {
+    --font-size: 14px;
+    --font-weight: 500;
+    --icon-size: 18px;
+    width: auto;
+    line-height: 18px;
+    text-transform: none;
+    color: black;
+
+    .abyss-title__content {
+      display: inline-flex;
+      align-items: stretch;
+      gap: 8px;
+      min-width: 0;
+    }
+
+    .abyss-title__row {
+      display: inline-flex;
+      align-items: stretch;
+      gap: 8px;
+      min-width: 0;
+    }
+
+    .abyss-title__icon,
+    .abyss-title__text {
+      display: inline-flex;
+      align-items: center;
+      height: 20px;
+      border-radius: 4px;
+      background-color: white;
+      color: black;
+    }
+
+    .abyss-title__text-label {
+      &::selection {
+        background-color: black;
+        color: white;
+      }
+    }
+
+    .abyss-title__icon {
+      flex: none;
+      justify-content: center;
+      width: 20px;
+      height: 20px;
+      padding: 0;
+    }
+
+    .abyss-title__text {
+      min-width: 0;
+      padding: 0 6px;
+    }
+  }
+
+  &--h6 {
+    --font-size: 12px;
+    --font-weight: 500;
+    --icon-size: 18px;
+    width: auto;
+    line-height: 18px;
+    text-transform: none;
+    color: black;
+
+    .abyss-title__content {
+      display: inline-flex;
+      align-items: stretch;
+      gap: 5px;
+      min-width: 0;
+    }
+
+    .abyss-title__row {
+      display: inline-flex;
+      align-items: stretch;
+      gap: 5px;
+      min-width: 0;
+    }
+
+    .abyss-title__icon,
+    .abyss-title__text {
+      display: inline-flex;
+      align-items: center;
+      height: 20px;
+      border-radius: 5px;
+      background-color: rgba(white, 0.8);
+      color: black;
+    }
+
+    .abyss-title__text-label {
+      position: relative;
+      top: 1px;
+      font-weight: 700;
+      text-transform: uppercase;
+
+      &::selection {
+        background-color: black;
+        color: white;
+      }
+    }
+
+    .abyss-title__icon {
+      flex: none;
+      justify-content: center;
+      width: 20px;
+      height: 20px;
+      padding: 0;
+    }
+
+    .abyss-title__text {
+      min-width: 0;
+      padding: 0 6px;
+    }
+  }
+
+  font-size: var(--font-size);
+  font-weight: var(--font-weight);
 }
 </style>

@@ -91,7 +91,7 @@ Reguly praktyczne:
 | ------------------ | ------------------------------- | ---------------------------------------------------------------------------------- | ----------------------------------------------------------------------------- |
 | `AbyssCard`        | podstawowy kontener sekcji      | grupujesz powiazane pola, informacje lub akcje w jednej powierzchni                | potrzebujesz tylko pojedynczej etykiety lub malego hintu bez struktury sekcji |
 | `AbyssDialog`      | warstwa tymczasowa nad trescia  | prosisz o decyzje, potwierdzenie albo skupione wprowadzenie danych                 | treść ma byc stale widoczna jako czesc ekranu                                 |
-| `AbyssTitle`       | naglowek i separator hierarchii | chcesz nazwac sekcje, blok lub podrzedna grupe treści                              | potrzebujesz alertu, hintu lub tekstu pomocniczego                            |
+| `AbyssTitle`       | naglowek sekcji i hierarchia typograficzna | chcesz nazwac strone informacyjna, karte, modal, podsekcje lub wyroznic konkretna sekcje (`h1`–`h6`) | potrzebujesz alertu, hintu lub tekstu pomocniczego                            |
 | `AbyssInfo`        | nazwany komunikat kontekstowy   | chcesz pokazac neutralny, ostrzegawczy lub ryzykowny callout z wyraznym znaczeniem | tresc nie ma tytulu ani nie niesie osobnej semantyki komunikatu               |
 | `AbyssButtonGroup` | ciasno zwiazany zestaw akcji    | budujesz toolbar, segment, steper lub zestaw rownorzednych przelaczalnych akcji    | akcje sa rozne semantycznie albo odlegle w hierarchii                         |
 
@@ -102,6 +102,17 @@ Reguly praktyczne:
 | `lg`    | tytul strony lub hero-sekcji | poczatek widoku, duzy blok otwierajacy                        |
 | `md`    | standardowy tytul sekcji     | naglowek karty, naglowek dialogu, glowny blok wewnatrz strony |
 | `sm`    | podsekcja lub mikro-naglowek | mniejsza grupa w karcie, lista, panel pomocniczy              |
+
+### Hierarchia `AbyssTitle`
+
+| Poziom | Rola                              | Typowe miejsce                                      |
+| ------ | --------------------------------- | --------------------------------------------------- |
+| `h1`   | tytul strony informacyjnej        | polityka prywatnosci, regulamin, strona pomocy      |
+| `h2`   | tytul powierzchni                 | karta, dialog, modal                                |
+| `h3`   | podtytul pierwszego poziomu       | sekcja w karcie, modalu lub contencie               |
+| `h4`   | podtytul drugiego poziomu         | podsekcja w karcie lub modalu                       |
+| `h5`   | naglowek specjalny                | wyroznienie konkretnej sekcji                       |
+| `h6`   | mniejszy naglowek specjalny       | wyroznienie konkretnej sekcji                       |
 
 Reguly praktyczne:
 

@@ -160,12 +160,8 @@ body.sb-show-main:not(:has(.docs-story)) {
 #storybook-docs .sbdocs {
   background-color: var(--docs-background-color-primary);
 
-  h1,
-  h2,
-  h3,
-  h4,
-  h5,
-  h6,
+  .sbdocs-content > :is(h1, h2, h3, h4, h5, h6),
+  .sbdocs-content > .sb-anchor > :is(h1, h2, h3, h4, h5, h6),
   .sbdocs-title,
   .sbdocs-content p,
   .sbdocs-content li,

@@ -62,7 +62,6 @@
             @click="back"
           />
           <AbyssTitle
-            size="md"
             v-bind="activeTab?.icon ? { icon: activeTab.icon } : {}"
             :label="activeTab?.label ?? ''"
           />

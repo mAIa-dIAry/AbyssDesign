@@ -5,8 +5,8 @@
         <div class="abyss-card-prepend">
           <slot name="header-prepend"></slot>
         </div>
-        <div class="abyss-card-title">
-          <slot name="header">{{ title }}</slot>
+        <div v-if="title" class="abyss-card-title">
+          <AbyssTitle type="h2">{{ title }}</AbyssTitle>
         </div>
         <div class="abyss-card-append">
           <slot name="header-append"></slot>
@@ -36,6 +36,7 @@
 <script setup lang="ts">
 import { computed, useSlots } from 'vue';
 import AbyssSeparator from '@/components/ui/AbyssSeparator/AbyssSeparator.vue';
+import AbyssTitle from '@/components/ui/AbyssTitle/AbyssTitle.vue';
 interface AbyssCardProps {
   title?: string;
 }
@@ -140,11 +141,6 @@ const hasFooter = computed(() => {
     flex: 1;
     min-width: 0;
     min-height: 24px;
-  }
-
-  .abyss-card-title {
-    font-weight: 500;
-    line-height: 24px;
   }
 
   .abyss-card-content {

@@ -1,8 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/vue3';
 import { expect } from 'storybook/test';
-import { ref } from 'vue';
 import AbyssTitle from '@/components/ui/AbyssTitle/AbyssTitle.vue';
-import AbyssButton from '@/components/ui/AbyssButton/AbyssButton.vue';
 import { withAbyssBackground } from '@/stories/AbyssBackgroundDecorator';
 
 const meta: Meta<typeof AbyssTitle> = {
@@ -14,20 +12,19 @@ const meta: Meta<typeof AbyssTitle> = {
     docs: {
       description: {
         component:
-          'Prosty komponent tytułu (AbyssTitle) z trzema rozmiarami i opcjonalną ikoną po lewej stronie. ' +
-          'Rozmiar determinuje jednocześnie wielkość czcionki i grubość fontu: ' +
-          'lg (20 px / 700), md (18 px / 600), sm (16 px / 500).',
+          'Semantyczny nagłówek UI z opcjonalną ikoną. Sześć poziomów (`h1`–`h6`) określa hierarchię i styl: `h1` — tytuł strony informacyjnej; `h2` — tytuł karty, dialogu lub modala; `h3` — podtytuł w karcie, modalu lub contencie; `h4` — podtytuł drugiego poziomu w karcie lub modalu; `h5` i `h6` — nagłówki specjalne do wyróżnienia konkretnych sekcji. Domyślnie renderuje `h2`.',
       },
     },
   },
   argTypes: {
-    size: {
+    type: {
       control: 'radio',
-      options: ['lg', 'md', 'sm'],
-      description: 'Rozmiar tytułu – determinuje font-size i font-weight.',
+      options: ['h1', 'h2', 'h3', 'h4', 'h5', 'h6'],
+      description:
+        'Poziom nagłówka — determinuje font-size, font-weight, kolor i przeznaczenie: `h1` strona informacyjna, `h2` karta/dialog/modal, `h3` podtytuł, `h4` podtytuł II poziomu, `h5`/`h6` sekcja specjalna.',
       table: {
-        defaultValue: { summary: 'md' },
-        type: { summary: "'lg' | 'md' | 'sm'" },
+        defaultValue: { summary: 'h2' },
+        type: { summary: "'h1' | 'h2' | 'h3' | 'h4' | 'h5' | 'h6'" },
       },
     },
     icon: {
@@ -45,73 +42,60 @@ const meta: Meta<typeof AbyssTitle> = {
         type: { summary: 'string' },
       },
     },
-    separator: {
-      control: 'boolean',
-      description:
-        'Gdy `true`, po tekście tytułu wyrenderowana zostaje pozioma linia (1 px, opacity 0.35) wypełniająca pozostałą szerokość wiersza.',
-      table: {
-        defaultValue: { summary: 'false' },
-        type: { summary: 'boolean' },
-      },
-    },
-    colors: {
-      control: 'object',
-      description:
-        'Kolory gradientu nakładanego na tytuł i ikonę (mix-blend-mode: overlay). Domyślnie używane są kolory aplikacji.',
-      table: {
-        type: { summary: 'string[]' },
-      },
-    },
   },
 };
 
 export default meta;
 type Story = StoryObj<typeof AbyssTitle>;
 
-export const Large: Story = {
-  name: 'Duży (lg – 20 px / 700)',
+export const Heading1: Story = {
+  name: 'h1 (24 px)',
   args: {
-    size: 'lg',
-    label: 'Dziennik emocji',
-    icon: 'sym_r_menu_book',
+    type: 'h1',
+    label: 'Polityka prywatności',
+    icon: 'sym_r_policy',
   },
   parameters: {
     docs: {
       description: {
         story:
-          'Największy rozmiar – 20 px, font-weight 700. Przeznaczony dla głównych nagłówków widoków.',
+          'Tytuł strony informacyjnej — np. polityka prywatności, regulamin lub inna strona treściowa. 24 px, font-weight 300, kolor pełnej bieli z podkreśleniem.',
       },
       source: {
-        code: `<AbyssTitle size="lg" icon="sym_r_menu_book">Dziennik emocji</AbyssTitle>`,
+        code: `<AbyssTitle type="h1" icon="sym_r_policy">Polityka prywatności</AbyssTitle>`,
       },
     },
   },
 };
 
-export const Medium: Story = {
-  name: 'Średni (md – 18 px / 600)',
+export const Heading2: Story = {
+  name: 'h2 (20 px, domyślny)',
   args: {
-    size: 'md',
-    label: 'Ostatnie wpisy',
-    icon: 'sym_r_history',
+    label: 'Przykładowa karta',
+    icon: 'sym_r_article',
   },
   parameters: {
     docs: {
       description: {
         story:
-          'Domyślny rozmiar – 18 px, font-weight 600. Przeznaczony dla nagłówków sekcji.',
+          'Tytuł karty, dialogu lub modala. Domyślny poziom — 20 px, bez `text-transform`. Używany m.in. w `AbyssCard` i `AbyssDialog`.',
       },
       source: {
-        code: `<AbyssTitle icon="sym_r_history">Ostatnie wpisy</AbyssTitle>`,
+        code: `<AbyssTitle icon="sym_r_article">Przykładowa karta</AbyssTitle>`,
       },
     },
   },
+  play: async ({ canvasElement }) => {
+    const title = canvasElement.querySelector('.abyss-title--h2');
+    await expect(title).toBeTruthy();
+    await expect(title?.tagName.toLowerCase()).toBe('h2');
+  },
 };
 
-export const Small: Story = {
-  name: 'Mały (sm – 16 px / 500)',
+export const Heading3: Story = {
+  name: 'h3 (18 px)',
   args: {
-    size: 'sm',
+    type: 'h3',
     label: 'Szczegóły wpisu',
     icon: 'sym_r_info',
   },
@@ -119,10 +103,70 @@ export const Small: Story = {
     docs: {
       description: {
         story:
-          'Najmniejszy rozmiar – 16 px, font-weight 500. Przeznaczony dla nagłówków podsekcji.',
+          'Podtytuł w karcie, modalu lub contencie. 18 px, line-height 22 px. Separator po prawej wyrównany pionowo do środka wiersza tytułu.',
       },
       source: {
-        code: `<AbyssTitle size="sm" icon="sym_r_info">Szczegóły wpisu</AbyssTitle>`,
+        code: `<AbyssTitle type="h3" icon="sym_r_info">Szczegóły wpisu</AbyssTitle>`,
+      },
+    },
+  },
+};
+
+export const Heading4: Story = {
+  name: 'h4 (16 px)',
+  args: {
+    type: 'h4',
+    label: 'Metadane',
+    icon: 'sym_r_label',
+  },
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'Podtytuł drugiego poziomu w karcie lub modalu. 16 px, uppercase, font-weight 500.',
+      },
+      source: {
+        code: `<AbyssTitle type="h4" icon="sym_r_label">Metadane</AbyssTitle>`,
+      },
+    },
+  },
+};
+
+export const Heading5: Story = {
+  name: 'h5 (14 px, bloki)',
+  args: {
+    type: 'h5',
+    label: 'Etykieta sekcji',
+    icon: 'sym_r_bookmark',
+  },
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'Nagłówek specjalny do wyróżnienia konkretnej sekcji. Wariant blokowy — dwa białe prostokąty z czarnym tekstem: osobny blok na ikonę i tytuł. 14 px, font-weight 500, line-height 18 px.',
+      },
+      source: {
+        code: `<AbyssTitle type="h5" icon="sym_r_bookmark">Etykieta sekcji</AbyssTitle>`,
+      },
+    },
+  },
+};
+
+export const Heading6: Story = {
+  name: 'h6 (12 px, bloki)',
+  args: {
+    type: 'h6',
+    label: 'Etykieta podsekcji',
+    icon: 'sym_r_bookmark',
+  },
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'Mniejszy nagłówek specjalny do wyróżnienia konkretnej sekcji. Wariant blokowy — bloki 20 px, ikona 18 px, gap 5 px, border-radius 5 px. Tekst 12 px, uppercase, font-weight 700, przesunięty o 1 px w dół. Białe tło bloków w 80% kryciu.',
+      },
+      source: {
+        code: `<AbyssTitle type="h6" icon="sym_r_bookmark">Etykieta podsekcji</AbyssTitle>`,
       },
     },
   },
@@ -131,14 +175,12 @@ export const Small: Story = {
 export const WithoutIcon: Story = {
   name: 'Bez ikony',
   args: {
-    size: 'md',
     label: 'Tytuł bez ikony',
   },
   parameters: {
     docs: {
       description: {
-        story:
-          'Gdy prop `icon` nie jest podany, tytuł renderuje się bez ikony.',
+        story: 'Gdy prop `icon` nie jest podany, tytuł renderuje się bez ikony.',
       },
       source: {
         code: `<AbyssTitle>Tytuł bez ikony</AbyssTitle>`,
@@ -147,108 +189,35 @@ export const WithoutIcon: Story = {
   },
 };
 
-export const WithSeparator: Story = {
-  name: 'Z separatorem',
-  args: {
-    size: 'md',
-    label: 'Ostatnie wpisy',
-    icon: 'sym_r_history',
-    separator: true,
-  },
-  parameters: {
-    docs: {
-      description: {
-        story:
-          'Gdy `separator` jest `true`, po tekście pojawia się cienka pozioma linia (1 px, opacity 0.35) rozciągająca się do końca wiersza.',
-      },
-      source: {
-        code: `<AbyssTitle icon="sym_r_history" separator>Ostatnie wpisy</AbyssTitle>`,
-      },
-    },
-  },
-};
-
-export const AllSizes: Story = {
-  name: 'Wszystkie rozmiary',
+export const AllTypes: Story = {
+  name: 'Wszystkie poziomy',
   render: () => ({
     components: { AbyssTitle },
     template: `
       <div style="display: flex; flex-direction: column; gap: 16px;">
-        <AbyssTitle size="lg" icon="sym_r_menu_book">Duży tytuł – lg</AbyssTitle>
-        <AbyssTitle size="md" icon="sym_r_history">Średni tytuł – md</AbyssTitle>
-        <AbyssTitle size="sm" icon="sym_r_info">Mały tytuł – sm</AbyssTitle>
+        <AbyssTitle type="h1" icon="sym_r_menu_book">Nagłówek h1</AbyssTitle>
+        <AbyssTitle type="h2" icon="sym_r_history">Nagłówek h2</AbyssTitle>
+        <AbyssTitle type="h3" icon="sym_r_info">Nagłówek h3</AbyssTitle>
+        <AbyssTitle type="h4" icon="sym_r_label">Nagłówek h4</AbyssTitle>
+        <AbyssTitle type="h5" icon="sym_r_bookmark">Nagłówek h5</AbyssTitle>
+        <AbyssTitle type="h6" icon="sym_r_bookmark">Nagłówek h6</AbyssTitle>
       </div>
     `,
   }),
   parameters: {
     docs: {
       description: {
-        story: 'Porównanie wszystkich trzech dostępnych rozmiarów.',
+        story:
+          'Porównanie wszystkich sześciu poziomów nagłówka — od tytułu strony informacyjnej (`h1`) po nagłówki specjalne (`h5`, `h6`).',
       },
       source: {
-        code: `
-<AbyssTitle size="lg" icon="sym_r_menu_book">Duży tytuł – lg</AbyssTitle>
-<AbyssTitle size="md" icon="sym_r_history">Średni tytuł – md</AbyssTitle>
-<AbyssTitle size="sm" icon="sym_r_info">Mały tytuł – sm</AbyssTitle>`,
+        code: `<AbyssTitle type="h1" icon="sym_r_menu_book">Nagłówek h1</AbyssTitle>
+<AbyssTitle type="h2" icon="sym_r_history">Nagłówek h2</AbyssTitle>
+<AbyssTitle type="h3" icon="sym_r_info">Nagłówek h3</AbyssTitle>
+<AbyssTitle type="h4" icon="sym_r_label">Nagłówek h4</AbyssTitle>
+<AbyssTitle type="h5" icon="sym_r_bookmark">Nagłówek h5</AbyssTitle>
+<AbyssTitle type="h6" icon="sym_r_bookmark">Nagłówek h6</AbyssTitle>`,
       },
     },
-  },
-};
-
-export const WithGradient: Story = {
-  name: 'Z gradientem',
-  args: {
-    size: 'md',
-    label: 'Dziennik emocji',
-    icon: 'sym_r_menu_book',
-    colors: ['hsl(345, 100%, 72%)', 'hsl(188, 98%, 30%)'],
-  },
-  parameters: {
-    docs: {
-      description: {
-        story:
-          'Gdy prop `colors` zawiera tablicę z co najmniej 2 kolorami CSS, ikona i tekst otrzymują ' +
-          'gradient przez `background-clip: text`. Bez `colors` czcionka pozostaje biała.',
-      },
-      source: {
-        code: `<AbyssTitle icon="sym_r_menu_book" :colors="['hsl(345, 100%, 72%)', 'hsl(188, 98%, 30%)']">Dziennik emocji</AbyssTitle>`,
-      },
-    },
-  },
-};
-
-export const ColorsWatch: Story = {
-  name: 'Reaktywna zmiana kolorów (setColors)',
-  parameters: {
-    docs: {
-      description: {
-        story:
-          'Weryfikacja reaktywności – zmiana prop `colors` aktualizuje gradient przez `setColors` w watchu (z opcją `immediate: true`).',
-      },
-    },
-  },
-  render: () => ({
-    components: { AbyssTitle, AbyssButton },
-    setup() {
-      const colors = ref(['hsl(345, 100%, 72%)', 'hsl(188, 98%, 30%)']);
-      function changeColors() {
-        colors.value = ['hsl(200, 100%, 50%)', 'hsl(260, 80%, 60%)'];
-      }
-      return { colors, changeColors };
-    },
-    template: `
-      <div style="display:flex;flex-direction:column;align-items:flex-start;gap:8px;">
-        <AbyssButton label="Zmień kolory" size="small" @click="changeColors" />
-        <AbyssTitle :colors="colors" label="Tytuł z gradientem" />
-      </div>
-    `,
-  }),
-  play: async ({ canvas, canvasElement, userEvent }) => {
-    const title = canvasElement.querySelector('.abyss-title') as HTMLElement;
-    const styleBefore = title.getAttribute('style');
-    await userEvent.click(canvas.getByRole('button', { name: /zmień kolory/i }));
-    await new Promise((r) => setTimeout(r, 50));
-    const styleAfter = title.getAttribute('style');
-    await expect(styleAfter).not.toBe(styleBefore);
   },
 };

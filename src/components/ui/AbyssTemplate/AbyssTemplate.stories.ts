@@ -21,7 +21,7 @@ const TestContent = defineComponent({
   },
   template: `
     <div style="display: flex; flex-direction: column; gap: 20px;">
-      <AbyssTitle label="Panel użytkownika" icon="sym_r_person" :colors="['#a78bfa', '#60a5fa']" />
+      <AbyssTitle type="h1" label="Panel użytkownika" icon="sym_r_person" />
 
       <AbyssCard title="Dane osobowe">
         <template #header-prepend>
@@ -50,7 +50,7 @@ const TestContent = defineComponent({
         </template>
         <template #content>
           <div style="padding: 16px; display: flex; flex-direction: column; gap: 10px;">
-            <AbyssTitle size="sm" label="Aktywne" separator />
+            <AbyssTitle type="h3" label="Aktywne" />
             <AbyssCard v-for="i in 3" :key="i">
               <template #content>
                 <div style="padding: 12px 16px; display: flex; align-items: center; gap: 12px;">
@@ -74,7 +74,7 @@ const TestContent = defineComponent({
         <template #content>
           <div style="padding: 16px; display: flex; flex-direction: column; gap: 12px;">
             <AbyssInput v-model="search" label="Szukaj" type="search" placeholder="Wpisz frazę..." />
-            <AbyssTitle size="sm" label="Ostatnie wyniki" separator />
+            <AbyssTitle type="h3" label="Ostatnie wyniki" />
             <AbyssCard v-for="j in 4" :key="j">
               <template #content>
                 <div style="padding: 12px 16px; display: flex; align-items: center; gap: 12px;">
@@ -90,7 +90,7 @@ const TestContent = defineComponent({
 
       <AbyssCard>
         <template #header>
-          <AbyssTitle size="sm" label="Notatki" icon="sym_r_edit_note" />
+          <AbyssTitle type="h3" label="Notatki" icon="sym_r_edit_note" />
         </template>
         <template #content>
           <div style="padding: 16px; display: flex; flex-direction: column; gap: 12px;">
