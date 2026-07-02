@@ -1,7 +1,7 @@
 <template>
   <div
     class="abyss-toggle-container"
-    :class="{ 'abyss-toggle-container--inline': inline }"
+    :class="{ 'abyss-toggle-container--full-width': fullWidth }"
   >
     <div
       v-if="label"
@@ -73,7 +73,7 @@ export interface AbyssToggleProps {
   indeterminateValue?: unknown;
   toggleOrder?: 'tf' | 'ft';
   disable?: boolean;
-  inline?: boolean;
+  fullWidth?: boolean;
   style?: string | Record<string, string>;
   class?:
     | string
@@ -91,7 +91,7 @@ withDefaults(defineProps<AbyssToggleProps>(), {
   toggleIndeterminate: false,
   toggleOrder: 'tf',
   disable: false,
-  inline: false,
+  fullWidth: false,
   style: '',
   class: '',
 });
@@ -103,12 +103,13 @@ defineEmits<{
 
 <style scoped lang="scss">
 .abyss-toggle-container {
-  width: 100%;
-  container-type: inline-size;
+  width: fit-content;
+  min-width: max-content;
 
-  &--inline {
-    width: fit-content;
-    min-width: max-content;
+  &--full-width {
+    width: 100%;
+    min-width: 0;
+    container-type: inline-size;
   }
 }
 
@@ -116,23 +117,23 @@ defineEmits<{
   display: flex;
   align-items: center;
   gap: 8px;
-  width: 100%;
+  width: fit-content;
 
   &--right-label {
     flex-direction: row-reverse;
   }
 
-  .abyss-toggle-container--inline & {
-    width: fit-content;
+  .abyss-toggle-container--full-width & {
+    width: 100%;
   }
 
   :deep(.abyss-input-label) {
-    flex: 1 1 auto;
+    flex: 0 0 auto;
     min-width: 0;
   }
 
-  .abyss-toggle-container--inline & :deep(.abyss-input-label) {
-    flex: 0 0 auto;
+  .abyss-toggle-container--full-width & :deep(.abyss-input-label) {
+    flex: 1 1 auto;
   }
 }
 
@@ -210,7 +211,8 @@ defineEmits<{
       }
     }
 
-    .q-toggle__label {
+    .q-anchor--skip,
+    .no-outline {
       display: none;
     }
   }

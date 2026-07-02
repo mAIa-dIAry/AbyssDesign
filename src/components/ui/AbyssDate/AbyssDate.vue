@@ -207,7 +207,7 @@ function handleConfirm() {
 .abyss-date {
   --date-padding: 16px;
   --border-radius: 16px;
-  --date-btn-radius: 8px;
+  --date-btn-radius: 12px;
   --date-btn-padding-x: 12px;
   --date-btn-padding-y: 8px;
   --date-btn-size: 32px;

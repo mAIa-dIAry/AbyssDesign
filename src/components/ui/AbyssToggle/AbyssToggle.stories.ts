@@ -41,7 +41,7 @@ const meta: Meta<typeof AbyssToggle> = {
     docs: {
       description: {
         component:
-          'Komponent toggle (przełącznik) z supportem dla stanu nieokreślonego (indeterminate), własnych wartości i różnych ikon dla każdego stanu.\n\n**Domyślnie** etykieta (`AbyssInputLabel`) zajmuje pozostałą szerokość wiersza, a przełącznik ma stały rozmiar 64×36 px po prawej. Użyj `right-label`, aby odwrócić kolejność. Toggle **nie** używa siatki kolumn formularza — to jeden wiersz flex, w przeciwieństwie do `AbyssInput` / `AbyssSelect`.',
+          'Komponent toggle (przełącznik) z supportem dla stanu nieokreślonego (indeterminate), własnych wartości i różnych ikon dla każdego stanu.\n\n**Domyślnie** komponent dopasowuje szerokość do zawartości (etykieta + przełącznik 64×36 px) — bezpiecznie działa w wąskich, dopasowujących się do treści kontenerach (np. stopka popupu, pasek narzędzi). Użyj `full-width`, aby etykieta zajęła pozostałą szerokość wiersza, a przełącznik został dosunięty do krawędzi (typowy układ w kartach ustawień/formularzach). Użyj `right-label`, aby odwrócić kolejność etykiety i przełącznika. Toggle **nie** używa siatki kolumn formularza — to jeden wiersz flex, w przeciwieństwie do `AbyssInput` / `AbyssSelect`.',
       },
     },
   },
@@ -59,6 +59,14 @@ const meta: Meta<typeof AbyssToggle> = {
     rightLabel: {
       control: 'boolean',
       description: 'Czy etykieta ma być wyświetlana po prawej stronie toggle',
+      table: {
+        defaultValue: { summary: 'false' },
+      },
+    },
+    fullWidth: {
+      control: 'boolean',
+      description:
+        'Czy komponent ma zajmować pełną szerokość wiersza (etykieta rozciąga się, przełącznik dosunięty do krawędzi). Domyślnie komponent dopasowuje się do zawartości.',
       table: {
         defaultValue: { summary: 'false' },
       },
@@ -154,6 +162,7 @@ export const Default: Story = {
   v-model="notifications"
   label="Włącz powiadomienia"
   icon="sym_r_notifications"
+  full-width
 />`,
       },
     },
@@ -162,6 +171,7 @@ export const Default: Story = {
     modelValue: false,
     label: 'Włącz powiadomienia',
     icon: 'sym_r_notifications',
+    fullWidth: true,
   },
   render: (args) => ({
     components: { AbyssToggle, StoryWrapper },
@@ -207,6 +217,7 @@ export const IndeterminateState: Story = {
   indeterminate-icon="sym_r_remove"
   checked-icon="sym_r_check"
   unchecked-icon="sym_r_close"
+  full-width
 />`,
       },
     },
@@ -219,6 +230,7 @@ export const IndeterminateState: Story = {
     indeterminateIcon: 'sym_r_remove',
     checkedIcon: 'sym_r_check',
     uncheckedIcon: 'sym_r_close',
+    fullWidth: true,
   },
   render: (args) => ({
     components: { AbyssToggle, StoryWrapper },
@@ -269,6 +281,7 @@ export const WithCustomValues: Story = {
   indeterminate-icon="sym_r_help"
   checked-icon="sym_r_check"
   unchecked-icon="sym_r_close"
+  full-width
 />`,
       },
     },
@@ -283,6 +296,7 @@ export const WithCustomValues: Story = {
     indeterminateIcon: 'sym_r_help',
     checkedIcon: 'sym_r_check',
     uncheckedIcon: 'sym_r_close',
+    fullWidth: true,
   },
   render: (args) => ({
     components: { AbyssToggle, StoryWrapper },
@@ -329,12 +343,14 @@ export const ToggleOrder: Story = {
 <AbyssToggle
   v-model="model"
   toggle-order="tf"
+  full-width
 />
 
 <!-- Kolejność 'ft' -->
 <AbyssToggle
   v-model="model"
   toggle-order="ft"
+  full-width
 />
 
 <!-- Z indeterminate -->
@@ -342,6 +358,7 @@ export const ToggleOrder: Story = {
   v-model="model"
   toggle-order="tf"
   toggle-indeterminate
+  full-width
 />`,
       },
     },
@@ -364,6 +381,7 @@ export const ToggleOrder: Story = {
           indeterminate-icon="sym_r_remove"
           checked-icon="sym_r_check"
           unchecked-icon="sym_r_close"
+          full-width
         />
         <ValueLabel :value="modelTF" />
 
@@ -374,6 +392,7 @@ export const ToggleOrder: Story = {
           indeterminate-icon="sym_r_remove"
           checked-icon="sym_r_check"
           unchecked-icon="sym_r_close"
+          full-width
         />
         <ValueLabel :value="modelFT" />
 
@@ -385,6 +404,7 @@ export const ToggleOrder: Story = {
           indeterminate-icon="sym_r_remove"
           checked-icon="sym_r_check"
           unchecked-icon="sym_r_close"
+          full-width
         />
         <ValueLabel :value="modelTFIndet === null ? 'null' : modelTFIndet" />
 
@@ -396,6 +416,7 @@ export const ToggleOrder: Story = {
           indeterminate-icon="sym_r_remove"
           checked-icon="sym_r_check"
           unchecked-icon="sym_r_close"
+          full-width
         />
         <ValueLabel :value="modelFTIndet === null ? 'null' : modelFTIndet" />
       </MultiExampleWrapper>
@@ -419,6 +440,7 @@ export const WithIcons: Story = {
   label="Tryb jasny/ciemny"
   checked-icon="sym_r_light_mode"
   unchecked-icon="sym_r_dark_mode"
+  full-width
 />
 
 <AbyssToggle
@@ -426,6 +448,7 @@ export const WithIcons: Story = {
   label="Odtwarzanie muzyki"
   checked-icon="sym_r_play_arrow"
   unchecked-icon="sym_r_pause"
+  full-width
 />`,
       },
     },
@@ -445,6 +468,7 @@ export const WithIcons: Story = {
           label="Tryb jasny/ciemny"
           checked-icon="sym_r_light_mode"
           unchecked-icon="sym_r_dark_mode"
+          full-width
         />
 
         <AbyssToggle
@@ -452,6 +476,7 @@ export const WithIcons: Story = {
           label="Odtwarzanie muzyki"
           checked-icon="sym_r_play_arrow"
           unchecked-icon="sym_r_pause"
+          full-width
         />
 
         <AbyssToggle
@@ -459,6 +484,7 @@ export const WithIcons: Story = {
           label="Mikrofon"
           checked-icon="sym_r_mic"
           unchecked-icon="sym_r_mic_off"
+          full-width
         />
       </StoryWrapper>
     `,
@@ -480,6 +506,7 @@ export const WithSingleIcon: Story = {
   v-model="notifications"
   label="Powiadomienia"
   icon="sym_r_notifications"
+  full-width
 />`,
       },
     },
@@ -488,6 +515,7 @@ export const WithSingleIcon: Story = {
     modelValue: false,
     label: 'Powiadomienia',
     icon: 'sym_r_notifications',
+    fullWidth: true,
   },
   render: (args) => ({
     components: { AbyssToggle, StoryWrapper },
@@ -518,6 +546,7 @@ export const LabelPosition: Story = {
 <AbyssToggle
   v-model="model"
   label="Etykieta po lewej"
+  full-width
 />
 
 <!-- Etykieta po prawej -->
@@ -525,6 +554,7 @@ export const LabelPosition: Story = {
   v-model="model"
   label="Etykieta po prawej"
   right-label
+  full-width
 />`,
       },
     },
@@ -542,6 +572,7 @@ export const LabelPosition: Story = {
           v-model="model1"
           label="Etykieta po lewej"
           icon="sym_r_check"
+          full-width
         />
 
         <AbyssToggle
@@ -549,10 +580,59 @@ export const LabelPosition: Story = {
           label="Etykieta po prawej"
           right-label
           icon="sym_r_check"
+          full-width
         />
       </StoryWrapper>
     `,
   }),
+};
+
+/**
+ * Domyślne dopasowanie szerokości do zawartości (bez `full-width`).
+ * Bezpieczne w wąskich, dopasowujących się do treści kontenerach — np. stopka popupu, pasek narzędzi.
+ */
+export const CompactWidth: Story = {
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'Bez `full-width` komponent dopasowuje się do zawartości (etykieta + przełącznik), zamiast rozciągać się na pełną szerokość rodzica. Dzięki temu bezpiecznie działa w kontenerach, które same dopasowują rozmiar do treści (np. `q-popup-proxy`, pasek narzędzi) — w przeciwieństwie do `full-width`, które w takich miejscach prowadzi do zapadania się layoutu.',
+      },
+      source: {
+        code: `<div style="display: inline-flex; align-items: center; gap: 8px;">
+  <AbyssToggle
+    v-model="isRangeMode"
+    right-label
+    label="Zakres dat"
+    unchecked-icon="sym_r_today"
+    checked-icon="sym_r_date_range"
+  />
+</div>`,
+      },
+    },
+  },
+  render: () => ({
+    components: { AbyssToggle },
+    setup() {
+      const isRangeMode = ref(false);
+      return { isRangeMode };
+    },
+    template: `
+      <div style="display: inline-flex; align-items: center; gap: 8px; padding: 8px; border: 1px dashed rgba(255,255,255,0.2); border-radius: 8px;">
+        <AbyssToggle
+          v-model="isRangeMode"
+          right-label
+          label="Zakres dat"
+          unchecked-icon="sym_r_today"
+          checked-icon="sym_r_date_range"
+        />
+      </div>
+    `,
+  }),
+  play: async ({ canvas }) => {
+    const toggle = canvas.getByRole('switch', { name: /zakres dat/i });
+    await expect(toggle).toBeVisible();
+  },
 };
 
 /**
@@ -570,6 +650,7 @@ export const Disabled: Story = {
   v-model="model"
   label="Disabled toggle"
   disable
+  full-width
 />`,
       },
     },
@@ -589,6 +670,7 @@ export const Disabled: Story = {
           label="Disabled (off)"
           disable
           icon="sym_r_check"
+          full-width
         />
 
         <AbyssToggle
@@ -596,6 +678,7 @@ export const Disabled: Story = {
           label="Disabled (on)"
           disable
           icon="sym_r_check"
+          full-width
         />
 
         <AbyssToggle
@@ -604,6 +687,7 @@ export const Disabled: Story = {
           disable
           toggle-indeterminate
           indeterminate-icon="sym_r_remove"
+          full-width
         />
       </StoryWrapper>
     `,

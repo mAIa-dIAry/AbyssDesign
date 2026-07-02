@@ -111,7 +111,7 @@ export const FormLayoutBasics: Story = {
     <AbyssForm v-model="accountForm" @update-form="settingsStore.apply">
       <AbyssInput v-model="accountForm.displayName" label="Nazwa wyświetlana" />
       <AbyssInput v-model="accountForm.email" type="email" label="E-mail" />
-      <AbyssToggle v-model="accountForm.notifications" label="Powiadomienia" />
+      <AbyssToggle v-model="accountForm.notifications" label="Powiadomienia" full-width />
       <AbyssGrid align="right" :column-size="INPUT_COLUMN_SIZE" :max-columns="INPUT_GRID_MAX_COLUMNS">
         <AbyssButton
           size="big"
@@ -237,6 +237,7 @@ export const FormLayoutBasics: Story = {
               <AbyssToggle
                 v-model="accountForm.notifications"
                 label="Powiadomienia e-mail"
+                full-width
               />
               <AbyssGrid align="right" :column-size="INPUT_COLUMN_SIZE" :max-columns="INPUT_GRID_MAX_COLUMNS">
                 <AbyssButton
@@ -367,7 +368,7 @@ export const SettingsSync: Story = {
   <template #content>
     <AbyssForm v-model="form" @update-form="settingsStore.apply">
       <AbyssInput v-model="form.displayName" label="Nazwa wyświetlana" />
-      <AbyssToggle v-model="form.notifications" label="Powiadomienia" />
+      <AbyssToggle v-model="form.notifications" label="Powiadomienia" full-width />
     </AbyssForm>
   </template>
 </AbyssCard>`,
@@ -400,6 +401,7 @@ export const SettingsSync: Story = {
               <AbyssToggle
                 v-model="form.notifications"
                 label="Powiadomienia e-mail"
+                full-width
               />
             </AbyssForm>
             <pre
