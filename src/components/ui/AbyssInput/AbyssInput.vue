@@ -172,7 +172,9 @@
 <script setup lang="ts">
 import { computed, ref, useSlots, watch } from 'vue';
 import AbyssButton from '@/components/ui/AbyssButton/AbyssButton.vue';
-import AbyssDate from '@/components/ui/AbyssDate/AbyssDate.vue';
+import AbyssDate, {
+  type AbyssDateModelValue,
+} from '@/components/ui/AbyssDate/AbyssDate.vue';
 import AbyssGrid from '@/components/ui/AbyssGrid/AbyssGrid.vue';
 import {
   ABYSS_INPUT_ROW_GAP,
@@ -359,8 +361,8 @@ function initDatePickerDraft(): void {
     dateValue.value || new Date().toISOString().split('T')[0] || '';
 }
 
-function handleDateDraftUpdate(newDate: string | null): void {
-  if (!newDate) {
+function handleDateDraftUpdate(newDate: AbyssDateModelValue): void {
+  if (!newDate || typeof newDate !== 'string') {
     return;
   }
 

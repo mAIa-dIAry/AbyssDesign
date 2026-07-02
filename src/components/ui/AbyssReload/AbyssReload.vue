@@ -141,6 +141,13 @@ let loadingTopStartedAt: number | null = null;
 let loadingBottomStartedAt: number | null = null;
 let topLoadingFinishTimer: ReturnType<typeof setTimeout> | null = null;
 let bottomLoadingFinishTimer: ReturnType<typeof setTimeout> | null = null;
+let bodyResizeObserver: ResizeObserver | null = null;
+let bottomRestoreAnimationFrame: number | null = null;
+let isBottomRestoreInProgress = false;
+let bottomRefreshCooldownUntil: number | null = null;
+let bottomRefreshCooldownTimer: ReturnType<typeof setTimeout> | null = null;
+
+const BOTTOM_RESTORE_ANIMATION_MS = 300;
 
 /** Debug scrolla — nie usuwać (diagnoza AbyssReload). */
 function logScrollDebug(event: string, details: Record<string, unknown>): void {
@@ -192,6 +199,7 @@ function markLoadingBottomStarted(): void {
 }
 
 function finishLoadingTop(): void {
+  pendingTop.value = false;
   const startedAt = loadingTopStartedAt ?? Date.now();
   loadingTopStartedAt = null;
 
@@ -211,11 +219,119 @@ function finishLoadingTop(): void {
   hideTopLoader();
 }
 
+function clearBottomRefreshCooldown(): void {
+  if (bottomRefreshCooldownTimer !== null) {
+    clearTimeout(bottomRefreshCooldownTimer);
+    bottomRefreshCooldownTimer = null;
+  }
+
+  bottomRefreshCooldownUntil = null;
+}
+
+function isBottomRefreshCooldownActive(): boolean {
+  return (
+    bottomRefreshCooldownUntil !== null &&
+    Date.now() < bottomRefreshCooldownUntil
+  );
+}
+
+function beginBottomRefreshCooldown(): void {
+  clearBottomRefreshCooldown();
+  bottomRefreshCooldownUntil = Date.now() + BOTTOM_RESTORE_ANIMATION_MS;
+  bottomRefreshCooldownTimer = setTimeout(() => {
+    bottomRefreshCooldownTimer = null;
+    bottomRefreshCooldownUntil = null;
+  }, BOTTOM_RESTORE_ANIMATION_MS);
+}
+
+function isBottomRestoreAnimating(): boolean {
+  return isBottomRestoreInProgress;
+}
+
+function cancelBottomRestoreAnimation(): void {
+  if (bottomRestoreAnimationFrame !== null) {
+    cancelAnimationFrame(bottomRestoreAnimationFrame);
+    bottomRestoreAnimationFrame = null;
+  }
+
+  isBottomRestoreInProgress = false;
+}
+
+function isInBottomLoaderZone(
+  container: HTMLElement,
+  scrollTop: number,
+): boolean {
+  const contentMaxScroll = getContentMaxScrollTop(container);
+
+  return (
+    scrollTop > contentMaxScroll + 1 ||
+    isBottomScrollPartial(container, scrollTop) ||
+    isBottomScrollActivated(container, scrollTop)
+  );
+}
+
+function enforceBottomRefreshCooldown(
+  container: HTMLElement,
+  scrollTop: number,
+): void {
+  if (
+    !isBottomRefreshCooldownActive() ||
+    props.disabledBottom ||
+    isBottomRestoreAnimating()
+  ) {
+    return;
+  }
+
+  if (!isInBottomLoaderZone(container, scrollTop)) {
+    return;
+  }
+
+  const contentMaxScroll = getContentMaxScrollTop(container);
+
+  if (Math.abs(container.scrollTop - contentMaxScroll) >= 1) {
+    restoreScrollAfterBottomLoading("smooth");
+  }
+}
+
+function restoreScrollAfterBottomLoading(
+  behavior: ScrollBehavior = "smooth",
+): void {
+  const container = viewportEl.value;
+
+  if (!container || props.disabledBottom) {
+    return;
+  }
+
+  const targetScroll = getContentMaxScrollTop(container);
+
+  if (Math.abs(container.scrollTop - targetScroll) < 1) {
+    lastScrollTop = targetScroll;
+    programmaticScrollTarget = null;
+    return;
+  }
+
+  if (behavior === "auto") {
+    cancelBottomRestoreAnimation();
+    container.scrollTop = targetScroll;
+    programmaticScrollTarget = null;
+    lastScrollTop = container.scrollTop;
+    return;
+  }
+
+  animateScrollTop(container, targetScroll);
+}
+
 function finishLoadingBottom(): void {
+  pendingBottom.value = false;
   const startedAt = loadingBottomStartedAt ?? Date.now();
   loadingBottomStartedAt = null;
 
   const remaining = minLoadingTimeMs.value - (Date.now() - startedAt);
+
+  const onLoadingFinished = (): void => {
+    beginBottomRefreshCooldown();
+    restoreScrollAfterBottomLoading("smooth");
+  };
 
   if (remaining > 0) {
     holdLoadingBottom.value = true;
@@ -223,12 +339,12 @@ function finishLoadingBottom(): void {
     bottomLoadingFinishTimer = setTimeout(() => {
       bottomLoadingFinishTimer = null;
       holdLoadingBottom.value = false;
-      hideBottomLoader();
+      onLoadingFinished();
     }, remaining);
     return;
   }
 
-  hideBottomLoader();
+  onLoadingFinished();
 }
 
 const paddingTopPx = computed(() => Math.max(0, props.paddingTop ?? 0));
@@ -282,6 +398,107 @@ const rootStyle = computed(() => ({
 
 function getMaxScrollTop(container: HTMLElement): number {
   return container.scrollHeight - container.clientHeight;
+}
+
+function getContentMinScrollTop(): number {
+  if (props.disabledTop) {
+    return 0;
+  }
+
+  return topLoaderEl.value?.offsetHeight ?? 0;
+}
+
+function getContentMaxScrollTop(container: HTMLElement): number {
+  const absoluteMax = getMaxScrollTop(container);
+  const bottomLoader = bottomLoaderEl.value;
+
+  if (props.disabledBottom || !bottomLoader) {
+    return Math.max(0, absoluteMax);
+  }
+
+  return Math.max(0, absoluteMax - bottomLoader.offsetHeight);
+}
+
+function easeOutCubic(progress: number): number {
+  return 1 - (1 - progress) ** 3;
+}
+
+function animateScrollTop(
+  container: HTMLElement,
+  targetScroll: number,
+  durationMs = BOTTOM_RESTORE_ANIMATION_MS,
+): void {
+  cancelBottomRestoreAnimation();
+  isBottomRestoreInProgress = true;
+
+  const startScroll = container.scrollTop;
+  const distance = targetScroll - startScroll;
+
+  if (Math.abs(distance) < 1) {
+    container.scrollTop = targetScroll;
+    programmaticScrollTarget = null;
+    lastScrollTop = targetScroll;
+    isBottomRestoreInProgress = false;
+    return;
+  }
+
+  startProgrammaticScroll(targetScroll);
+  const startTime = performance.now();
+
+  const step = (now: number): void => {
+    const progress = Math.min((now - startTime) / durationMs, 1);
+    const easedProgress = easeOutCubic(progress);
+
+    container.scrollTop = startScroll + distance * easedProgress;
+    lastScrollTop = container.scrollTop;
+
+    if (progress < 1) {
+      bottomRestoreAnimationFrame = requestAnimationFrame(step);
+      return;
+    }
+
+    bottomRestoreAnimationFrame = null;
+    container.scrollTop = targetScroll;
+    lastScrollTop = targetScroll;
+    programmaticScrollTarget = null;
+    isBottomRestoreInProgress = false;
+  };
+
+  bottomRestoreAnimationFrame = requestAnimationFrame(step);
+}
+
+function shouldDeferContentClamp(): boolean {
+  return (
+    activationSuppressedDepth > 0 ||
+    programmaticScrollTarget !== null ||
+    effectiveLoadingBottom.value ||
+    pendingBottom.value ||
+    effectiveLoadingTop.value ||
+    pendingTop.value ||
+    isTouchActive ||
+    hasUserScrollIntent()
+  );
+}
+
+function clampScrollToContentZone(behavior: ScrollBehavior = "auto"): void {
+  const container = viewportEl.value;
+
+  if (!container || shouldDeferContentClamp()) {
+    return;
+  }
+
+  const minScroll = getContentMinScrollTop();
+  const maxScroll = getContentMaxScrollTop(container);
+  const clamped = Math.min(Math.max(container.scrollTop, minScroll), maxScroll);
+
+  if (clamped === container.scrollTop) {
+    lastScrollTop = container.scrollTop;
+    return;
+  }
+
+  startProgrammaticScroll(clamped);
+  container.scrollTo({ top: clamped, behavior });
+  lastScrollTop = clamped;
 }
 
 function isTopScrollActivated(scrollTop: number): boolean {
@@ -457,7 +674,8 @@ function canRefreshBottom(): boolean {
     !props.disabledBottom &&
     !props.loadingBottom &&
     !pendingBottom.value &&
-    !holdLoadingBottom.value
+    !holdLoadingBottom.value &&
+    !isBottomRefreshCooldownActive()
   );
 }
 
@@ -485,6 +703,7 @@ function triggerRefreshBottom(): void {
     return;
   }
 
+  clearBottomRefreshCooldown();
   pendingBottom.value = true;
   markLoadingBottomStarted();
   bottomUserScrollAccum = 0;
@@ -567,6 +786,11 @@ function checkBottomActivation(
     return;
   }
 
+  if (isBottomRefreshCooldownActive()) {
+    enforceBottomRefreshCooldown(container, scrollTop);
+    return;
+  }
+
   if (!canRefreshBottom()) {
     logScrollDebug("activation-blocked-bottom", {
       scrollTop,
@@ -587,6 +811,8 @@ function startProgrammaticScroll(target: number): void {
 
 function cancelProgrammaticScroll(reason: string): void {
   const container = viewportEl.value;
+
+  cancelBottomRestoreAnimation();
 
   if (!container || programmaticScrollTarget === null) {
     return;
@@ -642,15 +868,18 @@ function hideTopLoader(): void {
 
 function hideBottomLoader(): void {
   const container = viewportEl.value;
-  const loader = bottomLoaderEl.value;
 
-  if (!container || !loader || props.disabledBottom) {
+  if (!container || props.disabledBottom) {
     return;
   }
 
   const scrollTop = container.scrollTop;
-  const maxScrollTop = getMaxScrollTop(container);
-  const targetScrollTop = Math.max(0, maxScrollTop - loader.offsetHeight);
+  const contentMaxScroll = getContentMaxScrollTop(container);
+
+  if (scrollTop > contentMaxScroll) {
+    restoreScrollAfterBottomLoading("smooth");
+    return;
+  }
 
   if (
     !isBottomScrollActivated(container, scrollTop) &&
@@ -659,11 +888,7 @@ function hideBottomLoader(): void {
     return;
   }
 
-  startProgrammaticScroll(targetScrollTop);
-  container.scrollTo({
-    top: targetScrollTop,
-    behavior: "smooth",
-  });
+  restoreScrollAfterBottomLoading("smooth");
 }
 
 function hidePartialLoaders(): void {
@@ -678,6 +903,10 @@ function hidePartialLoaders(): void {
   }
 
   const scrollTop = container.scrollTop;
+
+  if (isBottomRefreshCooldownActive()) {
+    enforceBottomRefreshCooldown(container, scrollTop);
+  }
 
   if (!props.disabledTop && isTopScrollPartial(container, scrollTop)) {
     hideTopLoader();
@@ -715,7 +944,11 @@ function handleScroll(): void {
         (programmaticScrollTarget < scrollTop && scrollTop > lastScrollTop);
 
       if (userOpposesProgrammaticScroll) {
-        cancelProgrammaticScroll("user-scroll");
+        if (isBottomRefreshCooldownActive() || isBottomRestoreAnimating()) {
+          restoreScrollAfterBottomLoading("smooth");
+        } else {
+          cancelProgrammaticScroll("user-scroll");
+        }
       }
     }
   }
@@ -754,6 +987,7 @@ function handleScrollEnd(): void {
       target: programmaticScrollTarget,
     });
     programmaticScrollTarget = null;
+    clampScrollToContentZone("auto");
   }
 
   if (isTouchActive) {
@@ -837,6 +1071,19 @@ watch(
   },
 );
 
+function observeBodyResize(): void {
+  const body = viewportEl.value?.querySelector(".abyss-reload__body");
+
+  if (!(body instanceof HTMLElement)) {
+    return;
+  }
+
+  bodyResizeObserver = new ResizeObserver(() => {
+    clampScrollToContentZone();
+  });
+  bodyResizeObserver.observe(body);
+}
+
 onMounted(() => {
   void nextTick(() => {
     const container = viewportEl.value;
@@ -852,8 +1099,11 @@ onMounted(() => {
       container.scrollTop < topLoader.offsetHeight
     ) {
       container.scrollTop = topLoader.offsetHeight;
+    } else {
+      clampScrollToContentZone();
     }
 
+    observeBodyResize();
     lastScrollTop = container.scrollTop;
     scrollDirection = "down";
     programmaticScrollTarget = null;
@@ -863,6 +1113,10 @@ onMounted(() => {
 onUnmounted(() => {
   clearTopLoadingFinishTimer();
   clearBottomLoadingFinishTimer();
+  cancelBottomRestoreAnimation();
+  clearBottomRefreshCooldown();
+  bodyResizeObserver?.disconnect();
+  bodyResizeObserver = null;
 });
 
 defineExpose({
@@ -871,6 +1125,7 @@ defineExpose({
   bottomLoaderEl,
   hideTopLoader,
   hideBottomLoader,
+  clampScrollToContentZone,
   isTopLoaderActivated,
   isBottomLoaderActivated,
   withSuppressedActivation,
