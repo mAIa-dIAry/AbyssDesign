@@ -1,5 +1,8 @@
 <template>
-  <div class="abyss-toggle-container">
+  <div
+    class="abyss-toggle-container"
+    :class="{ 'abyss-toggle-container--inline': inline }"
+  >
     <div
       v-if="label"
       class="abyss-toggle-row"
@@ -70,6 +73,7 @@ export interface AbyssToggleProps {
   indeterminateValue?: unknown;
   toggleOrder?: 'tf' | 'ft';
   disable?: boolean;
+  inline?: boolean;
   style?: string | Record<string, string>;
   class?:
     | string
@@ -87,6 +91,7 @@ withDefaults(defineProps<AbyssToggleProps>(), {
   toggleIndeterminate: false,
   toggleOrder: 'tf',
   disable: false,
+  inline: false,
   style: '',
   class: '',
 });
@@ -100,6 +105,11 @@ defineEmits<{
 .abyss-toggle-container {
   width: 100%;
   container-type: inline-size;
+
+  &--inline {
+    width: fit-content;
+    min-width: max-content;
+  }
 }
 
 .abyss-toggle-row {
@@ -112,9 +122,17 @@ defineEmits<{
     flex-direction: row-reverse;
   }
 
+  .abyss-toggle-container--inline & {
+    width: fit-content;
+  }
+
   :deep(.abyss-input-label) {
     flex: 1 1 auto;
     min-width: 0;
+  }
+
+  .abyss-toggle-container--inline & :deep(.abyss-input-label) {
+    flex: 0 0 auto;
   }
 }
 

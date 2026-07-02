@@ -19,6 +19,9 @@
       <AbyssSeparator />
 
       <div class="abyss-date__footer">
+        <div class="abyss-date__footer-prepend">
+          <slot name="footer-prepend" />
+        </div>
         <div class="abyss-date__footer-spacer"></div>
         <div class="abyss-date__footer-append">
           <slot name="footer-append">
@@ -56,8 +59,15 @@ defineOptions({
   inheritAttrs: false,
 });
 
+export interface AbyssDateRangeValue {
+  from: string;
+  to: string;
+}
+
+export type AbyssDateModelValue = string | null | AbyssDateRangeValue;
+
 export interface AbyssDateProps {
-  modelValue?: string | null;
+  modelValue?: AbyssDateModelValue;
   mask?: string;
   todayBtn?: boolean;
   firstDayOfWeek?: 0 | 1 | 2 | 3 | 4 | 5 | 6;
@@ -69,6 +79,7 @@ export interface AbyssDateProps {
     daysShort: string[];
     months: string[];
     monthsShort: string[];
+    pluralDay?: string;
   };
   style?: string | Record<string, string>;
   class?:
@@ -90,7 +101,7 @@ const props = withDefaults(defineProps<AbyssDateProps>(), {
 });
 
 const emit = defineEmits<{
-  'update:modelValue': [value: string | null];
+  'update:modelValue': [value: AbyssDateModelValue];
   close: [];
   confirm: [];
 }>();
@@ -110,6 +121,7 @@ const defaultLocale = computed(() => ({
   daysShort: toStringArray(i18n.tm('ui.datePicker.daysShort')),
   months: toStringArray(i18n.tm('ui.datePicker.months')),
   monthsShort: toStringArray(i18n.tm('ui.datePicker.monthsShort')),
+  pluralDay: i18n.t('ui.datePicker.pluralDay'),
 }));
 
 const resolvedLocale = computed(() => props.locale ?? defaultLocale.value);
@@ -231,6 +243,32 @@ function handleConfirm() {
     min-height: 24px;
   }
 
+  &__footer-prepend {
+    display: inline-flex;
+    align-items: center;
+    flex: 0 0 auto;
+
+    &:empty {
+      display: none;
+    }
+
+    :deep(.abyss-button) {
+      --border-radius: var(--date-btn-radius);
+    }
+
+    :deep(.abyss-button-group) {
+      margin-top: -8px;
+      margin-bottom: -8px;
+      margin-left: -12px;
+    }
+
+    :deep(> .abyss-button) {
+      margin-top: -8px;
+      margin-bottom: -8px;
+      margin-left: -12px;
+    }
+  }
+
   &__footer-append {
     display: flex;
     align-items: center;
@@ -285,6 +323,15 @@ function handleConfirm() {
       font-weight: 600;
       border-radius: var(--date-btn-radius);
 
+      &.text-white,
+      &.text-white .q-btn__content {
+        color: black !important;
+      }
+
+      .q-btn__content {
+        color: inherit !important;
+      }
+
       span {
         position: relative;
         z-index: 1;
@@ -313,6 +360,80 @@ function handleConfirm() {
         outline: 1px solid white !important;
         border-color: black !important;
       }
+    }
+
+    :deep(.q-date__calendar-item.q-date__range),
+    :deep(.q-date__calendar-item.q-date__range-from),
+    :deep(.q-date__calendar-item.q-date__range-to),
+    :deep(.q-date__calendar-item.q-date__edit-range),
+    :deep(.q-date__calendar-item.q-date__edit-range-from),
+    :deep(.q-date__calendar-item.q-date__edit-range-to),
+    :deep(.q-date__calendar-item.q-date__edit-range-from-to) {
+      &.text-primary {
+        color: white !important;
+      }
+
+      .q-btn:not(.bg-primary) {
+        color: white !important;
+
+        .q-btn__content {
+          color: inherit !important;
+        }
+      }
+    }
+
+    :deep(.q-date__calendar-item .q-btn.bg-primary) {
+      color: black !important;
+
+      &.text-white,
+      &.text-white .q-btn__content {
+        color: black !important;
+      }
+
+      .q-btn__content {
+        color: inherit !important;
+      }
+    }
+
+    :deep(.q-date__calendar-item.q-date__range),
+    :deep(.q-date__calendar-item.q-date__range-from),
+    :deep(.q-date__calendar-item.q-date__range-to) {
+      &:before {
+        background-color: rgba(white, 0.12);
+        opacity: 1;
+      }
+    }
+
+    :deep(.q-date__calendar-item.q-date__range-from:before) {
+      border-top-left-radius: var(--date-btn-radius);
+      border-bottom-left-radius: var(--date-btn-radius);
+    }
+
+    :deep(.q-date__calendar-item.q-date__range-to:before) {
+      border-top-right-radius: var(--date-btn-radius);
+      border-bottom-right-radius: var(--date-btn-radius);
+    }
+
+    :deep(.q-date__calendar-item.q-date__edit-range:after) {
+      border-color: rgba(white, 0.65) transparent;
+    }
+
+    :deep(.q-date__calendar-item.q-date__edit-range-from:after),
+    :deep(.q-date__calendar-item.q-date__edit-range-from-to:after) {
+      border-left-color: rgba(white, 0.65);
+      border-top-color: rgba(white, 0.65);
+      border-bottom-color: rgba(white, 0.65);
+      border-top-left-radius: var(--date-btn-radius);
+      border-bottom-left-radius: var(--date-btn-radius);
+    }
+
+    :deep(.q-date__calendar-item.q-date__edit-range-to:after),
+    :deep(.q-date__calendar-item.q-date__edit-range-from-to:after) {
+      border-right-color: rgba(white, 0.65);
+      border-top-color: rgba(white, 0.65);
+      border-bottom-color: rgba(white, 0.65);
+      border-top-right-radius: var(--date-btn-radius);
+      border-bottom-right-radius: var(--date-btn-radius);
     }
   }
 }

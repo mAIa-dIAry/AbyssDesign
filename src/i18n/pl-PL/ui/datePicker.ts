@@ -40,4 +40,5 @@ export default {
   close: 'Zamknij',
   cancel: 'Anuluj',
   confirm: 'Potwierdź',
+  pluralDay: 'dni',
 };
