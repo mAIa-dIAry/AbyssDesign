@@ -27,7 +27,8 @@ const meta: Meta<typeof AbyssGrid> = {
     docs: {
       description: {
         component:
-          'Uniwersalny wrapper siatki dla treści Abyss. Używa responsywnego układu jak lista peerów w panelu synchronizacji: kolumny mają minimalną szerokość z propsa `columnSize`, a poniżej dostępnej szerokości układ schodzi do jednej kolumny bez overflow. Elementy siatki prezentuj przez `AbyssTile`.',
+          'Uniwersalny wrapper siatki dla treści Abyss. Używa responsywnego układu jak lista peerów w panelu synchronizacji: kolumny mają minimalną szerokość z propsa `columnSize`, a poniżej dostępnej szerokości układ schodzi do jednej kolumny bez overflow. Elementy siatki prezentuj przez `AbyssTile`.\n\n' +
+          'W formularzach: `AbyssInput` i `AbyssSelect` używają wewnętrznego `AbyssGrid` z `INPUT_COLUMN_SIZE` i `INPUT_GRID_MAX_COLUMNS`. Przyciski akcji pod polami — ten sam zestaw stałych (szczegóły w dokumentacji `AbyssForm`). Nie owijaj pól ręcznie w dodatkowy `AbyssGrid`.',
       },
     },
   },

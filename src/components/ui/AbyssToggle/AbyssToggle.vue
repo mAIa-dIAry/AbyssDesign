@@ -1,31 +1,61 @@
 <template>
-  <q-toggle
-    :model-value="modelValue"
-    @update:model-value="$emit('update:modelValue', $event)"
-    :label="label"
-    :left-label="!rightLabel"
-    :icon="icon"
-    :checked-icon="checkedIcon"
-    :unchecked-icon="uncheckedIcon"
-    :indeterminate-icon="indeterminateIcon"
-    :true-value="trueValue"
-    :false-value="falseValue"
-    :toggle-indeterminate="toggleIndeterminate"
-    :indeterminate-value="indeterminateValue"
-    :toggle-order="toggleOrder"
-    :disable="disable"
-    :class="['abyss-toggle', $props.class]"
-    :style="style"
-    v-bind="$attrs"
-  >
-    <!-- Forward default slot -->
-    <template v-if="$slots.default">
-      <slot></slot>
-    </template>
-  </q-toggle>
+  <div class="abyss-toggle-container">
+    <div
+      v-if="label"
+      class="abyss-toggle-row"
+      :class="{ 'abyss-toggle-row--right-label': rightLabel }"
+    >
+      <AbyssInputLabel :label="label" />
+      <q-toggle
+        :model-value="modelValue"
+        @update:model-value="$emit('update:modelValue', $event)"
+        :icon="icon"
+        :checked-icon="checkedIcon"
+        :unchecked-icon="uncheckedIcon"
+        :indeterminate-icon="indeterminateIcon"
+        :true-value="trueValue"
+        :false-value="falseValue"
+        :toggle-indeterminate="toggleIndeterminate"
+        :indeterminate-value="indeterminateValue"
+        :toggle-order="toggleOrder"
+        :disable="disable"
+        :class="['abyss-toggle', $props.class]"
+        :style="style"
+        v-bind="$attrs"
+      >
+        <template v-if="$slots.default">
+          <slot />
+        </template>
+      </q-toggle>
+    </div>
+    <q-toggle
+      v-else
+      :model-value="modelValue"
+      @update:model-value="$emit('update:modelValue', $event)"
+      :icon="icon"
+      :checked-icon="checkedIcon"
+      :unchecked-icon="uncheckedIcon"
+      :indeterminate-icon="indeterminateIcon"
+      :true-value="trueValue"
+      :false-value="falseValue"
+      :toggle-indeterminate="toggleIndeterminate"
+      :indeterminate-value="indeterminateValue"
+      :toggle-order="toggleOrder"
+      :disable="disable"
+      :class="['abyss-toggle', $props.class]"
+      :style="style"
+      v-bind="$attrs"
+    >
+      <template v-if="$slots.default">
+        <slot />
+      </template>
+    </q-toggle>
+  </div>
 </template>
 
 <script setup lang="ts">
+import AbyssInputLabel from '@/components/ui/AbyssInputLabel/AbyssInputLabel.vue';
+
 export interface AbyssToggleProps {
   modelValue?: unknown;
   label?: string;
@@ -67,10 +97,32 @@ defineEmits<{
 </script>
 
 <style scoped lang="scss">
-.abyss-toggle {
-  padding: 6px 0;
+.abyss-toggle-container {
+  width: 100%;
+  container-type: inline-size;
+}
+
+.abyss-toggle-row {
+  display: flex;
+  align-items: center;
   gap: 8px;
   width: 100%;
+
+  &--right-label {
+    flex-direction: row-reverse;
+  }
+
+  :deep(.abyss-input-label) {
+    flex: 1 1 auto;
+    min-width: 0;
+  }
+}
+
+.abyss-toggle {
+  flex: 0 0 auto;
+  padding: 6px 0;
+  gap: 8px;
+  width: auto;
 
   :deep() {
     .q-toggle__inner {
@@ -124,10 +176,6 @@ defineEmits<{
         }
       }
 
-      &--falsy {
-        // Default state, no overrides needed
-      }
-
       &--indet {
         --background-color: #{rgba(white, 0.1)};
         --thumb-color: transparent;
@@ -145,10 +193,7 @@ defineEmits<{
     }
 
     .q-toggle__label {
-      color: white;
-      font-size: 16px;
-      font-weight: 400;
-      flex: 1;
+      display: none;
     }
   }
 
@@ -171,7 +216,7 @@ defineEmits<{
   }
 
   &.disabled {
-    opacity: 1 !important; // Override Quasar's default opacity for disabled state
+    opacity: 1 !important;
 
     :deep() {
       .q-toggle__inner {

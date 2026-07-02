@@ -3,10 +3,14 @@
     class="abyss-select-container"
     :class="{ 'abyss-select-container--size-small': size === 'small' }"
   >
-    <div class="abyss-select-wrapper">
-      <div v-if="label" class="abyss-select-label">
-        <div class="abyss-select-label-text">{{ label }}</div>
-      </div>
+    <AbyssGrid
+      class="abyss-select-wrapper"
+      :column-size="INPUT_COLUMN_SIZE"
+      :max-columns="INPUT_GRID_MAX_COLUMNS"
+      :rowGap="ABYSS_INPUT_ROW_GAP"
+      content-rows
+    >
+      <AbyssInputLabel v-if="label" :label="label" :size="size" />
       <q-select
         ref="selectRef"
         :model-value="modelValue"
@@ -123,12 +127,19 @@
           <slot name="loading" />
         </template>
       </q-select>
-    </div>
+    </AbyssGrid>
   </div>
 </template>
 
 <script setup lang="ts">
 import { computed, nextTick, ref, useAttrs } from 'vue';
+import AbyssGrid from '@/components/ui/AbyssGrid/AbyssGrid.vue';
+import {
+  ABYSS_INPUT_ROW_GAP,
+  INPUT_COLUMN_SIZE,
+  INPUT_GRID_MAX_COLUMNS,
+} from '@/components/ui/AbyssGrid/AbyssGrid.constants';
+import AbyssInputLabel from '@/components/ui/AbyssInputLabel/AbyssInputLabel.vue';
 import type { AbyssSelectProps } from './AbyssSelect.props';
 
 type SelectRootRef = {
@@ -158,7 +169,7 @@ const props = withDefaults(defineProps<AbyssSelectProps>(), {
   clearable: false,
   loading: false,
   error: false,
-  hideBottomSpace: false,
+  hideBottomSpace: true,
   counter: false,
   disable: false,
   readonly: false,
@@ -358,12 +369,13 @@ function resolveControlElement(): HTMLElement | null {
   --gap: calc(var(--font-size) / 2);
   --border-color: #{rgba(white, 0.075)};
 
-  container-type: inline-size;
   width: 100%;
+  transition: $transition-medium;
+  min-width: calc(var(--icon-size) + var(--padding-y) * 2);
 
   &--size-small {
     --font-size: 12px;
-    --padding-y: 12px;
+    --padding-y: 8px;
     --icon-size: 16px;
     --border-radius: 6px;
 
@@ -379,22 +391,7 @@ function resolveControlElement(): HTMLElement | null {
   }
 
   .abyss-select-wrapper {
-    display: flex;
-    flex-direction: row;
-    align-items: start;
-    gap: var(--gap);
     width: 100%;
-
-    .abyss-select-label {
-      flex: 1;
-      color: white;
-      font-size: var(--font-size);
-      line-height: var(--icon-size);
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      min-height: calc(var(--icon-size) + var(--padding-y) * 2);
-    }
 
     :deep(.abyss-select) {
       --control-radius-top: var(--border-radius);
@@ -403,7 +400,7 @@ function resolveControlElement(): HTMLElement | null {
       --control-border-bottom-color: var(--border-color);
 
       padding-bottom: 0;
-      flex: 1;
+      min-width: 0;
 
       .q-icon {
         transition: $transition-fast;
@@ -414,35 +411,26 @@ function resolveControlElement(): HTMLElement | null {
       }
 
       .q-field__control {
-        border: 0;
         border-radius: var(--control-radius-top) var(--control-radius-top)
           var(--control-radius-bottom) var(--control-radius-bottom);
         color: white;
         background-color: rgba(white, 0.02);
+        border: 1px solid var(--border-color);
+        border-top-color: var(--control-border-top-color);
+        border-bottom-color: var(--control-border-bottom-color);
         box-shadow: $shadow-base;
-        padding: var(--padding-y) var(--padding-x);
+        padding: calc(var(--padding-y) - 1px) calc(var(--padding-x) - 1px);
         min-height: calc(var(--icon-size) + var(--padding-y) * 2);
         height: auto;
+        align-items: center;
         outline: 0px solid rgba(white, 0.05);
         outline-offset: 2px;
         transition: $transition-fast;
         width: 100%;
 
-        // Usuń standout pseudo-element Quasara
-        &::before {
-          display: none;
-        }
-
+        &::before,
         &::after {
-          content: '';
-          position: absolute;
-          inset: 0;
-          pointer-events: none;
-          border: 1px solid var(--border-color);
-          border-top-color: var(--control-border-top-color);
-          border-bottom-color: var(--control-border-bottom-color);
-          border-radius: inherit;
-          transition: $transition-fast;
+          display: none;
         }
 
         .q-field__native,
@@ -451,7 +439,9 @@ function resolveControlElement(): HTMLElement | null {
         .q-field__prefix {
           color: white;
           font-size: var(--font-size);
+          line-height: var(--icon-size);
           min-height: var(--icon-size);
+          height: var(--icon-size);
           padding: 0;
         }
 
@@ -464,17 +454,20 @@ function resolveControlElement(): HTMLElement | null {
           opacity: 0;
         }
 
-        // Label jest zewnętrzny – ukryj wbudowany
         .q-field__label {
           display: none;
         }
 
         .q-field__control-container {
           padding-top: 0;
+          width: 100%;
+          align-items: center;
+          transition: $transition-medium;
         }
 
         .q-field__marginal {
           height: unset;
+          align-self: center;
           color: rgba(white, 0.5);
         }
 
@@ -504,7 +497,6 @@ function resolveControlElement(): HTMLElement | null {
           transition: $transition-fast;
         }
 
-        // Chipy wybranych wartości
         .q-chip {
           background: rgba(white, 0.1);
           color: white;
@@ -528,8 +520,10 @@ function resolveControlElement(): HTMLElement | null {
       }
 
       .q-field__bottom {
+        position: relative;
         padding: var(--gap) 0 0;
         font-size: 12px;
+        transform: translateY(0px);
 
         .q-field__messages {
           color: rgba(white, 0.5);
@@ -545,11 +539,14 @@ function resolveControlElement(): HTMLElement | null {
         }
       }
 
-      &.q-field:not(.q-field--disabled, .q-field--focused, .q-field--readonly) {
-        .q-field__control:hover {
-          --border-color: #{rgba(white, 0.125)};
-          background-color: rgba(white, 0.04);
-        }
+      &.q-field:not(
+          .q-field--disabled,
+          .q-field--focused,
+          .q-field--readonly
+        ):hover
+        .q-field__control {
+        --border-color: #{rgba(white, 0.125)};
+        background-color: rgba(white, 0.04);
       }
 
       &.q-field--focused {
@@ -622,18 +619,6 @@ function resolveControlElement(): HTMLElement | null {
           box-shadow: none;
           transform: none;
         }
-      }
-    }
-  }
-
-  @include responsive('xs', true) {
-    .abyss-select-wrapper {
-      flex-direction: column;
-      align-items: stretch;
-
-      .abyss-select-label {
-        min-height: unset;
-        line-height: 20px;
       }
     }
   }

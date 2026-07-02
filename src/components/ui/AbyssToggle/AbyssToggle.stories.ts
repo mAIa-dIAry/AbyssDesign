@@ -41,7 +41,7 @@ const meta: Meta<typeof AbyssToggle> = {
     docs: {
       description: {
         component:
-          'Komponent toggle (przełącznik) z supportem dla stanu nieokreślonego (indeterminate), własnych wartości i różnych ikon dla każdego stanu.\n\n**Domyślnie** etykieta wyświetla się po lewej stronie, a przełącznik po prawej — standardowy układ w formularzach i ustawieniach Abyss Design System. Użyj `right-label`, aby odwrócić kolejność.',
+          'Komponent toggle (przełącznik) z supportem dla stanu nieokreślonego (indeterminate), własnych wartości i różnych ikon dla każdego stanu.\n\n**Domyślnie** etykieta (`AbyssInputLabel`) zajmuje pozostałą szerokość wiersza, a przełącznik ma stały rozmiar 64×36 px po prawej. Użyj `right-label`, aby odwrócić kolejność. Toggle **nie** używa siatki kolumn formularza — to jeden wiersz flex, w przeciwieństwie do `AbyssInput` / `AbyssSelect`.',
       },
     },
   },

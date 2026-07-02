@@ -5,6 +5,8 @@
       `abyss-grid--align-${props.align}`,
       {
         'abyss-grid--limited': props.maxColumns > 0,
+        'abyss-grid--min-row-size': hasMinRowSize,
+        'abyss-grid--content-rows': props.contentRows,
       },
       props.class,
     ]"
@@ -24,6 +26,8 @@ export interface AbyssGridProps {
   columnGap?: string;
   rowGap?: string;
   rowSize?: string;
+  /** Wiersze o wysokości treści — bez wyrównywania wysokości między wierszami (np. etykieta + pole). */
+  contentRows?: boolean;
   style?: string | Record<string, string>;
   class?:
     | string
@@ -35,12 +39,15 @@ const props = withDefaults(defineProps<AbyssGridProps>(), {
   align: 'left',
   maxColumns: 0,
   columnSize: '360px',
-  columnGap: '8px',
-  rowGap: '8px',
+  columnGap: '12px',
+  rowGap: '12px',
   rowSize: '0px',
+  contentRows: false,
   style: '',
   class: '',
 });
+
+const hasMinRowSize = computed(() => props.rowSize !== '0px');
 
 const computedStyle = computed(() => [
   props.style,
@@ -68,10 +75,21 @@ const computedStyle = computed(() => [
     auto-fill,
     minmax(min(100%, var(--column-size)), 1fr)
   );
-  grid-auto-rows: minmax(var(--row-size), auto);
+  grid-auto-rows: auto;
   column-gap: var(--column-gap);
   row-gap: var(--row-gap);
+  align-content: start;
   align-items: stretch;
+
+  &--min-row-size {
+    grid-auto-rows: minmax(var(--row-size), auto);
+  }
+
+  &--content-rows {
+    grid-auto-rows: max-content;
+    align-items: start;
+    align-content: start;
+  }
 
   > * {
     direction: ltr;

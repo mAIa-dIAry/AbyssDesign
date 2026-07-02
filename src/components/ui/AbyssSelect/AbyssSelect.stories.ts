@@ -1417,7 +1417,7 @@ export const NoLabel: Story = {
   play: async ({ canvas, canvasElement }) => {
     const combobox = canvas.getByRole('combobox');
     await expect(combobox.closest('.abyss-select-wrapper')).toBeVisible();
-    const label = canvasElement.querySelector('.abyss-select-label');
+    const label = canvasElement.querySelector('.abyss-input-label');
     await expect(label).toBeNull();
   },
 };

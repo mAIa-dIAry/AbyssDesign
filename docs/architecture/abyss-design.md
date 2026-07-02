@@ -195,7 +195,8 @@ Reguly praktyczne:
 - W `header-prepend` umiesc ikone odpowiadajaca tytulowi sekcji.
 - Kontekstowe akcje karty (odswiezenie, filtr) umiesc w `header-append` jako płaskie przyciski ikonowe.
 - Trzymaj zewnetrzny padding sekcji w rytmie `16px`.
-- Pola, przełączniki i blokowe akcje ukladaj pionowo co `12px`.
+- Pola (`AbyssInput`, `AbyssSelect`) umieszczaj bezposrednio w tresci karty — maja wewnetrzny `AbyssGrid` (etykieta + kontrolka) z `INPUT_COLUMN_SIZE` i `INPUT_GRID_MAX_COLUMNS`.
+- Przyciski akcji pod polami umieszczaj w `AbyssGrid` z `align="right"`, `:column-size="INPUT_COLUMN_SIZE"` i `:max-columns="INPUT_GRID_MAX_COLUMNS"`.
 - Glowna akcja zapisania lub przejscia dalej powinna byc jedna i najczesciej `fullWidth` w tresci karty albo w dialogu — nie w stopce karty.
 - Ustawianie lub zmiana hasla zawsze odbywa sie w dedykowanym `AbyssDialog`. W karcie zostaw tylko trigger (np. „Zmien haslo”, „Resetowanie hasla”); pola nowego lub obecnego hasla nie umieszczaj inline w karcie ustawien. Wyjatek stanowi wyłacznie logowanie (pole biezacego hasla w formularzu auth).
 - Nie uzywaj footera w standardowym ukladzie. Footer tylko w specyficznych sytuacjach, np. gdy uzytkownik ma niezapisane zmiany.
@@ -245,6 +246,7 @@ Reguly praktyczne:
 - Uzywaj `AbyssInfo` tylko dla nazwanych komunikatow.
 - Uzywaj `AbyssDate` i `AbyssTime` (albo `AbyssInput` z `type="date"`, `type="time"`, `type="datetime-local"`) jako jedynego sposobu wyboru daty i czasu.
 - Ustawiaj i zmieniaj haslo wylacznie w dedykowanym `AbyssDialog`; w karcie zostaw tylko trigger otwierajacy dialog.
+- Umieszczaj przyciski formularza w `AbyssGrid` z `INPUT_COLUMN_SIZE` i `INPUT_GRID_MAX_COLUMNS`; pol (`AbyssInput`, `AbyssSelect`) nie owijaj recznie w dodatkowy `AbyssGrid`.
 
 ### Don't
 
@@ -258,6 +260,7 @@ Reguly praktyczne:
 - Nie uzywaj `icon-only` dla akcji o niejasnej albo nieodwracalnej konsekwencji.
 - Nie buduj recznie pseudo-grup przyciskow przez marginesy i lokalne radiusy, gdy istnieje `AbyssButtonGroup`.
 - Nie umieszczaj pol ustawiania lub zmiany hasla inline w `AbyssCard` — zawsze uzyj dedykowanego `AbyssDialog` (wyjatek: pole biezacego hasla przy logowaniu).
+- Nie owijaj recznie `AbyssInput` ani `AbyssSelect` w dodatkowy `AbyssGrid` — maja juz wewnetrzna siatke z tymi samymi stalymi co przyciski akcji.
 - Nie uzywaj natywnych selektorow daty ani czasu przegladarki/OS (`input type="date"`, `type="time"`, `type="datetime-local"` z wbudowanym UI systemowym). Zawsze uruchamiaj dokladnie `AbyssDate` / `AbyssTime` — bezposrednio lub przez `AbyssInput` z odpowiednim `type`.
 
 ---
@@ -274,6 +277,8 @@ Reguly praktyczne:
   Zasady warstw tymczasowych, blur, rytmu tresci i akcji modalnych.
 - `AbyssTitle` — [`src/components/ui/AbyssTitle/AbyssTitle.vue`](../../src/components/ui/AbyssTitle/AbyssTitle.vue)
   Hierarchia `lg`, `md`, `sm`.
+- `AbyssForm` — [`src/components/ui/AbyssForm/AbyssForm.stories.ts`](../../src/components/ui/AbyssForm/AbyssForm.stories.ts)
+  Układ formularza w karcie: pola z wewnetrznym `AbyssGrid`, przyciski w `AbyssGrid` z `INPUT_COLUMN_SIZE` i `INPUT_GRID_MAX_COLUMNS`.
 
 Przyklady uzycia w ekranach aplikacji Maia (konsument pakietu) znajduja sie w repozytorium `maia-app`.
 

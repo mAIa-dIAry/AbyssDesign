@@ -7,13 +7,21 @@
       'is-collapsed': isCollapsed,
     }"
   >
-    <div class="abyss-input-wrapper">
-      <div class="abyss-input-label" v-if="label && !collapsed">
-        <div class="abyss-input-label-text">
-          {{ label }}
-        </div>
-      </div>
+    <AbyssGrid
+      class="abyss-input-wrapper"
+      :class="{ 'abyss-input-wrapper--no-label': !hasLabel }"
+      :column-size="hasLabel ? INPUT_COLUMN_SIZE : '100%'"
+      :max-columns="hasLabel ? INPUT_GRID_MAX_COLUMNS : 0"
+      :rowGap="ABYSS_INPUT_ROW_GAP"
+      content-rows
+    >
+      <AbyssInputLabel
+        v-if="label && !collapsed"
+        :label="label"
+        :size="size"
+      />
       <q-input
+        v-bind="$attrs"
         :model-value="modelValue"
         @update:model-value="$emit('update:modelValue', $event)"
         @click="handleInputClick"
@@ -43,7 +51,6 @@
         :loading="loading"
         :mask="mask || undefined"
         :fill-mask="fillMask ? true : undefined"
-        v-bind="$attrs"
       >
         <!-- Forward prepend slot -->
         <template v-slot:prepend>
@@ -105,10 +112,12 @@
                 cover
                 transition-show="abyss-dialog-jump-down"
                 transition-hide="abyss-dialog-jump-up"
+                @before-show="initDatePickerDraft"
               >
                 <AbyssDate
-                  :model-value="dateValue"
-                  @update:model-value="handleDateUpdate"
+                  :model-value="datePickerDraft"
+                  @update:model-value="handleDateDraftUpdate"
+                  @confirm="handleDateConfirm"
                   mask="YYYY-MM-DD"
                   @close="datePopupRef?.hide()"
                 />
@@ -156,7 +165,7 @@
           <slot name="after"></slot>
         </template>
       </q-input>
-    </div>
+    </AbyssGrid>
   </div>
 </template>
 
@@ -164,6 +173,13 @@
 import { computed, ref, useSlots, watch } from 'vue';
 import AbyssButton from '@/components/ui/AbyssButton/AbyssButton.vue';
 import AbyssDate from '@/components/ui/AbyssDate/AbyssDate.vue';
+import AbyssGrid from '@/components/ui/AbyssGrid/AbyssGrid.vue';
+import {
+  ABYSS_INPUT_ROW_GAP,
+  INPUT_COLUMN_SIZE,
+  INPUT_GRID_MAX_COLUMNS,
+} from '@/components/ui/AbyssGrid/AbyssGrid.constants';
+import AbyssInputLabel from '@/components/ui/AbyssInputLabel/AbyssInputLabel.vue';
 import AbyssTime from '@/components/ui/AbyssTime/AbyssTime.vue';
 import type { QPopupProxy } from 'quasar';
 
@@ -236,6 +252,8 @@ const hasBottomContent = computed(() => {
   return !!(props.hint || props.errorMessage || props.counter);
 });
 
+const hasLabel = computed(() => Boolean(props.label));
+
 const effectivePlaceholder = computed(() => {
   const value = props.modelValue;
   if (value !== null && value !== undefined && String(value).length > 0) {
@@ -269,6 +287,7 @@ const hasAppendContent = computed(() => {
 const isPasswordVisible = ref(false);
 const datePopupRef = ref<QPopupProxy>();
 const timePopupRef = ref<QPopupProxy>();
+const datePickerDraft = ref('');
 const usesDatePopup = computed(
   () => props.type === 'date' || props.type === 'datetime-local',
 );
@@ -335,14 +354,31 @@ const emit = defineEmits<{
   search: [value: string | number | null];
 }>();
 
-function handleDateUpdate(newDate: string | null) {
-  if (!newDate) return;
+function initDatePickerDraft(): void {
+  datePickerDraft.value =
+    dateValue.value || new Date().toISOString().split('T')[0] || '';
+}
+
+function handleDateDraftUpdate(newDate: string | null): void {
+  if (!newDate) {
+    return;
+  }
+
+  datePickerDraft.value = newDate;
+}
+
+function handleDateConfirm(): void {
+  if (!datePickerDraft.value) {
+    return;
+  }
+
   if (props.type === 'datetime-local') {
     const time = timeValue.value || '00:00';
-    emit('update:modelValue', `${newDate}T${time}`);
-  } else {
-    emit('update:modelValue', newDate);
+    emit('update:modelValue', `${datePickerDraft.value}T${time}`);
+    return;
   }
+
+  emit('update:modelValue', datePickerDraft.value);
 }
 
 function handleTimeUpdate(newTime: string | null) {
@@ -407,9 +443,9 @@ function handleInputBlur() {
   --icon-size: 24px;
   --border-radius: 8px;
   --gap: calc(var(--font-size) / 2);
+  --marginal-input-gap: 4px;
   --border-color: #{rgba(white, 0.075)};
 
-  container-type: inline-size;
   width: 100%;
   transition: $transition-medium;
   min-width: calc(var(--icon-size) + var(--padding-y) * 2);
@@ -422,17 +458,17 @@ function handleInputBlur() {
   }
 
   .abyss-input-wrapper {
-    display: flex;
-    flex-direction: row;
-    align-items: start;
-    gap: var(--gap);
     width: 100%;
+
+    &--no-label {
+      grid-template-columns: 1fr;
+    }
 
     .icon-prepend {
       display: block;
       box-sizing: content-box;
       padding: 11px;
-      margin: -11px 8px -11px -15px;
+      margin: -11px 0 -11px -15px;
       background-color: rgba(white, 0.02);
       border-right: 1px solid var(--border-color);
       border-top-left-radius: var(--border-radius);
@@ -440,20 +476,9 @@ function handleInputBlur() {
       transition: $transition-fast;
     }
 
-    .abyss-input-label {
-      flex: 1;
-      color: white;
-      font-size: var(--font-size);
-      line-height: var(--icon-size);
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      min-height: calc(var(--icon-size) + var(--padding-y) * 2);
-    }
-
     :deep(.abyss-input) {
       padding-bottom: 0;
-      flex: 1;
+      min-width: 0;
 
       .q-field__control {
         border-radius: var(--border-radius);
@@ -465,6 +490,7 @@ function handleInputBlur() {
         min-height: calc(var(--icon-size) + var(--padding-y) * 2);
         height: auto;
         align-items: center;
+        gap: var(--marginal-input-gap);
         outline: 0px solid rgba(white, 0.05);
         outline-offset: 2px;
         transition: $transition-fast;
@@ -506,10 +532,10 @@ function handleInputBlur() {
       }
 
       .q-field__append {
-        padding-left: var(--gap);
+        padding-left: 0;
 
         .icon-button:not(.size-small) {
-          margin: -8px -12px -8px -8px;
+          margin: -8px -12px -8px 0;
 
           &:not(:first-child) {
             margin-left: 12px;
@@ -518,11 +544,10 @@ function handleInputBlur() {
 
         .icon-button.size-small {
           margin: calc(-1 * var(--padding-y))
-            calc(-1 * (var(--padding-x) - 1px)) calc(-1 * var(--padding-y))
-            calc(-1 * var(--gap));
+            calc(-1 * (var(--padding-x) - 1px)) calc(-1 * var(--padding-y)) 0;
 
           &:not(:first-child) {
-            margin-left: var(--gap);
+            margin-left: 12px;
           }
         }
 
@@ -532,10 +557,10 @@ function handleInputBlur() {
       }
 
       .q-field__prepend {
-        padding-right: var(--gap);
+        padding-right: 0;
 
         .icon-button:not(.size-small) {
-          margin: -8px -8px -8px -12px;
+          margin: -8px 0 -8px -12px;
 
           &:not(:last-child) {
             margin-right: 12px;
@@ -543,11 +568,11 @@ function handleInputBlur() {
         }
 
         .icon-button.size-small {
-          margin: calc(-1 * var(--padding-y)) calc(-1 * var(--gap))
-            calc(-1 * var(--padding-y)) calc(-1 * var(--padding-x));
+          margin: calc(-1 * var(--padding-y)) 0 calc(-1 * var(--padding-y))
+            calc(-1 * var(--padding-x));
 
           &:not(:last-child) {
-            margin-right: var(--gap);
+            margin-right: 12px;
           }
         }
 
@@ -592,10 +617,6 @@ function handleInputBlur() {
         color: rgba(white, 0.5);
         opacity: 1;
         user-select: none;
-      }
-
-      &.q-field--float .q-placeholder::placeholder {
-        opacity: 0;
       }
 
       &.q-field:not(
@@ -695,16 +716,13 @@ function handleInputBlur() {
   }
 
   &.abyss-input-container--size-small {
+    .icon-prepend {
+      padding: calc(var(--padding-y) - 1px);
+      margin: calc(-1 * (var(--padding-y) - 1px)) 0
+        calc(-1 * (var(--padding-y) - 1px)) calc(-1 * (var(--padding-x) - 1px));
+    }
+
     .abyss-input-wrapper {
-      align-items: center;
-
-      .icon-prepend {
-        padding: calc(var(--padding-y) - 1px);
-        margin: calc(-1 * (var(--padding-y) - 1px)) var(--gap)
-          calc(-1 * (var(--padding-y) - 1px))
-          calc(-1 * (var(--padding-x) - 1px));
-      }
-
       :deep(.abyss-input) {
         .q-field__control {
           padding: calc(var(--padding-y) - 1px) calc(var(--padding-x) - 1px);
@@ -750,18 +768,6 @@ function handleInputBlur() {
           pointer-events: none;
           padding-left: 0;
         }
-      }
-    }
-  }
-
-  @include responsive('xs', true) {
-    .abyss-input-wrapper {
-      flex-direction: column;
-      align-items: stretch;
-
-      .abyss-input-label {
-        min-height: unset;
-        line-height: 20px;
       }
     }
   }

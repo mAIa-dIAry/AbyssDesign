@@ -5,7 +5,7 @@ import AbyssButton from '@/components/ui/AbyssButton/AbyssButton.vue';
 import AbyssCard from '@/components/ui/AbyssCard/AbyssCard.vue';
 import AbyssForm from '@/components/ui/AbyssForm/AbyssForm.vue';
 import AbyssGrid from '@/components/ui/AbyssGrid/AbyssGrid.vue';
-import { INPUT_COLUMN_SIZE } from '@/components/ui/AbyssGrid/AbyssGrid.constants';
+import { INPUT_COLUMN_SIZE, INPUT_GRID_MAX_COLUMNS } from '@/components/ui/AbyssGrid/AbyssGrid.constants';
 import AbyssInfo from '@/components/ui/AbyssInfo/AbyssInfo.vue';
 import AbyssInput from '@/components/ui/AbyssInput/AbyssInput.vue';
 import AbyssToggle from '@/components/ui/AbyssToggle/AbyssToggle.vue';
@@ -43,15 +43,27 @@ const meta = {
           '- **Ustawienia:** `sync` (domyślnie włączone) + `@update-form` → zapis do store z debouncem. Bez przycisku „Zapisz”.\n' +
           '- **Auth:** `:sync="false"` + `@submit-form` → jednorazowa akcja po submitcie (np. logowanie).\n\n' +
           '### Hasło\n\n' +
-          'Ustawianie lub zmiana hasła **zawsze** odbywa się w dedykowanym `AbyssDialog`. W `AbyssCard` zostaw wyłącznie trigger otwierający dialog (np. „Zmień hasło”, „Resetowanie hasła”). Pola nowego lub obecnego hasła nie umieszczaj inline w karcie ustawień — wyjątek stanowi wyłącznie logowanie (pole bieżącego hasła w formularzu auth).\n\n' +
+          'Ustawianie lub zmiana hasła **zawsze** odbywa się w dedykowanym `AbyssDialog`. W `AbyssCard` wiersz triggera to `AbyssGrid` z `AbyssInputLabel` + przycisk (wzór: story **AbyssInput → Wzorzec: zmiana hasła**). Pola hasła nie umieszczaj inline w karcie — wyjątek: logowanie (pole bieżącego hasła w formularzu auth).\n\n' +
           '### Układ formularza w `AbyssCard`\n\n' +
-          'Formularz umieszczaj w `AbyssCard` (nagłówek z ikoną w `header-prepend`). Pola w `AbyssForm`, **przyciski akcji zawsze pod polami** w `AbyssGrid`:\n\n' +
+          'Formularz umieszczaj w `AbyssCard` (nagłówek z ikoną w `header-prepend`). Pola (`AbyssInput`, `AbyssSelect` itd.) w `AbyssForm` lub bezpośrednio w treści karty — **nie owijaj ich ręcznie w `AbyssGrid`**. `AbyssInput` i `AbyssSelect` mają wewnętrzny `AbyssGrid` (etykieta + kontrolka) z tymi samymi parametrami co siatka przycisków.\n\n' +
+          '**Wspólna siatka formularza** — pola i przyciski używają tych samych stałych:\n\n' +
           '```html\n' +
-          '<AbyssGrid align="right" :column-size="INPUT_COLUMN_SIZE">\n' +
+          '<!-- wewnątrz AbyssInput / AbyssSelect (automatycznie) -->\n' +
+          '<AbyssGrid :column-size="INPUT_COLUMN_SIZE" :max-columns="INPUT_GRID_MAX_COLUMNS" :rowGap="ABYSS_INPUT_ROW_GAP" content-rows>\n' +
+          '  <!-- etykieta + kontrolka -->\n' +
+          '</AbyssGrid>\n\n' +
+          '<!-- wiersz „Zmień hasło” w karcie (bez align="right" — etykieta | przycisk) -->\n' +
+          '<AbyssGrid :column-size="INPUT_COLUMN_SIZE" :max-columns="INPUT_GRID_MAX_COLUMNS" :rowGap="ABYSS_INPUT_ROW_GAP" content-rows>\n' +
+          '  <AbyssInputLabel label="Hasło" />\n' +
+          '  <AbyssButton label="Zmień hasło" @click="openChangePasswordDialog" />\n' +
+          '</AbyssGrid>\n\n' +
+          '<!-- przyciski akcji pod polami -->\n' +
+          '<AbyssGrid align="right" :column-size="INPUT_COLUMN_SIZE" :max-columns="INPUT_GRID_MAX_COLUMNS">\n' +
           '  <!-- przyciski -->\n' +
           '</AbyssGrid>\n' +
           '```\n\n' +
-          'Import stałej: `import { INPUT_COLUMN_SIZE } from \'@/components/ui/AbyssGrid/AbyssGrid.constants\'`.\n\n' +
+          'Import stałych: `import { INPUT_COLUMN_SIZE, INPUT_GRID_MAX_COLUMNS, ABYSS_INPUT_ROW_GAP } from \'@/components/ui/AbyssGrid/AbyssGrid.constants\'`.\n\n' +
+          '`INPUT_COLUMN_SIZE` + `INPUT_GRID_MAX_COLUMNS` (wartość `2`) definiują **jeden wspólny próg łamania** (ok. 560px kontenera): dwie kolumny (etykieta | pole lub przycisk | przycisk), poniżej jedna kolumna.\n\n' +
           '**Przyciski główne** używają `size="big"` (domyślny rozmiar inputów) i `full-width`, żeby szerokość kolumny pokrywała się z polem.\n\n' +
           '#### Dobór wariantu przycisku\n\n' +
           '| Scenariusz | Wariant | Przykład |\n' +
@@ -88,7 +100,7 @@ export const FormLayoutBasics: Story = {
     docs: {
       description: {
         story:
-          'Referencyjny układ: `AbyssCard` + `AbyssForm` + pola + `AbyssGrid` (`align="right"`, `INPUT_COLUMN_SIZE`) z przyciskami `size="big"`. Pokazuje dobór wariantów: akcja podstawowa, `embedded`, `warning`, `danger`. Przyciski „Zmień hasło” i „Resetowanie hasła” otwierają dedykowany `AbyssDialog` — pola hasła nie są inline w karcie.',
+          'Referencyjny układ: `AbyssCard` + `AbyssForm` + pola (wewnętrzny `AbyssGrid` w `AbyssInput`/`AbyssSelect`) + `AbyssGrid` (`align="right"`, `INPUT_COLUMN_SIZE`, `INPUT_GRID_MAX_COLUMNS`) wyłącznie z przyciskami `size="big"`. Pokazuje dobór wariantów: akcja podstawowa, `embedded`, `warning`, `danger`. Przyciski „Zmień hasło” i „Resetowanie hasła” otwierają dedykowany `AbyssDialog` — pola hasła nie są inline w karcie.',
       },
       source: {
         code: `<AbyssCard title="Konto">
@@ -100,7 +112,7 @@ export const FormLayoutBasics: Story = {
       <AbyssInput v-model="accountForm.displayName" label="Nazwa wyświetlana" />
       <AbyssInput v-model="accountForm.email" type="email" label="E-mail" />
       <AbyssToggle v-model="accountForm.notifications" label="Powiadomienia" />
-      <AbyssGrid align="right" :column-size="INPUT_COLUMN_SIZE">
+      <AbyssGrid align="right" :column-size="INPUT_COLUMN_SIZE" :max-columns="INPUT_GRID_MAX_COLUMNS">
         <AbyssButton
           size="big"
           gradient
@@ -127,7 +139,7 @@ export const FormLayoutBasics: Story = {
     <AbyssForm v-model="authForm" :sync="false" @submit-form="handleLogin">
       <AbyssInput v-model="authForm.email" type="email" label="E-mail" />
       <AbyssInput v-model="authForm.password" type="password" label="Hasło" />
-      <AbyssGrid align="right" :column-size="INPUT_COLUMN_SIZE">
+      <AbyssGrid align="right" :column-size="INPUT_COLUMN_SIZE" :max-columns="INPUT_GRID_MAX_COLUMNS">
         <AbyssButton type="submit" size="big" label="Zaloguj się" full-width />
         <AbyssButton embedded label="Resetowanie hasła" @click="openForgotPassword" />
       </AbyssGrid>
@@ -140,7 +152,7 @@ export const FormLayoutBasics: Story = {
     <AbyssInfo type="danger" icon="warning" title="Ostrzeżenie">
       Operacja jest nieodwracalna.
     </AbyssInfo>
-    <AbyssGrid align="right" :column-size="INPUT_COLUMN_SIZE">
+    <AbyssGrid align="right" :column-size="INPUT_COLUMN_SIZE" :max-columns="INPUT_GRID_MAX_COLUMNS">
       <AbyssButton
         size="big"
         gradient
@@ -188,6 +200,7 @@ export const FormLayoutBasics: Story = {
         accountForm,
         authForm,
         INPUT_COLUMN_SIZE,
+        INPUT_GRID_MAX_COLUMNS,
         storyFrameStyle: STORY_FRAME_STYLE,
         onUpdateForm,
         onSubmitForm,
@@ -225,7 +238,7 @@ export const FormLayoutBasics: Story = {
                 v-model="accountForm.notifications"
                 label="Powiadomienia e-mail"
               />
-              <AbyssGrid align="right" :column-size="INPUT_COLUMN_SIZE">
+              <AbyssGrid align="right" :column-size="INPUT_COLUMN_SIZE" :max-columns="INPUT_GRID_MAX_COLUMNS">
                 <AbyssButton
                   size="big"
                   gradient
@@ -273,7 +286,7 @@ export const FormLayoutBasics: Story = {
                 autocomplete="current-password"
                 data-testid="login-password"
               />
-              <AbyssGrid align="right" :column-size="INPUT_COLUMN_SIZE">
+              <AbyssGrid align="right" :column-size="INPUT_COLUMN_SIZE" :max-columns="INPUT_GRID_MAX_COLUMNS">
                 <AbyssButton
                   type="submit"
                   size="big"
@@ -300,7 +313,7 @@ export const FormLayoutBasics: Story = {
             <AbyssInfo type="danger" icon="warning" title="Ostrzeżenie">
               Operacja jest nieodwracalna. Wszystkie dane zostaną trwale usunięte.
             </AbyssInfo>
-            <AbyssGrid align="right" :column-size="INPUT_COLUMN_SIZE">
+            <AbyssGrid align="right" :column-size="INPUT_COLUMN_SIZE" :max-columns="INPUT_GRID_MAX_COLUMNS">
               <AbyssButton
                 size="big"
                 gradient
@@ -427,7 +440,7 @@ export const AuthSubmit: Story = {
     <AbyssForm v-model="form" :sync="false" @submit-form="handleLogin">
       <AbyssInput v-model="form.email" type="email" label="E-mail" />
       <AbyssInput v-model="form.password" type="password" label="Hasło" />
-      <AbyssGrid align="right" :column-size="INPUT_COLUMN_SIZE">
+      <AbyssGrid align="right" :column-size="INPUT_COLUMN_SIZE" :max-columns="INPUT_GRID_MAX_COLUMNS">
         <AbyssButton type="submit" size="big" label="Zaloguj się" full-width />
         <AbyssButton embedded label="Resetowanie hasła" @click="openForgotPassword" />
       </AbyssGrid>
@@ -454,6 +467,7 @@ export const AuthSubmit: Story = {
         submitted,
         onSubmitForm,
         INPUT_COLUMN_SIZE,
+        INPUT_GRID_MAX_COLUMNS,
         storyFrameStyle: STORY_FRAME_STYLE,
       };
     },
@@ -477,7 +491,7 @@ export const AuthSubmit: Story = {
                 label="Hasło"
                 autocomplete="current-password"
               />
-              <AbyssGrid align="right" :column-size="INPUT_COLUMN_SIZE">
+              <AbyssGrid align="right" :column-size="INPUT_COLUMN_SIZE" :max-columns="INPUT_GRID_MAX_COLUMNS">
                 <AbyssButton type="submit" size="big" label="Zaloguj się" full-width />
               </AbyssGrid>
             </AbyssForm>

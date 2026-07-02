@@ -22,7 +22,12 @@ $gradient-garden-color-1: hsl(85, 100%, 69%);
 $gradient-garden-color-2: hsl(133, 100%, 39%);
 $font-garden-color: hsl(125, 87%, 12%);
 
-$breakpoint-xs: 560px;
+$input-column-size: 274px;
+$form-field-grid-column-gap: 12px;
+$form-field-grid-row-gap: 4px;
+/** Szerokość kontenera, poniżej której siatka pola przechodzi w jedną kolumnę (2 × kolumna + gap). */
+$form-field-stack-max-width: $input-column-size * 2 + $form-field-grid-column-gap;
+$breakpoint-xs: $form-field-stack-max-width;
 $breakpoint-sm: 768px;
 $breakpoint-md: 1024px;
 $breakpoint-lg: 1300px;

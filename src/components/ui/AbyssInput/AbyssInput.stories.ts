@@ -1,13 +1,32 @@
 import type { Meta, StoryObj } from '@storybook/vue3';
-import { expect, fn } from 'storybook/test';
-import AbyssInput from '@/components/ui/AbyssInput/AbyssInput.vue';
-import { withAbyssBackground } from '@/stories/AbyssBackgroundDecorator';
+import { computed, reactive, ref } from 'vue';
+import { expect, fn, within } from 'storybook/test';
 import AbyssButton from '@/components/ui/AbyssButton/AbyssButton.vue';
+import AbyssCard from '@/components/ui/AbyssCard/AbyssCard.vue';
+import AbyssDialog, {
+  type AbyssDialogAction,
+} from '@/components/ui/AbyssDialog/AbyssDialog.vue';
+import AbyssGrid from '@/components/ui/AbyssGrid/AbyssGrid.vue';
+import {
+  ABYSS_INPUT_ROW_GAP,
+  INPUT_COLUMN_SIZE,
+  INPUT_GRID_MAX_COLUMNS,
+} from '@/components/ui/AbyssGrid/AbyssGrid.constants';
+import AbyssInput from '@/components/ui/AbyssInput/AbyssInput.vue';
+import ArchiveSearchPatternDemo from '@/components/ui/AbyssInput/ArchiveSearchPatternDemo.vue';
+import AbyssInputLabel from '@/components/ui/AbyssInputLabel/AbyssInputLabel.vue';
+import { withAbyssBackground } from '@/stories/AbyssBackgroundDecorator';
+import { withAbyssBackgroundDialogScope } from '@/stories/StoryDialogScopeDecorator';
 
 const meta: Meta<typeof AbyssInput> = {
   title: 'UI/AbyssInput',
   component: AbyssInput,
-  decorators: [withAbyssBackground],
+  decorators: [
+    (story, context) =>
+      context.parameters.abyssDialogScope
+        ? withAbyssBackgroundDialogScope(story, context)
+        : withAbyssBackground(story, context),
+  ],
   tags: ['autodocs'],
   argTypes: {
     modelValue: { control: 'text' },
@@ -865,5 +884,398 @@ export const SmallFlat: Story = {
     await expect(input).toHaveClass('abyss-input--flat');
     await expect(button).toHaveClass('size-small');
     await expect(button).toHaveClass('flat');
+  },
+};
+
+const PASSWORD_MIN_LENGTH = 8;
+
+export const ChangePasswordPattern: Story = {
+  name: 'Wzorzec: zmiana hasła',
+  parameters: {
+    abyssDialogScope: true,
+    docs: {
+      description: {
+        story:
+          'Referencyjny wzorzec akcji „Zmień hasło” w formularzu konta.\n\n' +
+          '**Układ w karcie:** wiersz `AbyssGrid` z parametrami pól (`INPUT_COLUMN_SIZE`, `INPUT_GRID_MAX_COLUMNS`, `ABYSS_INPUT_ROW_GAP`, `content-rows`) — pierwsza komórka to `AbyssInputLabel`, druga to przycisk akcji (bez `align="right"`; ten atrybut odwraca kolejność kolumn przy dwóch elementach). Osobny `AbyssGrid align="right"` zostaw wyłącznie dla samych przycisków (np. Zapisz / Wyloguj).\n\n' +
+          '**Hasła poza kartą:** pola hasła wyłącznie w `AbyssDialog` (obecne, nowe, powtórzenie) z wbudowanym propem `label` w `AbyssInput`. Nie owijaj pól w dodatkowy `AbyssGrid` i nie duplikuj etykiety poza dialogiem.\n\n' +
+          '**Stałe:** `import { INPUT_COLUMN_SIZE, INPUT_GRID_MAX_COLUMNS, ABYSS_INPUT_ROW_GAP } from \'@/components/ui/AbyssGrid/AbyssGrid.constants\'`.',
+      },
+      source: {
+        language: 'html',
+        code: `<AbyssCard title="Konto">
+  <template #content>
+    <!-- …pozostałe pola z propem label… -->
+    <AbyssGrid
+      :column-size="INPUT_COLUMN_SIZE"
+      :max-columns="INPUT_GRID_MAX_COLUMNS"
+      :rowGap="ABYSS_INPUT_ROW_GAP"
+      content-rows
+    >
+      <AbyssInputLabel label="Hasło" />
+      <AbyssButton
+        icon="sym_r_password"
+        label="Zmień hasło"
+        @click="openChangePasswordDialog"
+      />
+    </AbyssGrid>
+  </template>
+</AbyssCard>
+
+<AbyssDialog
+  v-model="showChangePasswordDialog"
+  title="Zmiana hasła"
+  icon="sym_r_password"
+  close-button
+  persistent
+  :actions="changePasswordDialogActions"
+  @action="handleChangePasswordDialogAction"
+>
+  <AbyssInput
+    v-model="passwordForm.currentPassword"
+    type="password"
+    label="Obecne hasło"
+    autocomplete="current-password"
+  />
+  <AbyssInput
+    v-model="passwordForm.newPassword"
+    type="password"
+    label="Nowe hasło"
+    autocomplete="new-password"
+  />
+  <AbyssInput
+    v-model="passwordForm.confirmNewPassword"
+    type="password"
+    label="Powtórz nowe hasło"
+    autocomplete="new-password"
+  />
+</AbyssDialog>`,
+      },
+    },
+  },
+  render: () => ({
+    components: {
+      AbyssCard,
+      AbyssGrid,
+      AbyssInputLabel,
+      AbyssButton,
+      AbyssDialog,
+      AbyssInput,
+    },
+    setup() {
+      const showChangePasswordDialog = ref(false);
+      const validationAttempted = ref(false);
+      const passwordForm = reactive({
+        currentPassword: '',
+        newPassword: '',
+        confirmNewPassword: '',
+      });
+
+      const passwordFieldErrors = computed(() => ({
+        currentPassword:
+          validationAttempted.value && !passwordForm.currentPassword.trim()
+            ? 'Podaj obecne hasło'
+            : '',
+        newPassword:
+          validationAttempted.value &&
+          passwordForm.newPassword.length < PASSWORD_MIN_LENGTH
+            ? `Hasło musi mieć co najmniej ${PASSWORD_MIN_LENGTH} znaków`
+            : '',
+        confirmNewPassword:
+          validationAttempted.value && !passwordForm.confirmNewPassword.trim()
+            ? 'Powtórz nowe hasło'
+            : validationAttempted.value &&
+                passwordForm.newPassword !== passwordForm.confirmNewPassword
+              ? 'Hasła nie są identyczne'
+              : '',
+      }));
+
+      const canSubmitChangePassword = computed(
+        () =>
+          passwordForm.currentPassword.trim().length > 0 &&
+          passwordForm.newPassword.length >= PASSWORD_MIN_LENGTH &&
+          passwordForm.confirmNewPassword.trim().length > 0 &&
+          passwordForm.newPassword === passwordForm.confirmNewPassword,
+      );
+
+      const changePasswordDialogActions = computed<AbyssDialogAction[]>(() => [
+        {
+          id: 'cancel',
+          label: 'Anuluj',
+          flat: true,
+        },
+        {
+          id: 'submit',
+          label: 'Zmień hasło',
+          gradient: true,
+          gradientColors: 'success',
+          disable: !canSubmitChangePassword.value,
+        },
+      ]);
+
+      function resetPasswordForm(): void {
+        passwordForm.currentPassword = '';
+        passwordForm.newPassword = '';
+        passwordForm.confirmNewPassword = '';
+        validationAttempted.value = false;
+      }
+
+      function openChangePasswordDialog(): void {
+        resetPasswordForm();
+        showChangePasswordDialog.value = true;
+      }
+
+      function closeChangePasswordDialog(): void {
+        showChangePasswordDialog.value = false;
+        resetPasswordForm();
+      }
+
+      function handleChangePasswordDialogAction(actionId: string): void {
+        if (actionId === 'cancel') {
+          closeChangePasswordDialog();
+          return;
+        }
+
+        validationAttempted.value = true;
+        if (!canSubmitChangePassword.value) {
+          return;
+        }
+
+        closeChangePasswordDialog();
+      }
+
+      return {
+        INPUT_COLUMN_SIZE,
+        INPUT_GRID_MAX_COLUMNS,
+        ABYSS_INPUT_ROW_GAP,
+        email: 'jan@example.com',
+        showChangePasswordDialog,
+        passwordForm,
+        passwordFieldErrors,
+        changePasswordDialogActions,
+        openChangePasswordDialog,
+        closeChangePasswordDialog,
+        handleChangePasswordDialogAction,
+      };
+    },
+    template: `
+      <div style="display: flex; flex-direction: column; gap: 16px; width: 100%;">
+        <AbyssCard title="Konto">
+          <template #header-prepend>
+            <q-icon name="sym_r_person" />
+          </template>
+          <template #content>
+            <AbyssInput v-model="email" type="email" label="E-mail" />
+            <AbyssGrid
+              :column-size="INPUT_COLUMN_SIZE"
+              :max-columns="INPUT_GRID_MAX_COLUMNS"
+              :rowGap="ABYSS_INPUT_ROW_GAP"
+              content-rows
+            >
+              <AbyssInputLabel label="Hasło" />
+              <AbyssButton
+                icon="sym_r_password"
+                label="Zmień hasło"
+                @click="openChangePasswordDialog"
+              />
+            </AbyssGrid>
+          </template>
+        </AbyssCard>
+
+        <AbyssDialog
+          v-model="showChangePasswordDialog"
+          title="Zmiana hasła"
+          icon="sym_r_password"
+          close-button
+          persistent
+          :actions="changePasswordDialogActions"
+          @action="handleChangePasswordDialogAction"
+          @close="closeChangePasswordDialog"
+        >
+          <AbyssInput
+            v-model="passwordForm.currentPassword"
+            type="password"
+            label="Obecne hasło"
+            autocomplete="current-password"
+            :error="!!passwordFieldErrors.currentPassword"
+            :error-message="passwordFieldErrors.currentPassword"
+          />
+          <AbyssInput
+            v-model="passwordForm.newPassword"
+            type="password"
+            label="Nowe hasło"
+            autocomplete="new-password"
+            :error="!!passwordFieldErrors.newPassword"
+            :error-message="passwordFieldErrors.newPassword"
+          />
+          <AbyssInput
+            v-model="passwordForm.confirmNewPassword"
+            type="password"
+            label="Powtórz nowe hasło"
+            autocomplete="new-password"
+            :error="!!passwordFieldErrors.confirmNewPassword"
+            :error-message="passwordFieldErrors.confirmNewPassword"
+          />
+        </AbyssDialog>
+      </div>
+    `,
+  }),
+  play: async ({ canvas, userEvent }) => {
+    const changePasswordButton = canvas.getByRole('button', {
+      name: 'Zmień hasło',
+    });
+    await expect(changePasswordButton).toBeVisible();
+
+    await userEvent.click(changePasswordButton);
+
+    const dialog = canvas.getByRole('dialog');
+    await expect(dialog).toBeVisible();
+    await expect(within(dialog).getAllByRole('textbox')).toHaveLength(3);
+  },
+};
+
+export const ArchiveSearchPattern: Story = {
+  name: 'Wzorzec: wyszukiwarka archiwum',
+  parameters: {
+    controls: { disable: true },
+    docs: {
+      description: {
+        story:
+          'Referencyjny układ paska wyszukiwania z `ArchivePage`: `AbyssInput` typu `search` **bez etykiety** (100% szerokości), własny slot `#prepend` z przyciskiem daty i opcjonalnym `q-chip`, wbudowany przycisk lupy w `#append`.\n\n' +
+          '**Placeholder:** pusty, gdy aktywny filtr daty (`@YYYY-MM-DD`); w przeciwnym razie „Szukaj frazy we wpisach”.',
+      },
+      source: {
+        language: 'html',
+        code: `<div class="page-archive__toolbar">
+  <AbyssInput
+    v-model="searchQuery"
+    type="search"
+    :placeholder="searchPlaceholder"
+    :loading="isSearchingHistory || isJumpingToDate"
+    class="page-archive__toolbar-input page-archive__toolbar-input--search"
+  >
+    <template #prepend>
+      <div class="page-archive__search-prepend">
+        <AbyssButton
+          flat
+          size="medium"
+          icon="sym_r_calendar_month"
+          class="icon-button page-archive__date-trigger"
+          aria-label="Wybierz datę"
+        >
+          <q-popup-proxy class="abyss-date-menu" :breakpoint="0">
+            <AbyssDate
+              :model-value="datePickerValue"
+              mask="YYYY-MM-DD"
+              @update:model-value="handleDatePickerUpdate"
+              @close="datePopupRef?.hide()"
+            />
+          </q-popup-proxy>
+        </AbyssButton>
+
+        <q-chip
+          v-if="selectedDateToken"
+          removable
+          remove-icon="sym_r_close"
+          dense
+          class="page-archive__date-chip"
+          @remove="clearDateToken"
+        >
+          {{ \`@\${selectedDateToken}\` }}
+        </q-chip>
+      </div>
+    </template>
+  </AbyssInput>
+</div>`,
+      },
+    },
+  },
+  render: () => ({
+    components: { ArchiveSearchPatternDemo },
+    template: '<ArchiveSearchPatternDemo />',
+  }),
+  play: async ({ canvas, canvasElement, userEvent }) => {
+    const clearDateFilterButton = canvas.getByRole('button', {
+      name: 'Wyczyść filtr daty',
+    });
+    await userEvent.click(clearDateFilterButton);
+
+    const searchInput = canvas.getByRole('searchbox');
+    await expect(searchInput).toBeVisible();
+    await expect(searchInput).toHaveAttribute(
+      'placeholder',
+      'Szukaj frazy we wpisach',
+    );
+
+    await userEvent.type(searchInput, 'asdad');
+    await expect(searchInput).toHaveValue('asdad');
+
+    const buttons = canvas.getAllByRole('button');
+    const calendarButton = buttons.find(
+      (button) => button.getAttribute('aria-label') === 'Wybierz datę',
+    );
+    await expect(calendarButton).toBeVisible();
+
+    const searchButton = canvasElement.querySelector(
+      '.archive-search-pattern__input .q-field__append .icon-button',
+    );
+    await expect(searchButton).toBeVisible();
+
+    const setDateFilterButton = canvas.getByRole('button', {
+      name: 'Ustaw filtr daty',
+    });
+    await userEvent.click(setDateFilterButton);
+
+    await expect(searchInput).toHaveValue('');
+    await expect(searchInput).toHaveAttribute('placeholder', '');
+    await expect(canvas.getByText('@2026-07-01')).toBeVisible();
+
+    const inputControl = canvasElement.querySelector(
+      '.archive-search-pattern__input .q-field__control',
+    );
+    const appendButton = canvasElement.querySelector(
+      '.archive-search-pattern__input .q-field__append .icon-button',
+    ) as HTMLElement | null;
+    const nativeInput = canvasElement.querySelector(
+      '.archive-search-pattern__input .q-field__native',
+    ) as HTMLElement | null;
+    const prependButton = canvasElement.querySelector(
+      '.archive-search-pattern__input .q-field__prepend .icon-button',
+    ) as HTMLElement | null;
+
+    const dateChip = canvasElement.querySelector(
+      '.archive-search-pattern__date-chip',
+    ) as HTMLElement | null;
+
+    if (
+      inputControl &&
+      appendButton &&
+      nativeInput &&
+      prependButton &&
+      dateChip
+    ) {
+      const controlRect = inputControl.getBoundingClientRect();
+      const appendRect = appendButton.getBoundingClientRect();
+      const nativeRect = nativeInput.getBoundingClientRect();
+      const prependRect = prependButton.getBoundingClientRect();
+      const dateChipRect = dateChip.getBoundingClientRect();
+      const appendGap = appendRect.left - nativeRect.right;
+      const prependGap = nativeRect.left - dateChipRect.right;
+      const dateButtonGap = dateChipRect.left - prependRect.right;
+
+      await expect(appendGap).toBeGreaterThanOrEqual(3);
+      await expect(appendGap).toBeLessThanOrEqual(5);
+      await expect(prependGap).toBeGreaterThanOrEqual(3);
+      await expect(prependGap).toBeLessThanOrEqual(5);
+      await expect(dateButtonGap).toBeGreaterThanOrEqual(3);
+      await expect(dateButtonGap).toBeLessThanOrEqual(5);
+      await expect(controlRect.width).toBeGreaterThan(400);
+    }
+
+    await userEvent.click(clearDateFilterButton);
+    await expect(searchInput).toHaveAttribute(
+      'placeholder',
+      'Szukaj frazy we wpisach',
+    );
   },
 };
