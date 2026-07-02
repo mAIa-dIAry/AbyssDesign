@@ -1,5 +1,12 @@
 <template>
-  <div :class="['abyss-reload', $props.class]" :style="[rootStyle, style]">
+  <div
+    :class="[
+      'abyss-reload',
+      { 'abyss-reload--top-scroll': !disabledTop },
+      $props.class,
+    ]"
+    :style="[rootStyle, style]"
+  >
     <div
       ref="viewportEl"
       class="abyss-reload__viewport"
@@ -142,12 +149,10 @@ let loadingBottomStartedAt: number | null = null;
 let topLoadingFinishTimer: ReturnType<typeof setTimeout> | null = null;
 let bottomLoadingFinishTimer: ReturnType<typeof setTimeout> | null = null;
 let bodyResizeObserver: ResizeObserver | null = null;
-let bottomRestoreAnimationFrame: number | null = null;
-let isBottomRestoreInProgress = false;
 let bottomRefreshCooldownUntil: number | null = null;
 let bottomRefreshCooldownTimer: ReturnType<typeof setTimeout> | null = null;
 
-const BOTTOM_RESTORE_ANIMATION_MS = 300;
+const BOTTOM_REFRESH_COOLDOWN_MS = 300;
 
 /** Debug scrolla — nie usuwać (diagnoza AbyssReload). */
 function logScrollDebug(event: string, details: Record<string, unknown>): void {
@@ -237,24 +242,11 @@ function isBottomRefreshCooldownActive(): boolean {
 
 function beginBottomRefreshCooldown(): void {
   clearBottomRefreshCooldown();
-  bottomRefreshCooldownUntil = Date.now() + BOTTOM_RESTORE_ANIMATION_MS;
+  bottomRefreshCooldownUntil = Date.now() + BOTTOM_REFRESH_COOLDOWN_MS;
   bottomRefreshCooldownTimer = setTimeout(() => {
     bottomRefreshCooldownTimer = null;
     bottomRefreshCooldownUntil = null;
-  }, BOTTOM_RESTORE_ANIMATION_MS);
-}
-
-function isBottomRestoreAnimating(): boolean {
-  return isBottomRestoreInProgress;
-}
-
-function cancelBottomRestoreAnimation(): void {
-  if (bottomRestoreAnimationFrame !== null) {
-    cancelAnimationFrame(bottomRestoreAnimationFrame);
-    bottomRestoreAnimationFrame = null;
-  }
-
-  isBottomRestoreInProgress = false;
+  }, BOTTOM_REFRESH_COOLDOWN_MS);
 }
 
 function isInBottomLoaderZone(
@@ -277,7 +269,7 @@ function enforceBottomRefreshCooldown(
   if (
     !isBottomRefreshCooldownActive() ||
     props.disabledBottom ||
-    isBottomRestoreAnimating()
+    programmaticScrollTarget !== null
   ) {
     return;
   }
@@ -310,15 +302,11 @@ function restoreScrollAfterBottomLoading(
     return;
   }
 
-  if (behavior === "auto") {
-    cancelBottomRestoreAnimation();
-    container.scrollTop = targetScroll;
-    programmaticScrollTarget = null;
-    lastScrollTop = container.scrollTop;
-    return;
-  }
-
-  animateScrollTop(container, targetScroll);
+  startProgrammaticScroll(targetScroll);
+  container.scrollTo({
+    top: targetScroll,
+    behavior,
+  });
 }
 
 function finishLoadingBottom(): void {
@@ -366,7 +354,7 @@ const bottomSpacerStyle = computed(() => ({
 
 const topSectionInsetPx = computed(() => {
   if (props.disabledTop) {
-    return paddingTopPx.value;
+    return 0;
   }
 
   return (
@@ -378,7 +366,7 @@ const topSectionInsetPx = computed(() => {
 
 const bottomSectionInsetPx = computed(() => {
   if (props.disabledBottom) {
-    return paddingBottomPx.value;
+    return 0;
   }
 
   return (
@@ -417,54 +405,6 @@ function getContentMaxScrollTop(container: HTMLElement): number {
   }
 
   return Math.max(0, absoluteMax - bottomLoader.offsetHeight);
-}
-
-function easeOutCubic(progress: number): number {
-  return 1 - (1 - progress) ** 3;
-}
-
-function animateScrollTop(
-  container: HTMLElement,
-  targetScroll: number,
-  durationMs = BOTTOM_RESTORE_ANIMATION_MS,
-): void {
-  cancelBottomRestoreAnimation();
-  isBottomRestoreInProgress = true;
-
-  const startScroll = container.scrollTop;
-  const distance = targetScroll - startScroll;
-
-  if (Math.abs(distance) < 1) {
-    container.scrollTop = targetScroll;
-    programmaticScrollTarget = null;
-    lastScrollTop = targetScroll;
-    isBottomRestoreInProgress = false;
-    return;
-  }
-
-  startProgrammaticScroll(targetScroll);
-  const startTime = performance.now();
-
-  const step = (now: number): void => {
-    const progress = Math.min((now - startTime) / durationMs, 1);
-    const easedProgress = easeOutCubic(progress);
-
-    container.scrollTop = startScroll + distance * easedProgress;
-    lastScrollTop = container.scrollTop;
-
-    if (progress < 1) {
-      bottomRestoreAnimationFrame = requestAnimationFrame(step);
-      return;
-    }
-
-    bottomRestoreAnimationFrame = null;
-    container.scrollTop = targetScroll;
-    lastScrollTop = targetScroll;
-    programmaticScrollTarget = null;
-    isBottomRestoreInProgress = false;
-  };
-
-  bottomRestoreAnimationFrame = requestAnimationFrame(step);
 }
 
 function shouldDeferContentClamp(): boolean {
@@ -812,8 +752,6 @@ function startProgrammaticScroll(target: number): void {
 function cancelProgrammaticScroll(reason: string): void {
   const container = viewportEl.value;
 
-  cancelBottomRestoreAnimation();
-
   if (!container || programmaticScrollTarget === null) {
     return;
   }
@@ -944,7 +882,7 @@ function handleScroll(): void {
         (programmaticScrollTarget < scrollTop && scrollTop > lastScrollTop);
 
       if (userOpposesProgrammaticScroll) {
-        if (isBottomRefreshCooldownActive() || isBottomRestoreAnimating()) {
+        if (isBottomRefreshCooldownActive()) {
           restoreScrollAfterBottomLoading("smooth");
         } else {
           cancelProgrammaticScroll("user-scroll");
@@ -1071,6 +1009,15 @@ watch(
   },
 );
 
+watch(
+  () => [props.disabledTop, props.disabledBottom] as const,
+  () => {
+    void nextTick(() => {
+      clampScrollToContentZone();
+    });
+  },
+);
+
 function observeBodyResize(): void {
   const body = viewportEl.value?.querySelector(".abyss-reload__body");
 
@@ -1113,7 +1060,6 @@ onMounted(() => {
 onUnmounted(() => {
   clearTopLoadingFinishTimer();
   clearBottomLoadingFinishTimer();
-  cancelBottomRestoreAnimation();
   clearBottomRefreshCooldown();
   bodyResizeObserver?.disconnect();
   bodyResizeObserver = null;
@@ -1158,9 +1104,13 @@ defineExpose({
 
   &__body {
     flex: 1 1 auto;
-    min-height: 100%;
+    min-height: 0;
     display: flex;
     flex-direction: column;
+  }
+
+  &--top-scroll &__body {
+    min-height: 100%;
   }
 
   &__loader {

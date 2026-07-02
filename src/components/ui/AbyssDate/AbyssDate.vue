@@ -207,7 +207,8 @@ function handleConfirm() {
 .abyss-date {
   --date-padding: 16px;
   --border-radius: 16px;
-  --date-btn-radius: 12px;
+  --date-btn-radius: 8px;
+  --date-footer-btn-radius: 12px;
   --date-btn-padding-x: 12px;
   --date-btn-padding-y: 8px;
   --date-btn-size: 32px;
@@ -253,7 +254,7 @@ function handleConfirm() {
     }
 
     :deep(.abyss-button) {
-      --border-radius: var(--date-btn-radius);
+      --border-radius: var(--date-footer-btn-radius);
     }
 
     :deep(.abyss-button-group) {
@@ -278,7 +279,7 @@ function handleConfirm() {
     }
 
     :deep(.abyss-button) {
-      --border-radius: var(--date-btn-radius);
+      --border-radius: var(--date-footer-btn-radius);
     }
 
     :deep(.abyss-button-group) {
@@ -305,6 +306,10 @@ function handleConfirm() {
       border-radius: 0;
     }
 
+    :deep(.q-date__actions) {
+      display: none;
+    }
+
     :deep(.q-date__header) {
       background: transparent;
       border-top-left-radius: var(--border-radius);
@@ -315,6 +320,10 @@ function handleConfirm() {
 
     :deep(.q-date__main) {
       background-color: transparent;
+    }
+
+    :deep(.q-date__calendar-days-container) {
+      min-height: 204px;
     }
 
     :deep(.bg-primary) {
