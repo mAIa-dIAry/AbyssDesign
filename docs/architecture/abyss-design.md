@@ -114,6 +114,7 @@ Podział odpowiedzialności między komponentami layoutu:
 - Domyślnie wyłączone: `disabledTop` i `disabledBottom` są `true`.
 - Włącz tylko tam, gdzie potrzebne (np. archiwum — dół listy, lista analiz — góra).
 - Odstępy loaderów: `indicatorPaddingTop`, `indicatorPaddingBottom`.
+- Przy włączonym odświeżaniu od góry startowy `scrollTop` ustawia się na wysokość górnego loadera — chroni to przed przypadkową aktywacją `refresh-top` przy wejściu na stronę.
 - Wysokość scrolla przy włączonym loaderze: `100%` viewportu + zmierzona wysokość sekcji loadera (góra i/lub dół). `__body` ma naturalną wysokość treści — nie rozciąga się flexem do viewportu.
 
 ### Wzorzec strony ze scrollem

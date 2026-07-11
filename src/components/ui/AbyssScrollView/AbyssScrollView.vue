@@ -153,6 +153,7 @@ let viewportLayoutObserver: ResizeObserver | null = null;
 let loaderResizeObserver: ResizeObserver | null = null;
 let bottomRefreshCooldownUntil: number | null = null;
 let bottomRefreshCooldownTimer: ReturnType<typeof setTimeout> | null = null;
+let isInitialTopScrollPositionReady = true;
 
 const BOTTOM_REFRESH_COOLDOWN_MS = 300;
 
@@ -427,6 +428,58 @@ function getContentMinScrollTop(): number {
   return topLoaderEl.value?.offsetHeight ?? 0;
 }
 
+function markInitialTopScrollPositionReady(): void {
+  if (props.disabledTop) {
+    isInitialTopScrollPositionReady = true;
+    return;
+  }
+
+  const container = viewportEl.value;
+
+  if (!container) {
+    return;
+  }
+
+  const minScroll = getContentMinScrollTop();
+
+  if (minScroll <= 0 || container.scrollTop >= minScroll) {
+    isInitialTopScrollPositionReady = true;
+  }
+}
+
+function applyInitialContentScrollPosition(): void {
+  const container = viewportEl.value;
+
+  if (!container) {
+    return;
+  }
+
+  if (props.disabledTop) {
+    isInitialTopScrollPositionReady = true;
+    lastScrollTop = container.scrollTop;
+    return;
+  }
+
+  const minScroll = getContentMinScrollTop();
+
+  if (minScroll <= 0) {
+    return;
+  }
+
+  if (container.scrollTop >= minScroll) {
+    markInitialTopScrollPositionReady();
+    lastScrollTop = container.scrollTop;
+    return;
+  }
+
+  withSuppressedActivation(() => {
+    startProgrammaticScroll(minScroll);
+    container.scrollTop = minScroll;
+    lastScrollTop = minScroll;
+    markInitialTopScrollPositionReady();
+  });
+}
+
 function getContentMaxScrollTop(container: HTMLElement): number {
   const absoluteMax = getMaxScrollTop(container);
   const bottomLoader = bottomLoaderEl.value;
@@ -464,12 +517,14 @@ function clampScrollToContentZone(behavior: ScrollBehavior = "auto"): void {
 
   if (clamped === container.scrollTop) {
     lastScrollTop = container.scrollTop;
+    markInitialTopScrollPositionReady();
     return;
   }
 
   startProgrammaticScroll(clamped);
   container.scrollTo({ top: clamped, behavior });
   lastScrollTop = clamped;
+  markInitialTopScrollPositionReady();
 }
 
 function isTopScrollActivated(scrollTop: number): boolean {
@@ -690,6 +745,10 @@ function triggerRefreshBottom(): void {
 }
 
 function checkTopActivation(scrollTop: number): void {
+  if (!isInitialTopScrollPositionReady) {
+    return;
+  }
+
   if (isActivationSuppressed()) {
     return;
   }
@@ -1114,6 +1173,19 @@ function observeViewportLayout(): void {
 }
 
 watch(
+  () => props.disabledTop,
+  (disabledTop) => {
+    isInitialTopScrollPositionReady = disabledTop;
+
+    if (!disabledTop) {
+      void nextTick(() => {
+        applyInitialContentScrollPosition();
+      });
+    }
+  },
+);
+
+watch(
   () =>
     [
       props.disabledTop,
@@ -1125,37 +1197,42 @@ watch(
   () => {
     void nextTick(() => {
       observeLoaderSections();
+      applyInitialContentScrollPosition();
       clampScrollToContentZone();
     });
   },
 );
 
 onMounted(() => {
+  isInitialTopScrollPositionReady = props.disabledTop;
+
   void nextTick(() => {
     const container = viewportEl.value;
-    const topLoader = topLoaderEl.value;
 
     if (!container) {
       return;
     }
 
     observeLoaderSections();
+    applyInitialContentScrollPosition();
 
-    if (
-      topLoader &&
-      !props.disabledTop &&
-      container.scrollTop < topLoader.offsetHeight
-    ) {
-      container.scrollTop = topLoader.offsetHeight;
-    } else {
-      clampScrollToContentZone();
-    }
+    requestAnimationFrame(() => {
+      applyInitialContentScrollPosition();
 
-    observeBodyResize();
-    observeViewportLayout();
-    lastScrollTop = container.scrollTop;
-    scrollDirection = "down";
-    programmaticScrollTarget = null;
+      if (!isInitialTopScrollPositionReady) {
+        clampScrollToContentZone();
+      }
+
+      observeBodyResize();
+      observeViewportLayout();
+
+      if (lastScrollTop === -1) {
+        lastScrollTop = container.scrollTop;
+      }
+
+      scrollDirection = "down";
+      programmaticScrollTarget = null;
+    });
   });
 });
 
