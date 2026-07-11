@@ -289,8 +289,7 @@ function back() {
 
   &--desktop {
     display: flex;
-    height: calc(100% + 48px);
-    margin: -24px;
+    height: 100%;
     overflow: hidden;
 
     .abyss-settings__sidebar {
@@ -315,11 +314,7 @@ function back() {
         8px,
         calc(var(--screen-radius, 12px) - env(safe-area-inset-left, 0px))
       );
-      height: calc(
-        100% + 8px + var(--landscape-safe-top) + var(--landscape-bottom-offset)
-      );
-      margin: calc(-8px - var(--landscape-safe-top)) -20px
-        calc(-1 * var(--landscape-bottom-offset)) -8px;
+      height: 100%;
 
       .abyss-settings__sidebar {
         max-width: 280px;
@@ -349,13 +344,11 @@ function back() {
   }
 
   &--mobile {
-    height: calc(100% + 36px);
-    margin: -12px -8px -24px -8px;
+    height: 100%;
     overflow: hidden;
 
     &.abyss-settings--device-desktop {
-      height: calc(100% + 48px);
-      margin: -24px;
+      height: 100%;
 
       .abyss-settings__detail-content {
         background: rgba(black, 0.25);
@@ -369,6 +362,10 @@ function back() {
       &--list {
         height: 100%;
         overflow: auto;
+        box-sizing: border-box;
+        padding-top: calc(env(safe-area-inset-top, 0px) + 12px);
+        padding-inline: 8px;
+        padding-bottom: 24px;
       }
 
       &--detail {
@@ -381,6 +378,7 @@ function back() {
           align-items: center;
           box-shadow: $shadow-sidebar;
           clip-path: inset(0 -16px -16px -16px);
+          padding-top: env(safe-area-inset-top, 0px);
 
           .abyss-title__content {
             font-size: 16px;

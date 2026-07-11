@@ -1,16 +1,16 @@
 <template>
   <div
-    class="abyss-reload-indicator"
-    :class="{ 'abyss-reload-indicator--large': size === 'large' }"
+    class="abyss-scroll-view-indicator"
+    :class="{ 'abyss-scroll-view-indicator--large': size === 'large' }"
   >
     <q-icon
       name="sym_r_refresh"
-      class="abyss-reload-indicator__icon"
-      :class="{ 'abyss-reload-indicator__icon--hidden': loading }"
+      class="abyss-scroll-view-indicator__icon"
+      :class="{ 'abyss-scroll-view-indicator__icon--hidden': loading }"
     />
     <q-spinner
-      class="abyss-reload-indicator__spinner"
-      :class="{ 'abyss-reload-indicator__spinner--visible': loading }"
+      class="abyss-scroll-view-indicator__spinner"
+      :class="{ 'abyss-scroll-view-indicator__spinner--visible': loading }"
       :size="spinnerSize"
       color="white"
     />
@@ -20,12 +20,12 @@
 <script setup lang="ts">
 import { computed } from "vue";
 
-export interface AbyssReloadIndicatorProps {
+export interface AbyssScrollViewIndicatorProps {
   loading?: boolean;
   size?: "default" | "large";
 }
 
-const props = withDefaults(defineProps<AbyssReloadIndicatorProps>(), {
+const props = withDefaults(defineProps<AbyssScrollViewIndicatorProps>(), {
   loading: false,
   size: "default",
 });
@@ -34,7 +34,7 @@ const spinnerSize = computed(() => (props.size === "large" ? "24px" : "20px"));
 </script>
 
 <style scoped lang="scss">
-.abyss-reload-indicator {
+.abyss-scroll-view-indicator {
   position: relative;
   display: grid;
   place-items: center;
@@ -65,7 +65,7 @@ const spinnerSize = computed(() => (props.size === "large" ? "24px" : "20px"));
       opacity: 0;
     }
 
-    .abyss-reload-indicator--large & {
+    .abyss-scroll-view-indicator--large & {
       font-size: 24px;
     }
   }

@@ -32,12 +32,17 @@ html {
   }
 }
 
+.story-scroll-container {
+  overflow: auto;
+  @include scrollbar;
+}
+
 .abyss-bg-decorator {
   position: relative;
   width: 100%;
   min-height: 100vh;
 
-  .abyss-reload__viewport {
+  .abyss-scroll-view__viewport {
     @include scrollbar;
   }
 

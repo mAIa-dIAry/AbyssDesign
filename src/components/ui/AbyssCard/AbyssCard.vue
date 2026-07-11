@@ -119,6 +119,33 @@ const hasFooter = computed(() => {
       margin-bottom: -8px;
       margin-right: -12px;
     }
+
+    :deep(> .abyss-button) {
+      margin-top: -8px;
+      margin-bottom: -8px;
+      margin-right: -12px;
+    }
+  }
+
+  .abyss-card-footer-prepend,
+  .abyss-card-footer-append {
+    :deep(.abyss-button) {
+      --font-size: 12px;
+      --padding-x: 16px;
+      --padding-y: 12px;
+      --icon-size: 16px;
+      min-height: 40px;
+      height: 40px;
+
+      &.icon-only {
+        min-width: 40px;
+        width: 40px;
+      }
+
+      &.full-width {
+        height: 100%;
+      }
+    }
   }
 
   .abyss-card-footer-prepend {

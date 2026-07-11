@@ -44,10 +44,7 @@
     <main class="abyss-template__content" :class="[`device--${props.device}`]">
       <div
         class="abyss-template__overflow-wrapper"
-        :class="[
-          `device--${props.device}`,
-          { 'abyss-template__overflow-wrapper--locked': !props.contentScrollable },
-        ]"
+        :class="[`device--${props.device}`]"
       >
         <slot name="content" />
       </div>
@@ -63,13 +60,11 @@ export interface AbyssTemplateProps {
   device: 'desktop' | 'mobile' | 'web';
   orientation?: 'portrait' | 'landscape';
   screenRadius?: string;
-  contentScrollable?: boolean;
 }
 
 const props = withDefaults(defineProps<AbyssTemplateProps>(), {
   orientation: 'portrait',
   screenRadius: '',
-  contentScrollable: true,
 });
 
 const slots = useSlots();
@@ -286,31 +281,9 @@ const hasNavigation = computed(
   &__overflow-wrapper {
     width: 100%;
     height: 100%;
-    overflow: auto;
+    overflow: hidden;
     position: relative;
-
-    &--locked {
-      overflow: hidden;
-    }
-
-    &.device--desktop,
-    &.device--web {
-      padding: 24px;
-      @include scrollbar;
-    }
-
-    &.device--mobile {
-      padding: calc(var(--safe-area-top-offset) + 12px) 8px 24px;
-      mask-image: linear-gradient(
-        to bottom,
-        transparent 0,
-        rgba(0, 0, 0, 0.3) calc(var(--safe-area-top-offset) * 0.5),
-        black calc(var(--safe-area-top-offset) + 12px),
-        black 100%
-      );
-      mask-repeat: no-repeat;
-      mask-size: 100% 100%;
-    }
+    min-height: 0;
   }
 
   // Mobile landscape overrides — navigation moves to the right side
@@ -418,14 +391,6 @@ const hasNavigation = computed(
       }
     }
 
-    .abyss-template__overflow-wrapper {
-      padding: var(--offset-top) 20px
-        max(
-          8px,
-          calc(var(--screen-radius, 12px) - env(safe-area-inset-left, 0px))
-        )
-        8px;
-    }
   }
 
   // No navigation overrides
@@ -463,10 +428,6 @@ const hasNavigation = computed(
       mask-image: none;
     }
 
-    .abyss-template__overflow-wrapper.device--mobile {
-      padding-bottom: 12px;
-    }
-
     &.device--mobile.orientation--landscape {
       grid-template-areas: 'content';
       grid-template-columns: 1fr;
@@ -476,10 +437,6 @@ const hasNavigation = computed(
         mask-image: none;
       }
 
-      .abyss-template__overflow-wrapper {
-        padding-right: var(--offset-right);
-        padding-bottom: max(12px, env(safe-area-inset-bottom, 0px));
-      }
     }
   }
 }

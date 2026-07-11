@@ -7,7 +7,7 @@
     />
 
     <div class="abyss-info__icon">
-      <span class="material-symbols-rounded">{{ icon }}</span>
+      <q-icon :name="icon" />
     </div>
 
     <div class="abyss-info__panel">
@@ -131,7 +131,7 @@ if (import.meta.env.DEV) {
     min-width: var(--info-icon-column-width);
     color: black;
 
-    .material-symbols-rounded {
+    :deep(.q-icon) {
       font-size: var(--info-icon-size);
       line-height: 1;
     }

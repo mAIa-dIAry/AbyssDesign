@@ -21,5 +21,6 @@ alwaysApply: false
 ## Pozostałe zasady
 
 - Prezentuj komponenty UI na tle `withAbyssBackground`.
+- Kontenery przewijane w stories (listy, panele ze scrollem) oznaczaj klasą **`story-scroll-container`** — mixin `scrollbar` jest zdefiniowany w `src/storybook/preview-base.scss` i stosowany globalnie w Storybooku.
 - W `play()` używaj `canvas.getByRole()` zamiast `querySelector`.
 - Importuj `expect` z `storybook/test`, nie z Vitest.

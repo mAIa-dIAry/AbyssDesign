@@ -6,6 +6,7 @@
 - [Zasady nadrzędne](#zasady-nadrzędne)
 - [Formularze i karty vs komponenty złożone](#formularze-i-karty-vs-komponenty-złożone)
 - [Powierzchnie i warstwy](#powierzchnie-i-warstwy)
+- [Layout strony](#layout-strony)
 - [Feedback po akcjach użytkownika](#feedback-po-akcjach-użytkownika)
 - [Matryca AbyssButton](#matryca-abyssbutton)
 - [Wzorce kompozycji](#wzorce-kompozycji)
@@ -73,10 +74,55 @@ Przykład niedozwolonego użycia: karta „Konto” w ustawieniach z `class="set
 | `AbyssGrid`        | responsywna siatka             | `column-size`, `max-columns`, `column-gap`, `row-gap`, `align`, `content-rows`          |
 | `AbyssForm`        | wrapper formularza             | `v-model`, `sync`, `@update-form`, `@submit-form`                                       |
 | `AbyssPanel`       | panel z opcjonalnym nagłówkiem | `title`, `flush`, slot `title`                                                          |
+| `AbyssNavHeader`   | sticky nagłówek nawigacyjny    | `title`, `icon`, `backDisabled`, `backIcon`, `backLabel`, `sticky`, `stickyTop`, slot `actions` (`AbyssButton` `size="medium"` `flat` `embedded`); przycisk wstecz zawsze widoczny |
 | `AbyssContent`     | typografia gotowego HTML       | `html`, `mode` (`html-note` \| `html-changelog`), `size`, `tone`                        |
 | `AbyssMarkdown`    | podgląd Markdown + kod źródłowy | `source`, `v-model` (`preview` \| `code`), `content-mode`, `embedded`                  |
 | `AbyssCode`        | kolorowany kod (JSON)          | `value`, `language` (`json` \| `abyss-json`), `colorTheme` (domyślnie `one-dark`)       |
 | `AbyssDebug`       | karta debugowania danych       | `data` — cienki wrapper nad `AbyssCode language="abyss-json"`                           |
+| `AbyssTemplate`    | szkielet aplikacji (nav, content) | `device`, `orientation`, `screenRadius`; slot `content` bez scrollu i paddingu        |
+| `AbyssScrollView`  | przewijany obszar strony       | `device`, `padded`, opcjonalny reload (`disabledTop` / `disabledBottom`, domyślnie wyłączony); paddingi treści per `device` |
+| `AbyssSettings`    | układ ustawień (sidebar + detail) | własny scroll paneli; nie wymaga `AbyssScrollView` na poziomie strony                 |
+
+---
+
+## Layout strony
+
+Podział odpowiedzialności między komponentami layoutu:
+
+| Komponent | Scroll | Padding treści |
+| --------- | ------ | -------------- |
+| `AbyssTemplate` → slot `content` | **Nie** — `overflow: hidden` | **Nie** |
+| `AbyssScrollView` | **Tak** — viewport przewija treść | **Tak** — domyślne insety zależne od `device` (`padded`, domyślnie `true`) |
+| `AbyssSettings` | **Tak** — wewnętrznie w sidebarze i panelu detail | Własne insety paneli |
+| Edytor / full-bleed | Własny layout 100% wysokości | W komponencie domenowym |
+
+### Presety paddingów `AbyssScrollView`
+
+- **desktop / web:** `24px` ze wszystkich stron
+- **mobile:** góra `calc(safe-area-inset-top + 12px)`, boki `8px`, dół `24px`
+- Nadpisanie: propsy `paddingTop`, `paddingInline`, `paddingBottom` (px)
+
+### Odświeżanie list (reload)
+
+- Domyślnie wyłączone: `disabledTop` i `disabledBottom` są `true`.
+- Włącz tylko tam, gdzie potrzebne (np. archiwum — dół listy, lista analiz — góra).
+- Odstępy loaderów: `loaderGapTop`, `loaderGapBottom`, `indicatorPaddingTop`, `indicatorPaddingBottom`.
+
+### Wzorzec strony ze scrollem
+
+```vue
+<div class="page-example">
+  <div class="page-example__content">
+    <AbyssScrollView :device="device" class="page-example__scroll">
+      <!-- treść -->
+    </AbyssScrollView>
+  </div>
+</div>
+```
+
+Strona: `height: 100%`, `min-height: 0`, flex column. Kontener content i `AbyssScrollView`: `flex: 1`, `min-height: 0`.
+
+---
 
 ### Hierarchia `AbyssTitle`
 
@@ -402,7 +448,8 @@ Prop `expandable` lub obecność slotu `row-expand` aktywuje kolumnę +/- i wier
 - Używaj `AbyssDate` / `AbyssTime` (lub `AbyssInput` z odpowiednim `type`) jako jedynego sposobu wyboru daty i czasu.
 - Ustawiaj i zmieniaj hasło wyłącznie w dedykowanym `AbyssDialog`.
 - Używaj `AbyssMarkdown` dla generycznego podglądu Markdown; logikę changelogu trzymaj w komponencie aplikacji (`ChangeLog`).
-- Używaj `AbyssCode` zamiast własnego `<pre>` dla kolorowanego JSON.
+- Używaj `AbyssScrollView` dla przewijanych widoków strony — nie polegaj na scrollu slotu `content` w `AbyssTemplate`.
+- Ustawiaj `device` na `AbyssScrollView` zgodnie z kontekstem aplikacji (`mobile` / `desktop` / `web`).
 
 ### Don't
 
@@ -419,7 +466,8 @@ Prop `expandable` lub obecność slotu `row-expand` aktywuje kolumnę +/- i wier
 - Nie używaj natywnych selektorów daty/czasu systemowych.
 - Nie używaj `AbyssInfo` z `v-if` / `v-show` do pokazywania sukcesu lub błędu po akcji użytkownika — użyj Quasar Notify.
 - Nie dodawaj zagnieżdżonych pionowych scrollbarów w treści `AbyssDialog` — przewijaj wyłącznie body dialogu.
-- Nie powtarzaj etykiety kolumny akcji (np. „Akcje”) w każdym wierszu tabeli — w komórce wystarczy ikona menu z `aria-label`.
+- Nie dodawaj paddingu ani `overflow: auto` na wrapperze contentu `AbyssTemplate` — to odpowiedzialność `AbyssScrollView` lub `AbyssSettings`.
+- Nie uzależniaj scrollu strony od ujemnych marginesów kompensujących padding szablonu.
 
 ---
 
@@ -433,6 +481,7 @@ Prop `expandable` lub obecność slotu `row-expand` aktywuje kolumnę +/- i wier
 - `AbyssTable` — [`src/components/ui/AbyssTable/AbyssTable.stories.ts`](../../src/components/ui/AbyssTable/AbyssTable.stories.ts)
 - `AbyssMarkdown` — [`src/components/ui/AbyssMarkdown/AbyssMarkdown.stories.ts`](../../src/components/ui/AbyssMarkdown/AbyssMarkdown.stories.ts)
 - `AbyssCode` — [`src/components/ui/AbyssCode/AbyssCode.stories.ts`](../../src/components/ui/AbyssCode/AbyssCode.stories.ts)
+- `AbyssScrollView` — [`src/components/ui/AbyssScrollView/AbyssScrollView.stories.ts`](../../src/components/ui/AbyssScrollView/AbyssScrollView.stories.ts)
 - `AbyssDebug` — [`src/components/ui/AbyssDebug/AbyssDebug.stories.ts`](../../src/components/ui/AbyssDebug/AbyssDebug.stories.ts)
 
 Przykłady użycia w ekranach aplikacji Maia znajdują się w repozytorium `maia-app`.

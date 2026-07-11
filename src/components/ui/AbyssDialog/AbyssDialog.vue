@@ -283,6 +283,27 @@ function getActionButtonProps(
     }
   }
 
+  &__footer-prepend,
+  &__footer-append {
+    :deep(.abyss-button) {
+      --font-size: 12px;
+      --padding-x: 16px;
+      --padding-y: 12px;
+      --icon-size: 16px;
+      min-height: 40px;
+      height: 40px;
+
+      &.icon-only {
+        min-width: 40px;
+        width: 40px;
+      }
+
+      &.full-width {
+        height: 100%;
+      }
+    }
+  }
+
   &__title,
   &__footer-spacer {
     flex: 1;

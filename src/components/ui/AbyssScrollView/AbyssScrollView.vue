@@ -1,15 +1,17 @@
 <template>
   <div
     :class="[
-      'abyss-reload',
-      { 'abyss-reload--top-scroll': !disabledTop },
+      'abyss-scroll-view',
+      `device--${device}`,
+      { 'abyss-scroll-view--top-scroll': !disabledTop },
       $props.class,
     ]"
     :style="[rootStyle, style]"
   >
     <div
       ref="viewportEl"
-      class="abyss-reload__viewport"
+      class="abyss-scroll-view__viewport"
+      :class="[`device--${device}`]"
       v-bind="$attrs"
       @scroll="handleScroll"
       @scrollend.passive="handleScrollEnd"
@@ -18,31 +20,37 @@
       @touchcancel.passive="handleTouchCancel"
       @wheel.passive="handleWheel"
     >
-      <div class="abyss-reload__content">
+      <div class="abyss-scroll-view__content">
         <div
           v-if="!disabledTop"
           ref="topLoaderEl"
-          class="abyss-reload__loader abyss-reload__loader--top"
-          :class="{ 'abyss-reload__loader--large': size === 'large' }"
+          class="abyss-scroll-view__loader abyss-scroll-view__loader--top"
+          :class="{ 'abyss-scroll-view__loader--large': size === 'large' }"
           aria-hidden="true"
         >
-          <AbyssReloadIndicator :loading="effectiveLoadingTop" :size="size" />
+          <AbyssScrollViewIndicator :loading="effectiveLoadingTop" :size="size" />
         </div>
 
         <div
-          v-if="paddingTopPx > 0"
-          class="abyss-reload__spacer abyss-reload__spacer--top"
+          v-if="loaderGapTopPx > 0"
+          class="abyss-scroll-view__spacer abyss-scroll-view__spacer--top"
           aria-hidden="true"
           :style="topSpacerStyle"
         />
 
-        <div class="abyss-reload__body">
+        <div
+          class="abyss-scroll-view__body"
+          :class="[
+            `device--${device}`,
+            { 'abyss-scroll-view__body--padded': padded },
+          ]"
+        >
           <slot />
         </div>
 
         <div
-          v-if="paddingBottomPx > 0"
-          class="abyss-reload__spacer abyss-reload__spacer--bottom"
+          v-if="loaderGapBottomPx > 0"
+          class="abyss-scroll-view__spacer abyss-scroll-view__spacer--bottom"
           aria-hidden="true"
           :style="bottomSpacerStyle"
         />
@@ -50,11 +58,11 @@
         <div
           v-if="!disabledBottom"
           ref="bottomLoaderEl"
-          class="abyss-reload__loader abyss-reload__loader--bottom"
-          :class="{ 'abyss-reload__loader--large': size === 'large' }"
+          class="abyss-scroll-view__loader abyss-scroll-view__loader--bottom"
+          :class="{ 'abyss-scroll-view__loader--large': size === 'large' }"
           aria-hidden="true"
         >
-          <AbyssReloadIndicator
+          <AbyssScrollViewIndicator
             :loading="effectiveLoadingBottom"
             :size="size"
           />
@@ -66,7 +74,7 @@
 
 <script setup lang="ts">
 import { computed, nextTick, onMounted, onUnmounted, ref, watch } from "vue";
-import AbyssReloadIndicator from "@/components/ui/AbyssReload/AbyssReloadIndicator.vue";
+import AbyssScrollViewIndicator from "@/components/ui/AbyssScrollView/AbyssScrollViewIndicator.vue";
 
 const DEFAULT_LOADER_HEIGHT = 56;
 const DEFAULT_LOADER_HEIGHT_LARGE = 64;
@@ -74,7 +82,17 @@ const DEFAULT_ACTIVATION_THRESHOLD = 8;
 /** Minimalny przyrost scrollTop (px) przy aktywacji — chroni przed fałszywym triggerem po programatycznym scrollu. */
 const REFRESH_SCROLL_DELTA = 12;
 
-export interface AbyssReloadProps {
+export interface AbyssScrollViewProps {
+  /** Urządzenie — determinuje domyślne paddingi treści. */
+  device: "mobile" | "desktop" | "web";
+  /** Stosuje standardowe paddingi treści strony. */
+  padded?: boolean;
+  /** Nadpisanie górnego paddingu treści (px). */
+  paddingTop?: number;
+  /** Nadpisanie bocznego paddingu treści (px). */
+  paddingInline?: number;
+  /** Nadpisanie dolnego paddingu treści (px). */
+  paddingBottom?: number;
   /** Stan ładowania wskaźnika u góry (fade ikony → spinner). */
   loadingTop?: boolean;
   /** Stan ładowania wskaźnika u dołu (fade ikony → spinner). */
@@ -88,9 +106,9 @@ export interface AbyssReloadProps {
   /** Rozmiar wskaźnika odświeżania. */
   size?: "default" | "large";
   /** Odstęp (px) między górnym wskaźnikiem a treścią listy. */
-  paddingTop?: number;
+  loaderGapTop?: number;
   /** Odstęp (px) między treścią listy a dolnym wskaźnikiem. */
-  paddingBottom?: number;
+  loaderGapBottom?: number;
   /** Wewnętrzny padding (px) wrappera górnego wskaźnika od zewnętrznej krawędzi listy. */
   indicatorPaddingTop?: number;
   /** Wewnętrzny padding (px) wrappera dolnego wskaźnika od zewnętrznej krawędzi listy. */
@@ -104,15 +122,16 @@ export interface AbyssReloadProps {
   style?: string | Record<string, string>;
 }
 
-const props = withDefaults(defineProps<AbyssReloadProps>(), {
+const props = withDefaults(defineProps<AbyssScrollViewProps>(), {
+  padded: true,
   loadingTop: false,
   loadingBottom: false,
-  disabledTop: false,
-  disabledBottom: false,
+  disabledTop: true,
+  disabledBottom: true,
   activationThreshold: DEFAULT_ACTIVATION_THRESHOLD,
   size: "default",
-  paddingTop: 0,
-  paddingBottom: 0,
+  loaderGapTop: 0,
+  loaderGapBottom: 0,
   indicatorPaddingTop: 0,
   indicatorPaddingBottom: 0,
   minLoadingTime: 0,
@@ -149,14 +168,15 @@ let loadingBottomStartedAt: number | null = null;
 let topLoadingFinishTimer: ReturnType<typeof setTimeout> | null = null;
 let bottomLoadingFinishTimer: ReturnType<typeof setTimeout> | null = null;
 let bodyResizeObserver: ResizeObserver | null = null;
+let viewportLayoutObserver: ResizeObserver | null = null;
 let bottomRefreshCooldownUntil: number | null = null;
 let bottomRefreshCooldownTimer: ReturnType<typeof setTimeout> | null = null;
 
 const BOTTOM_REFRESH_COOLDOWN_MS = 300;
 
-/** Debug scrolla — nie usuwać (diagnoza AbyssReload). */
+/** Debug scrolla — nie usuwać (diagnoza AbyssScrollView). */
 function logScrollDebug(event: string, details: Record<string, unknown>): void {
-  console.log("[AbyssReload]", event, details);
+  console.log("[AbyssScrollView]", event, details);
 }
 
 const loaderHeight = computed(() =>
@@ -335,8 +355,10 @@ function finishLoadingBottom(): void {
   onLoadingFinished();
 }
 
-const paddingTopPx = computed(() => Math.max(0, props.paddingTop ?? 0));
-const paddingBottomPx = computed(() => Math.max(0, props.paddingBottom ?? 0));
+const loaderGapTopPx = computed(() => Math.max(0, props.loaderGapTop ?? 0));
+const loaderGapBottomPx = computed(() =>
+  Math.max(0, props.loaderGapBottom ?? 0),
+);
 const indicatorPaddingTopPx = computed(() =>
   Math.max(0, props.indicatorPaddingTop ?? 0),
 );
@@ -344,12 +366,52 @@ const indicatorPaddingBottomPx = computed(() =>
   Math.max(0, props.indicatorPaddingBottom ?? 0),
 );
 
+const contentPaddingTop = computed(() => {
+  if (!props.padded) {
+    return "0px";
+  }
+
+  if (props.paddingTop !== undefined) {
+    return `${props.paddingTop}px`;
+  }
+
+  if (props.device === "mobile") {
+    return "calc(var(--safe-area-top-offset, env(safe-area-inset-top, 0px)) + 12px)";
+  }
+
+  return "24px";
+});
+
+const contentPaddingInline = computed(() => {
+  if (!props.padded) {
+    return "0px";
+  }
+
+  if (props.paddingInline !== undefined) {
+    return `${props.paddingInline}px`;
+  }
+
+  return props.device === "mobile" ? "8px" : "24px";
+});
+
+const contentPaddingBottom = computed(() => {
+  if (!props.padded) {
+    return "0px";
+  }
+
+  if (props.paddingBottom !== undefined) {
+    return `${props.paddingBottom}px`;
+  }
+
+  return "24px";
+});
+
 const topSpacerStyle = computed(() => ({
-  height: `${paddingTopPx.value}px`,
+  height: `${loaderGapTopPx.value}px`,
 }));
 
 const bottomSpacerStyle = computed(() => ({
-  height: `${paddingBottomPx.value}px`,
+  height: `${loaderGapBottomPx.value}px`,
 }));
 
 const topSectionInsetPx = computed(() => {
@@ -360,7 +422,7 @@ const topSectionInsetPx = computed(() => {
   return (
     loaderHeight.value +
     indicatorPaddingTopPx.value +
-    paddingTopPx.value
+    loaderGapTopPx.value
   );
 });
 
@@ -372,16 +434,20 @@ const bottomSectionInsetPx = computed(() => {
   return (
     loaderHeight.value +
     indicatorPaddingBottomPx.value +
-    paddingBottomPx.value
+    loaderGapBottomPx.value
   );
 });
 
 const rootStyle = computed(() => ({
-  "--abyss-reload-loader-height": `${loaderHeight.value}px`,
-  "--abyss-reload-indicator-padding-top": `${indicatorPaddingTopPx.value}px`,
-  "--abyss-reload-indicator-padding-bottom": `${indicatorPaddingBottomPx.value}px`,
-  "--abyss-reload-top-inset": `${topSectionInsetPx.value}px`,
-  "--abyss-reload-bottom-inset": `${bottomSectionInsetPx.value}px`,
+  "--safe-area-top-offset": "env(safe-area-inset-top, 0px)",
+  "--abyss-scroll-view-loader-height": `${loaderHeight.value}px`,
+  "--abyss-scroll-view-indicator-padding-top": `${indicatorPaddingTopPx.value}px`,
+  "--abyss-scroll-view-indicator-padding-bottom": `${indicatorPaddingBottomPx.value}px`,
+  "--abyss-scroll-view-top-inset": `${topSectionInsetPx.value}px`,
+  "--abyss-scroll-view-bottom-inset": `${bottomSectionInsetPx.value}px`,
+  "--abyss-scroll-view-content-padding-top": contentPaddingTop.value,
+  "--abyss-scroll-view-content-padding-inline": contentPaddingInline.value,
+  "--abyss-scroll-view-content-padding-bottom": contentPaddingBottom.value,
 }));
 
 function getMaxScrollTop(container: HTMLElement): number {
@@ -1019,7 +1085,7 @@ watch(
 );
 
 function observeBodyResize(): void {
-  const body = viewportEl.value?.querySelector(".abyss-reload__body");
+  const body = viewportEl.value?.querySelector(".abyss-scroll-view__body");
 
   if (!(body instanceof HTMLElement)) {
     return;
@@ -1029,6 +1095,26 @@ function observeBodyResize(): void {
     clampScrollToContentZone();
   });
   bodyResizeObserver.observe(body);
+}
+
+function observeViewportLayout(): void {
+  viewportLayoutObserver?.disconnect();
+
+  const viewport = viewportEl.value;
+
+  if (!viewport) {
+    return;
+  }
+
+  viewportLayoutObserver = new ResizeObserver(() => {
+    clampScrollToContentZone();
+  });
+
+  viewportLayoutObserver.observe(viewport);
+
+  if (viewport.parentElement) {
+    viewportLayoutObserver.observe(viewport.parentElement);
+  }
 }
 
 onMounted(() => {
@@ -1051,6 +1137,7 @@ onMounted(() => {
     }
 
     observeBodyResize();
+    observeViewportLayout();
     lastScrollTop = container.scrollTop;
     scrollDirection = "down";
     programmaticScrollTarget = null;
@@ -1063,6 +1150,8 @@ onUnmounted(() => {
   clearBottomRefreshCooldown();
   bodyResizeObserver?.disconnect();
   bodyResizeObserver = null;
+  viewportLayoutObserver?.disconnect();
+  viewportLayoutObserver = null;
 });
 
 defineExpose({
@@ -1079,7 +1168,8 @@ defineExpose({
 </script>
 
 <style scoped lang="scss">
-.abyss-reload {
+.abyss-scroll-view {
+  --safe-area-top-offset: env(safe-area-inset-top, 0px);
   display: flex;
   flex-direction: column;
   min-height: 0;
@@ -1092,13 +1182,27 @@ defineExpose({
     overflow-y: auto;
     overscroll-behavior: contain;
     -webkit-overflow-scrolling: touch;
+    @include scrollbar;
+
+    &.device--mobile {
+      mask-image: linear-gradient(
+        to bottom,
+        transparent 0,
+        rgba(0, 0, 0, 0.3) calc(var(--safe-area-top-offset) * 0.5),
+        black calc(var(--safe-area-top-offset) + 12px),
+        black 100%
+      );
+      mask-repeat: no-repeat;
+      mask-size: 100% 100%;
+    }
   }
 
   &__content {
     display: flex;
     flex-direction: column;
     min-height: calc(
-      100% + var(--abyss-reload-top-inset) + var(--abyss-reload-bottom-inset)
+      100% + var(--abyss-scroll-view-top-inset) +
+        var(--abyss-scroll-view-bottom-inset)
     );
   }
 
@@ -1107,6 +1211,13 @@ defineExpose({
     min-height: 0;
     display: flex;
     flex-direction: column;
+    box-sizing: border-box;
+
+    &--padded {
+      padding-top: var(--abyss-scroll-view-content-padding-top);
+      padding-inline: var(--abyss-scroll-view-content-padding-inline);
+      padding-bottom: var(--abyss-scroll-view-content-padding-bottom);
+    }
   }
 
   &--top-scroll &__body {
@@ -1119,14 +1230,14 @@ defineExpose({
     justify-content: center;
     align-items: center;
     box-sizing: border-box;
-    min-height: var(--abyss-reload-loader-height);
+    min-height: var(--abyss-scroll-view-loader-height);
 
     &--top {
-      padding-top: var(--abyss-reload-indicator-padding-top);
+      padding-top: var(--abyss-scroll-view-indicator-padding-top);
     }
 
     &--bottom {
-      padding-bottom: var(--abyss-reload-indicator-padding-bottom);
+      padding-bottom: var(--abyss-scroll-view-indicator-padding-bottom);
     }
   }
 
