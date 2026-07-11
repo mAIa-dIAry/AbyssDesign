@@ -96,8 +96,17 @@
             </slot>
           </template>
         </q-tr>
-        <q-tr v-show="bodyProps.expand" :props="bodyProps">
-          <q-td colspan="100%">
+        <q-tr
+          v-show="bodyProps.expand"
+          class="abyss-table__expand-row"
+          no-hover
+          :props="bodyProps"
+        >
+          <q-td
+            class="abyss-table__expand-cell"
+            colspan="100%"
+            no-hover
+          >
             <slot name="row-expand" v-bind="bodyProps">
               <div class="text-left">
                 This is expand slot for row above: {{ bodyProps.row.name }}.
@@ -693,6 +702,14 @@ defineOptions({
     border-color: var(--table-separator-color);
   }
 
+  :deep(tr.abyss-table__expand-row > td.abyss-table__expand-cell) {
+    padding: 16px;
+  }
+
+  :deep(tr.abyss-table__expand-row > td.abyss-table__expand-cell::before) {
+    background: transparent !important;
+  }
+
   :deep(.q-table__middle.scroll) {
     @include scrollbar;
   }
@@ -752,7 +769,7 @@ defineOptions({
       margin-left: 4px;
     }
 
-    :deep(tbody td::before) {
+    :deep(tbody td:not(.abyss-table__expand-cell)::before) {
       background: rgba(white, 0.035);
     }
   }
