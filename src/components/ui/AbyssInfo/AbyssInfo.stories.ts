@@ -29,13 +29,14 @@ const meta: Meta<typeof AbyssInfo> = {
           '### Zalecane ikony i etykiety\n\n' +
           '> Ikony poniżej należą do zestawu Material Symbols, ale **nie posiadają wariantu `sym_r_`** — ' +
           'należy używać ich bez prefixu.\n\n' +
-          '| `type`    | `icon`         | Opcjonalna etykieta (`title`)      |\n' +
-          '|-----------|----------------|------------------------------------|\n' +
-          "| `info`    | `info`         | `t('common.labels.info')`          |\n" +
-          "| `warning` | `warning`      | `t('common.labels.warning')`       |\n" +
-          "| `danger`  | `error`        | `t('common.labels.error')`         |\n" +
-          "| `success` | `check_circle` | `t('common.labels.success')`       |\n" +
-          "| `hint`    | `lightbulb`    | *(opcjonalnie)*                    |\n\n" +
+          '| `type`    | Gradient   | `icon`         | Opcjonalna etykieta (`title`)      |\n' +
+          '|-----------|------------|----------------|------------------------------------|\n' +
+          "| `info`    | niebieski  | `info`         | `t('common.labels.info')`          |\n" +
+          "| `warning` | żółty      | `warning`      | `t('common.labels.warning')`       |\n" +
+          "| `danger`  | czerwony   | `error`        | `t('common.labels.error')`         |\n" +
+          "| `success` | zielony    | `check_circle` | `t('common.labels.success')`       |\n" +
+          "| `hint`    | fioletowy  | `lightbulb`    | *(opcjonalnie)*                    |\n\n" +
+          '> `type="info"` — istotna informacja kontekstowa (niebieski gradient). `type="hint"` — podpowiedź lub pusty stan (fioletowy gradient). Nie używaj `hint` z ikoną `info`.\n\n' +
           '```html\n' +
           '<AbyssInfo type="info"    icon="info"         :title="t(\'common.labels.info\')">\n' +
           '<AbyssInfo type="warning" icon="warning"      :title="t(\'common.labels.warning\')">\n' +

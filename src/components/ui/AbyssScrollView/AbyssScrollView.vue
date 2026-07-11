@@ -3,7 +3,6 @@
     :class="[
       'abyss-scroll-view',
       `device--${device}`,
-      { 'abyss-scroll-view--top-scroll': !disabledTop },
       $props.class,
     ]"
     :style="[rootStyle, style]"
@@ -32,13 +31,6 @@
         </div>
 
         <div
-          v-if="loaderGapTopPx > 0"
-          class="abyss-scroll-view__spacer abyss-scroll-view__spacer--top"
-          aria-hidden="true"
-          :style="topSpacerStyle"
-        />
-
-        <div
           class="abyss-scroll-view__body"
           :class="[
             `device--${device}`,
@@ -47,13 +39,6 @@
         >
           <slot />
         </div>
-
-        <div
-          v-if="loaderGapBottomPx > 0"
-          class="abyss-scroll-view__spacer abyss-scroll-view__spacer--bottom"
-          aria-hidden="true"
-          :style="bottomSpacerStyle"
-        />
 
         <div
           v-if="!disabledBottom"
@@ -87,7 +72,7 @@ export interface AbyssScrollViewProps {
   device: "mobile" | "desktop" | "web";
   /** Stosuje standardowe paddingi treści strony. */
   padded?: boolean;
-  /** Nadpisanie górnego paddingu treści (px). Domyślnie `0` — inset u góry zapewnia strona (toolbar, nagłówek). */
+  /** Nadpisanie górnego paddingu treści (px). Domyślnie taki sam jak boczny. */
   paddingTop?: number;
   /** Nadpisanie bocznego paddingu treści (px). */
   paddingInline?: number;
@@ -105,10 +90,6 @@ export interface AbyssScrollViewProps {
   activationThreshold?: number;
   /** Rozmiar wskaźnika odświeżania. */
   size?: "default" | "large";
-  /** Odstęp (px) między górnym wskaźnikiem a treścią listy. */
-  loaderGapTop?: number;
-  /** Odstęp (px) między treścią listy a dolnym wskaźnikiem. */
-  loaderGapBottom?: number;
   /** Wewnętrzny padding (px) wrappera górnego wskaźnika od zewnętrznej krawędzi listy. */
   indicatorPaddingTop?: number;
   /** Wewnętrzny padding (px) wrappera dolnego wskaźnika od zewnętrznej krawędzi listy. */
@@ -130,8 +111,6 @@ const props = withDefaults(defineProps<AbyssScrollViewProps>(), {
   disabledBottom: true,
   activationThreshold: DEFAULT_ACTIVATION_THRESHOLD,
   size: "default",
-  loaderGapTop: 0,
-  loaderGapBottom: 0,
   indicatorPaddingTop: 0,
   indicatorPaddingBottom: 0,
   minLoadingTime: 0,
@@ -147,6 +126,8 @@ const emit = defineEmits<{
 const viewportEl = ref<HTMLElement | null>(null);
 const topLoaderEl = ref<HTMLElement | null>(null);
 const bottomLoaderEl = ref<HTMLElement | null>(null);
+const topLoaderMeasuredPx = ref(0);
+const bottomLoaderMeasuredPx = ref(0);
 
 const pendingTop = ref(false);
 const pendingBottom = ref(false);
@@ -169,6 +150,7 @@ let topLoadingFinishTimer: ReturnType<typeof setTimeout> | null = null;
 let bottomLoadingFinishTimer: ReturnType<typeof setTimeout> | null = null;
 let bodyResizeObserver: ResizeObserver | null = null;
 let viewportLayoutObserver: ResizeObserver | null = null;
+let loaderResizeObserver: ResizeObserver | null = null;
 let bottomRefreshCooldownUntil: number | null = null;
 let bottomRefreshCooldownTimer: ReturnType<typeof setTimeout> | null = null;
 
@@ -355,16 +337,24 @@ function finishLoadingBottom(): void {
   onLoadingFinished();
 }
 
-const loaderGapTopPx = computed(() => Math.max(0, props.loaderGapTop ?? 0));
-const loaderGapBottomPx = computed(() =>
-  Math.max(0, props.loaderGapBottom ?? 0),
-);
 const indicatorPaddingTopPx = computed(() =>
   Math.max(0, props.indicatorPaddingTop ?? 0),
 );
 const indicatorPaddingBottomPx = computed(() =>
   Math.max(0, props.indicatorPaddingBottom ?? 0),
 );
+
+const resolvedPaddingInlinePx = computed(() => {
+  if (!props.padded) {
+    return 0;
+  }
+
+  if (props.paddingInline !== undefined) {
+    return props.paddingInline;
+  }
+
+  return props.device === "mobile" ? 8 : 24;
+});
 
 const contentPaddingTop = computed(() => {
   if (!props.padded) {
@@ -375,7 +365,7 @@ const contentPaddingTop = computed(() => {
     return `${props.paddingTop}px`;
   }
 
-  return "0px";
+  return `${resolvedPaddingInlinePx.value}px`;
 });
 
 const contentPaddingInline = computed(() => {
@@ -383,11 +373,7 @@ const contentPaddingInline = computed(() => {
     return "0px";
   }
 
-  if (props.paddingInline !== undefined) {
-    return `${props.paddingInline}px`;
-  }
-
-  return props.device === "mobile" ? "8px" : "24px";
+  return `${resolvedPaddingInlinePx.value}px`;
 });
 
 const contentPaddingBottom = computed(() => {
@@ -402,24 +388,12 @@ const contentPaddingBottom = computed(() => {
   return "24px";
 });
 
-const topSpacerStyle = computed(() => ({
-  height: `${loaderGapTopPx.value}px`,
-}));
-
-const bottomSpacerStyle = computed(() => ({
-  height: `${loaderGapBottomPx.value}px`,
-}));
-
 const topSectionInsetPx = computed(() => {
   if (props.disabledTop) {
     return 0;
   }
 
-  return (
-    loaderHeight.value +
-    indicatorPaddingTopPx.value +
-    loaderGapTopPx.value
-  );
+  return topLoaderMeasuredPx.value;
 });
 
 const bottomSectionInsetPx = computed(() => {
@@ -427,11 +401,7 @@ const bottomSectionInsetPx = computed(() => {
     return 0;
   }
 
-  return (
-    loaderHeight.value +
-    indicatorPaddingBottomPx.value +
-    loaderGapBottomPx.value
-  );
+  return bottomLoaderMeasuredPx.value;
 });
 
 const rootStyle = computed(() => ({
@@ -1070,14 +1040,45 @@ watch(
   },
 );
 
-watch(
-  () => [props.disabledTop, props.disabledBottom] as const,
-  () => {
-    void nextTick(() => {
-      clampScrollToContentZone();
-    });
-  },
-);
+function syncLoaderSectionHeights(): void {
+  topLoaderMeasuredPx.value =
+    !props.disabledTop && topLoaderEl.value
+      ? topLoaderEl.value.offsetHeight
+      : 0;
+  bottomLoaderMeasuredPx.value =
+    !props.disabledBottom && bottomLoaderEl.value
+      ? bottomLoaderEl.value.offsetHeight
+      : 0;
+}
+
+function observeLoaderSections(): void {
+  loaderResizeObserver?.disconnect();
+  loaderResizeObserver = null;
+  syncLoaderSectionHeights();
+
+  const nodes: HTMLElement[] = [];
+
+  if (!props.disabledTop && topLoaderEl.value) {
+    nodes.push(topLoaderEl.value);
+  }
+
+  if (!props.disabledBottom && bottomLoaderEl.value) {
+    nodes.push(bottomLoaderEl.value);
+  }
+
+  if (nodes.length === 0) {
+    return;
+  }
+
+  loaderResizeObserver = new ResizeObserver(() => {
+    syncLoaderSectionHeights();
+    clampScrollToContentZone();
+  });
+
+  for (const node of nodes) {
+    loaderResizeObserver.observe(node);
+  }
+}
 
 function observeBodyResize(): void {
   const body = viewportEl.value?.querySelector(".abyss-scroll-view__body");
@@ -1112,6 +1113,23 @@ function observeViewportLayout(): void {
   }
 }
 
+watch(
+  () =>
+    [
+      props.disabledTop,
+      props.disabledBottom,
+      props.size,
+      indicatorPaddingTopPx.value,
+      indicatorPaddingBottomPx.value,
+    ] as const,
+  () => {
+    void nextTick(() => {
+      observeLoaderSections();
+      clampScrollToContentZone();
+    });
+  },
+);
+
 onMounted(() => {
   void nextTick(() => {
     const container = viewportEl.value;
@@ -1120,6 +1138,8 @@ onMounted(() => {
     if (!container) {
       return;
     }
+
+    observeLoaderSections();
 
     if (
       topLoader &&
@@ -1147,6 +1167,8 @@ onUnmounted(() => {
   bodyResizeObserver = null;
   viewportLayoutObserver?.disconnect();
   viewportLayoutObserver = null;
+  loaderResizeObserver?.disconnect();
+  loaderResizeObserver = null;
 });
 
 defineExpose({
@@ -1189,7 +1211,7 @@ defineExpose({
   }
 
   &__body {
-    flex: 1 1 auto;
+    flex: 0 1 auto;
     min-height: 0;
     display: flex;
     flex-direction: column;
@@ -1200,10 +1222,6 @@ defineExpose({
       padding-inline: var(--abyss-scroll-view-content-padding-inline);
       padding-bottom: var(--abyss-scroll-view-content-padding-bottom);
     }
-  }
-
-  &--top-scroll &__body {
-    min-height: 100%;
   }
 
   &__loader {
@@ -1221,11 +1239,6 @@ defineExpose({
     &--bottom {
       padding-bottom: var(--abyss-scroll-view-indicator-padding-bottom);
     }
-  }
-
-  &__spacer {
-    flex-shrink: 0;
-    width: 100%;
   }
 }
 </style>

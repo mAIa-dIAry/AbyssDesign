@@ -1,5 +1,6 @@
 import commonNavigation from './pl-PL/common/navigation';
 import uiDatePicker from './pl-PL/ui/datePicker';
+import uiInput from './pl-PL/ui/input';
 import uiMarkdown from './pl-PL/ui/markdown';
 import uiTable from './pl-PL/ui/table';
 
@@ -9,6 +10,7 @@ const plPL = {
   },
   ui: {
     datePicker: uiDatePicker,
+    input: uiInput,
     markdown: uiMarkdown,
     table: uiTable,
   },

@@ -70,11 +70,11 @@ Przykład niedozwolonego użycia: karta „Konto” w ustawieniach z `class="set
 | `AbyssDialog`      | warstwa tymczasowa nad treścią | `model-value`, sloty `header`, `navigation` (taby poza scrollowym body), domyślny content, `actions`; przyciski w stopce zawsze `flat`   |
 | `AbyssTitle`       | hierarchia nagłówków           | `level` (`h1`–`h6`), `size` (`lg`, `md`, `sm`)                                          |
 | `AbyssInfo`        | statyczny komunikat kontekstowy | `type`, `title`, `icon` — pusty stan, ostrzeżenie przed akcją, trwała wskazówka; **nie** feedback po akcji |
-| `AbyssButtonGroup` | zestaw równorzędnych akcji     | dzieci: wyłącznie `AbyssButton`                                                         |
+| `AbyssButtonGroup` | zestaw równorzędnych akcji     | `vertical` (lista pionowa, domyślnie 100% szerokości); dzieci: wyłącznie `AbyssButton` |
 | `AbyssGrid`        | responsywna siatka             | `column-size`, `max-columns`, `column-gap`, `row-gap`, `align`, `content-rows`          |
 | `AbyssForm`        | wrapper formularza             | `v-model`, `sync`, `@update-form`, `@submit-form`                                       |
 | `AbyssPanel`       | panel z opcjonalnym nagłówkiem | `title`, `flush`, slot `title`                                                          |
-| `AbyssNavHeader`   | sticky nagłówek nawigacyjny    | `title`, `icon`, `backDisabled`, `backIcon`, `backLabel`, `sticky`, `stickyTop`, slot `actions` (`AbyssButton` `size="medium"` `flat` `embedded`); przycisk wstecz zawsze widoczny |
+| `AbyssNavHeader`   | sticky nagłówek nawigacyjny    | `title`, `icon`, `backDisabled`, `backIcon`, `backLabel`, `sticky`, `stickyTop`, slot `actions` (`AbyssButton` `size="medium"` `flat` `embedded`); bez marginesów — inset u góry z `AbyssScrollView`; przycisk wstecz zawsze widoczny |
 | `AbyssContent`     | typografia gotowego HTML       | `html`, `mode` (`html-note` \| `html-changelog`), `size`, `tone`                        |
 | `AbyssMarkdown`    | podgląd Markdown + kod źródłowy | `source`, `v-model` (`preview` \| `code`), `content-mode`, `embedded`                  |
 | `AbyssCode`        | kolorowany kod (JSON)          | `value`, `language` (`json` \| `abyss-json`), `colorTheme` (domyślnie `one-dark`)       |
@@ -92,32 +92,40 @@ Podział odpowiedzialności między komponentami layoutu:
 | Komponent | Scroll | Padding treści |
 | --------- | ------ | -------------- |
 | `AbyssTemplate` → slot `content` | **Nie** — `overflow: hidden` | **Nie** |
-| `AbyssScrollView` | **Tak** — viewport przewija treść | **Tak** — boki i dół per `device`; góra `0` (inset u góry na stronie) |
+| `AbyssScrollView` | **Tak** — viewport przewija treść | **Tak** — góra, boki i dół per `device`; góra = boki |
 | `AbyssSidebarNav` | **Tak** — wewnętrznie w sidebarze i panelu treści (`desktop`/`web`: mixin scrollbara) | Własne insety paneli |
 | Edytor / full-bleed | Własny layout 100% wysokości | W komponencie domenowym |
 
 ### Presety paddingów `AbyssScrollView`
 
-- **góra:** `0` — inset u góry zapewnia strona (toolbar, `AbyssNavHeader`, safe-area w layoucie strony)
-- **desktop / web:** boki i dół `24px`
-- **mobile:** boki `8px`, dół `24px`
+- **góra:** taki sam jak boczny — bez wyjątków, gdy `padded` jest włączone
+- **desktop / web:** góra, boki i dół `24px`
+- **mobile:** góra i boki `8px`, dół `24px`
 - Nadpisanie: propsy `paddingTop`, `paddingInline`, `paddingBottom` (px)
+
+### `AbyssNavHeader`
+
+- **Bez marginesów** — odstęp od górnej krawędzi zapewnia `AbyssScrollView` (padding treści).
+- Tekst tytułu: **18 px**; ikona obok tytułu: **24 px**.
+- `stickyTop` ustawia `top` w trybie sticky. Domyślnie `var(--abyss-scroll-view-content-padding-top, 0)` — po przewinięciu nagłówek zachowuje odstęp od górnej krawędzi równy górnemu paddingowi `AbyssScrollView`.
 
 ### Odświeżanie list (reload)
 
 - Domyślnie wyłączone: `disabledTop` i `disabledBottom` są `true`.
 - Włącz tylko tam, gdzie potrzebne (np. archiwum — dół listy, lista analiz — góra).
-- Odstępy loaderów: `loaderGapTop`, `loaderGapBottom`, `indicatorPaddingTop`, `indicatorPaddingBottom`.
+- Odstępy loaderów: `indicatorPaddingTop`, `indicatorPaddingBottom`.
+- Wysokość scrolla przy włączonym loaderze: `100%` viewportu + zmierzona wysokość sekcji loadera (góra i/lub dół). `__body` ma naturalną wysokość treści — nie rozciąga się flexem do viewportu.
 
 ### Wzorzec strony ze scrollem
 
 ```vue
 <div class="page-example">
   <div class="page-example__toolbar">
-    <!-- stały nagłówek / toolbar z własnym paddingiem u góry -->
+    <!-- opcjonalny stały toolbar (np. wyszukiwarka); inset u góry ekranu nadal może wymagać własnego safe-area -->
   </div>
   <div class="page-example__content">
     <AbyssScrollView :device="device" class="page-example__scroll">
+      <AbyssNavHeader title="..." icon="..." @back="..." />
       <!-- przewijalna treść -->
     </AbyssScrollView>
   </div>
@@ -150,6 +158,34 @@ Strona: `height: 100%`, `min-height: 0`, flex column. Kontener content i `AbyssS
 - Stopka (`footer`, `footer-prepend`, `footer-append`) tylko w specyficznych sytuacjach (np. niezapisane zmiany) — nie w standardowym układzie.
 - `AbyssInfo` stosuj tylko, gdy komunikat ma tytuł lub status semantyczny **i jest częścią stałego układu ekranu** (np. pusty stan tabeli, ostrzeżenie przed usunięciem konta).
 - Nie używaj `AbyssInfo` do pokazywania wyniku akcji użytkownika (sukces/błąd po API) — do tego służy Quasar Notify.
+
+### AbyssInfo — typy i gradienty
+
+Prop `type` determinuje semantyczny gradient tła. **Nie mieszaj typu z ikoną ani etykietą** — `type="info"` z ikoną `info` i tytułem „Informacja” to niebieski gradient; `type="hint"` z ikoną `lightbulb` to fioletowy gradient podpowiedzi.
+
+| `type`    | Gradient   | Kiedy używać                                                                 | Ikona          |
+| --------- | ---------- | ---------------------------------------------------------------------------- | -------------- |
+| `info`    | niebieski  | istotna informacja kontekstowa (kontekst dialogu, opis operacji, dane o obiekcie) | `info`         |
+| `hint`    | fioletowy  | podpowiedź, pusty stan, wskazówka pomocnicza                                 | `lightbulb`    |
+| `warning` | żółty      | ostrzeżenie przed akcją wymagającą uwagi                                     | `warning`      |
+| `danger`  | czerwony   | ryzyko, operacja nieodwracalna                                               | `error`        |
+| `success` | zielony    | trwały komunikat o pozytywnym stanie ekranu (nie feedback po akcji)          | `check_circle` |
+
+Przykład informacji kontekstowej w dialogu:
+
+```html
+<AbyssInfo type="info" icon="info" :title="t('common.labels.info')">
+  Urządzenia powiązane z kontem {{ email }}.
+</AbyssInfo>
+```
+
+Przykład podpowiedzi / pustego stanu:
+
+```html
+<AbyssInfo type="hint" icon="lightbulb" :title="t('routes.workers.emptyJobsTitle')">
+  {{ t('routes.workers.emptyJobs') }}
+</AbyssInfo>
+```
 
 ---
 
@@ -342,6 +378,7 @@ Przykład dialogu z tabami i treścią bez zagnieżdżonego scrolla:
 ### 4. Toolbar lub segment
 
 - `AbyssButtonGroup` z `AbyssButton` (`size="small"`, opcjonalnie `icon-only`).
+- Dla listy akcji w kolumnie (np. menu kontekstowe, wybór opcji) użyj `vertical` — przyciski układają się pionowo z pełną szerokością kontenera i wysokością dopasowaną do treści.
 - Aktywny stan narzędzia: `toggled`, nie `current`.
 - Grupuj tylko semantycznie równorzędne akcje.
 
@@ -450,6 +487,7 @@ Prop `expandable` lub obecność slotu `row-expand` aktywuje kolumnę +/- i wier
 - Potwierdzaj powodzenie lub niepowodzenie akcji użytkownika przez Quasar Notify (`type: 'positive'` / `'negative'`).
 - Używaj `AbyssInfo` wyłącznie do statycznych komunikatów kontekstowych (pusty stan, ostrzeżenie, trwała wskazówka).
 - Używaj `AbyssDate` / `AbyssTime` (lub `AbyssInput` z odpowiednim `type`) jako jedynego sposobu wyboru daty i czasu.
+- Używaj `AbyssInput` z `type="copy"` dla wartości tylko do odczytu z kopiowaniem do schowka — pole jest `readonly`, przycisk jest wbudowany w `#append`, klik/focus zaznacza całą treść, a feedback po kopiowaniu realizuje wbudowany Quasar Notify.
 - Ustawiaj i zmieniaj hasło wyłącznie w dedykowanym `AbyssDialog`.
 - Używaj `AbyssMarkdown` dla generycznego podglądu Markdown; logikę changelogu trzymaj w komponencie aplikacji (`ChangeLog`).
 - Używaj `AbyssScrollView` dla przewijanych widoków strony — nie polegaj na scrollu slotu `content` w `AbyssTemplate`.
@@ -467,6 +505,7 @@ Prop `expandable` lub obecność slotu `row-expand` aktywuje kolumnę +/- i wier
 - Nie używaj `icon-only` dla akcji o niejasnej lub nieodwracalnej konsekwencji.
 - Nie buduj pseudo-grup przycisków ręcznie — użyj `AbyssButtonGroup`.
 - Nie owijaj `AbyssInput` ani `AbyssSelect` w dodatkowy `AbyssGrid`.
+- Nie duplikuj pola `readonly` i osobnego przycisku „Kopiuj” — użyj `AbyssInput` z `type="copy"`.
 - Nie używaj natywnych selektorów daty/czasu systemowych.
 - Nie używaj `AbyssInfo` z `v-if` / `v-show` do pokazywania sukcesu lub błędu po akcji użytkownika — użyj Quasar Notify.
 - Nie dodawaj zagnieżdżonych pionowych scrollbarów w treści `AbyssDialog` — przewijaj wyłącznie body dialogu.

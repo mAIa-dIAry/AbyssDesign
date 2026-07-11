@@ -43,8 +43,6 @@ type AbyssScrollViewStoryArgs = {
   disabledBottom?: boolean;
   activationThreshold?: number;
   size?: "default" | "large";
-  loaderGapTop?: number;
-  loaderGapBottom?: number;
   indicatorPaddingTop?: number;
   indicatorPaddingBottom?: number;
   minLoadingTime?: number;
@@ -128,16 +126,6 @@ const meta: Meta<AbyssScrollViewStoryArgs> = {
       options: ["default", "large"],
       description: "Rozmiar wskaźnika odświeżania",
       table: { defaultValue: { summary: "default" } },
-    },
-    loaderGapTop: {
-      control: { type: "number", min: 0, max: 64, step: 4 },
-      description: "Odstęp (px) między górnym wskaźnikiem a treścią listy",
-      table: { defaultValue: { summary: "0" } },
-    },
-    loaderGapBottom: {
-      control: { type: "number", min: 0, max: 64, step: 4 },
-      description: "Odstęp (px) między treścią listy a dolnym wskaźnikiem",
-      table: { defaultValue: { summary: "0" } },
     },
     indicatorPaddingTop: {
       control: { type: "number", min: 0, max: 64, step: 4 },
@@ -267,8 +255,6 @@ export const Default: Story = {
           :disabled-bottom="args.disabledBottom"
           :activation-threshold="args.activationThreshold ?? 8"
           :size="args.size"
-          :loader-gap-top="args.loaderGapTop ?? 0"
-          :loader-gap-bottom="args.loaderGapBottom ?? 0"
           :indicator-padding-top="args.indicatorPaddingTop ?? 0"
           :indicator-padding-bottom="args.indicatorPaddingBottom ?? 0"
           :min-loading-time="args.minLoadingTime ?? 0"
@@ -326,7 +312,7 @@ export const EmptyList: Story = {
     template: `
       <div :style="'${reloadStoryFrameStyle(360, 420)}'">
         <p :style="'${RELOAD_STORY_HINT_STYLE}'">
-          Treść ma min-height 100% viewportu + wysokość loaderów — odświeżanie działa nawet bez elementów.
+          Treść ma min-height równy viewportowi plus wysokość aktywnych loaderów — bez dodatkowego rozciągania body.
         </p>
         <div :style="scrollViewStoryChromeStyle('desktop')">
           Stały toolbar / nagłówek strony (padding u góry poza AbyssScrollView)

@@ -32,6 +32,7 @@ const meta: Meta<typeof AbyssInput> = {
     modelValue: { control: 'text' },
     'onUpdate:modelValue': { action: 'update:modelValue' },
     onSearch: { action: 'search' },
+    onCopy: { action: 'copy' },
     label: { control: 'text' },
     placeholder: { control: 'text' },
     type: {
@@ -49,6 +50,7 @@ const meta: Meta<typeof AbyssInput> = {
         'date',
         'datetime-local',
         'textarea',
+        'copy',
       ],
     },
     disable: { control: 'boolean' },
@@ -192,6 +194,39 @@ export const Search: Story = {
     await expect(searchButton).toHaveClass('flat');
     await userEvent.click(searchButton);
     await expect(args.onSearch).toHaveBeenCalledOnce();
+  },
+};
+
+export const Copy: Story = {
+  args: {
+    modelValue: 'https://example.com/invite/abc123',
+    label: 'Link zaproszenia',
+    type: 'copy',
+    hint: 'Kliknij pole lub ikonę kopiowania — treść zostanie zaznaczona, a kopiowanie potwierdzi Quasar Notify',
+    onCopy: fn(),
+  },
+  render: (args) => ({
+    components: { AbyssInput },
+    setup() {
+      return { args };
+    },
+    template: `<AbyssInput v-bind="args" v-model="args.modelValue" />`,
+  }),
+  play: async ({ args, canvasElement, userEvent }) => {
+    const canvas = within(canvasElement);
+    const input = canvas.getByRole('textbox');
+
+    await expect(input).toHaveAttribute('readonly');
+    await expect(input).toHaveValue('https://example.com/invite/abc123');
+
+    await userEvent.click(input);
+    await userEvent.type(input, 'nowy tekst');
+    await expect(input).toHaveValue('https://example.com/invite/abc123');
+
+    const copyButton = canvas.getByRole('button', { name: 'Kopiuj' });
+    await expect(copyButton).toBeVisible();
+    await userEvent.click(copyButton);
+    await expect(args.onCopy).toHaveBeenCalledOnce();
   },
 };
 

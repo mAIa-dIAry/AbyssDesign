@@ -21,10 +21,12 @@
         :size="size"
       />
       <q-input
+        ref="inputRef"
         v-bind="$attrs"
         :model-value="modelValue"
         @update:model-value="$emit('update:modelValue', $event)"
         @click="handleInputClick"
+        @focus="handleInputFocus"
         @blur="handleInputBlur"
         :placeholder="effectivePlaceholder"
         :type="computedType"
@@ -98,6 +100,16 @@
               icon="sym_r_search"
               class="icon-button"
               @click="handleSearchClick"
+            />
+            <AbyssButton
+              v-if="type === 'copy'"
+              flat
+              :size="buttonSize"
+              icon="sym_r_content_copy"
+              class="icon-button"
+              :aria-label="t('ui.input.copy')"
+              :disable="!hasCopyValue"
+              @click="handleCopyClick"
             />
             <AbyssButton
               v-if="type === 'date' || type === 'datetime-local'"
@@ -175,6 +187,9 @@
 
 <script setup lang="ts">
 import { computed, ref, useSlots, watch } from 'vue';
+import { useI18n } from 'vue-i18n';
+import { useQuasar } from 'quasar';
+import type { QInput } from 'quasar';
 import AbyssButton from '@/components/ui/AbyssButton/AbyssButton.vue';
 import AbyssDate, {
   type AbyssDateModelValue,
@@ -204,7 +219,8 @@ export interface AbyssInputProps {
     | 'time'
     | 'date'
     | 'datetime-local'
-    | 'textarea';
+    | 'textarea'
+    | 'copy';
   disable?: boolean;
   readonly?: boolean;
   error?: boolean;
@@ -229,6 +245,9 @@ export interface AbyssInputProps {
   /** Quasar QDate `default-year-month` — np. `2026/07`. */
   defaultYearMonth?: string;
 }
+
+const $q = useQuasar();
+const { t } = useI18n();
 
 const props = withDefaults(defineProps<AbyssInputProps>(), {
   modelValue: '',
@@ -298,11 +317,13 @@ const hasAppendContent = computed(() => {
     'time',
     'datetime-local',
     'number',
+    'copy',
   ];
   return typesWithAppend.includes(props.type);
 });
 
 const isPasswordVisible = ref(false);
+const inputRef = ref<QInput>();
 const datePopupRef = ref<QPopupProxy>();
 const timePopupRef = ref<QPopupProxy>();
 const datePickerDraft = ref('');
@@ -339,15 +360,19 @@ const computedType = computed(() => {
     return 'text';
   }
 
-  if (usesCustomPicker.value) {
+  if (usesCustomPicker.value || props.type === 'copy') {
     return 'text';
   }
 
   return props.type;
 });
 
+const hasCopyValue = computed(
+  () => String(props.modelValue ?? '').length > 0,
+);
+
 const computedReadonly = computed(
-  () => props.readonly || usesCustomPicker.value,
+  () => props.readonly || usesCustomPicker.value || props.type === 'copy',
 );
 
 // Date picker support
@@ -370,6 +395,7 @@ const timeValue = computed(() => {
 const emit = defineEmits<{
   'update:modelValue': [value: string | number | null];
   search: [value: string | number | null];
+  copy: [value: string | number | null];
 }>();
 
 function initDatePickerDraft(): void {
@@ -413,6 +439,55 @@ function handleSearchClick() {
   emit('search', props.modelValue);
 }
 
+async function handleCopyClick(): Promise<void> {
+  const text = String(props.modelValue ?? '');
+  if (!text) {
+    return;
+  }
+
+  try {
+    await navigator.clipboard.writeText(text);
+    $q.notify({
+      type: 'positive',
+      message: t('ui.input.copySuccess'),
+    });
+    emit('copy', props.modelValue);
+  } catch {
+    $q.notify({
+      type: 'negative',
+      message: t('ui.input.copyFailed'),
+    });
+  }
+}
+
+function getNativeInputElement(): HTMLInputElement | null {
+  const root = inputRef.value?.$el;
+  if (!(root instanceof HTMLElement)) {
+    return null;
+  }
+
+  const nativeInput = root.querySelector('input');
+  return nativeInput instanceof HTMLInputElement ? nativeInput : null;
+}
+
+function selectCopyInputContent(event?: Event): void {
+  if (props.type !== 'copy') {
+    return;
+  }
+
+  const eventTarget = event?.target;
+  if (eventTarget instanceof HTMLInputElement) {
+    eventTarget.select();
+    return;
+  }
+
+  const nativeInput = getNativeInputElement();
+  if (nativeInput) {
+    nativeInput.focus();
+    nativeInput.select();
+  }
+}
+
 function openCustomPicker(): void {
   if (usesDatePopup.value) {
     datePopupRef.value?.show();
@@ -424,9 +499,18 @@ function openCustomPicker(): void {
   }
 }
 
+function handleInputFocus(event?: Event) {
+  selectCopyInputContent(event);
+}
+
 function handleInputClick(event?: MouseEvent) {
   if (isCollapsed.value && props.collapsed) {
     isCollapsed.value = false;
+    return;
+  }
+
+  if (props.type === 'copy') {
+    selectCopyInputContent(event);
     return;
   }
 

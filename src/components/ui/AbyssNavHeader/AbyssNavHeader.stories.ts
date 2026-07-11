@@ -15,8 +15,9 @@ const meta: Meta<typeof AbyssNavHeader> = {
     docs: {
       description: {
         component:
-          'Sticky nagłówek nawigacyjny w jednej linii: przycisk wstecz (40 px, zawsze widoczny), pionowy separator (4×16 px) i tytuł z ikoną (24 px). ' +
+          'Sticky nagłówek nawigacyjny w jednej linii: przycisk wstecz (40 px, zawsze widoczny), pionowy separator (4×16 px), ikona tytułu (24 px) i tekst tytułu (18 px). ' +
           'Panel ma padding 8 px, `border-radius: 12px` oraz cienie `$shadow-card` i `$shadow-frame-medium` jak `AbyssCard`. ' +
+          'Bez marginesów — odstęp od górnej krawędzi zapewnia `AbyssScrollView`. ' +
           'Przyciski w slocie `actions` używaj `AbyssButton` z `size="medium"`, `flat`, `embedded` — ten sam styl co wstecz.',
       },
     },
@@ -56,8 +57,12 @@ const meta: Meta<typeof AbyssNavHeader> = {
     stickyTop: {
       control: 'text',
       description:
-        'Odstęp od górnej krawędzi kontenera — ustawia `margin-top` i `top` w trybie sticky.',
-      table: { defaultValue: { summary: '12px' } },
+        'Wartość CSS `top` w trybie sticky. Domyślnie równa górnemu paddingowi `AbyssScrollView`, żeby nagłówek zachował ten sam odstęp po przewinięciu.',
+      table: {
+        defaultValue: {
+          summary: 'var(--abyss-scroll-view-content-padding-top, 0)',
+        },
+      },
     },
   },
   args: {
@@ -196,7 +201,15 @@ export const StickyScroll: Story = {
           background: rgba(0, 0, 0, 0.16);
         "
       >
-        <div style="display: flex; flex-direction: column; gap: 12px; padding: 0 12px 12px;">
+        <div
+          style="
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            padding: 12px;
+            --abyss-scroll-view-content-padding-top: 12px;
+          "
+        >
           <AbyssNavHeader
             title="Lista analiz"
             icon="sym_r_insights"

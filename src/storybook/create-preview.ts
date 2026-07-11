@@ -6,7 +6,7 @@ import '@maia/abyss-design/styles/icons';
 
 import { setup } from '@storybook/vue3-vite';
 import { createPinia } from 'pinia';
-import { Quasar } from 'quasar';
+import { Notify, Quasar } from 'quasar';
 import * as QuasarComponents from 'quasar';
 import { createI18n, type I18nOptions } from 'vue-i18n';
 
@@ -27,6 +27,7 @@ export function createStorybookPreview(
 
   setup((app) => {
     app.use(Quasar, {
+      plugins: { Notify },
       components: QuasarComponents,
     });
     app.use(i18n);

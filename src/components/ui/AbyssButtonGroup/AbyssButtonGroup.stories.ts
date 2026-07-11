@@ -12,11 +12,19 @@ const meta: Meta<typeof AbyssButtonGroup> = {
     docs: {
       description: {
         component:
-          'Komponent grupujący przyciski AbyssButton w jedną spójną całość. Prostuje wyłącznie wewnętrzne narożniki przycisków, pozostawiając zewnętrzne zaokrąglenia bez nadpisywania. **Uwaga:** Komponent przeznaczony wyłącznie dla komponentów AbyssButton.',
+          'Komponent grupujący przyciski AbyssButton w jedną spójną całość. Prostuje wyłącznie wewnętrzne narożniki przycisków, pozostawiając zewnętrzne zaokrąglenia bez nadpisywania. Prop `vertical` układa przyciski pionowo jak listę — domyślnie z szerokością 100%. **Uwaga:** Komponent przeznaczony wyłącznie dla komponentów AbyssButton.',
       },
     },
   },
   argTypes: {
+    vertical: {
+      control: 'boolean',
+      description:
+        'Układa przyciski pionowo jak listę. Grupa i każdy przycisk domyślnie zajmują 100% szerokości kontenera; wysokość przycisku dopasowuje się do treści.',
+      table: {
+        defaultValue: { summary: 'false' },
+      },
+    },
     class: {
       control: 'text',
       description:
@@ -252,6 +260,204 @@ export const MixedStatesFlat: Story = {
             {{ 'Grupa ' + size }}
           </div>
           <AbyssButtonGroup>
+            <AbyssButton label="Aktywny" :size="size" flat />
+            <AbyssButton label="Nieaktywny" :size="size" flat disable />
+            <AbyssButton
+              label="Gradient"
+              :size="size"
+              flat
+              gradient
+              icon-right="sym_r_note_stack_add"
+              :gradient-colors="gradientColors"
+            />
+          </AbyssButtonGroup>
+        </div>
+      </div>
+    `,
+  }),
+  play: async ({ canvas }) => {
+    const buttons = canvas.getAllByRole('button');
+
+    await expect(buttons).toHaveLength(9);
+
+    for (let index = 0; index < 3; index += 1) {
+      const groupStart = index * 3;
+      await expect(buttons[groupStart]).toBeEnabled();
+      await expect(buttons[groupStart]).toHaveClass('flat');
+      await expect(buttons[groupStart + 1]).toBeDisabled();
+      await expect(buttons[groupStart + 1]).toHaveClass('flat');
+      await expect(buttons[groupStart + 2]).toBeEnabled();
+      await expect(buttons[groupStart + 2]).toHaveClass('flat');
+      await expect(buttons[groupStart + 2]).toHaveClass('gradient');
+    }
+  },
+};
+
+export const Vertical: Story = {
+  name: 'Pionowo',
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'Grupa pionowa — przyciski ułożone jak lista z pełną szerokością kontenera i prostowanymi wewnętrznymi narożnikami.',
+      },
+      source: {
+        code: `<AbyssButtonGroup vertical>
+  <AbyssButton label="Pierwszy" size="big" />
+  <AbyssButton label="Drugi" size="big" />
+  <AbyssButton label="Trzeci" size="big" />
+</AbyssButtonGroup>`,
+      },
+    },
+  },
+  render: () => ({
+    components: { AbyssButtonGroup, AbyssButton },
+    setup() {
+      return { sizes: BUTTON_SIZES };
+    },
+    template: `
+      <div style="${sizesLayoutStyle}">
+        <div v-for="size in sizes" :key="size" style="width: 280px;">
+          <div style="margin-bottom: 8px; font-size: 12px; color: rgba(255,255,255,0.6);">
+            {{ 'Grupa pionowa ' + size }}
+          </div>
+          <AbyssButtonGroup vertical>
+            <AbyssButton label="Pierwszy" :size="size" />
+            <AbyssButton label="Drugi" :size="size" />
+            <AbyssButton label="Trzeci" :size="size" />
+          </AbyssButtonGroup>
+        </div>
+      </div>
+    `,
+  }),
+  play: async ({ canvas }) => {
+    const buttons = canvas.getAllByRole('button');
+
+    await expect(buttons).toHaveLength(9);
+
+    const groups = BUTTON_SIZES.map((size) =>
+      buttons.filter((button) => button.classList.contains(`size-${size}`)),
+    );
+
+    for (const groupButtons of groups) {
+      await expect(groupButtons).toHaveLength(3);
+      for (const button of groupButtons) {
+        await expect(button).toBeVisible();
+        await expect(button).toBeEnabled();
+      }
+    }
+
+    const [firstButton, middleButton, lastButton] = groups[2]!;
+    const firstStyle = getComputedStyle(firstButton!);
+    const middleStyle = getComputedStyle(middleButton!);
+    const lastStyle = getComputedStyle(lastButton!);
+
+    await expect(firstStyle.borderRadius).toBe('8px 8px 4px 4px');
+    await expect(middleStyle.borderRadius).toBe('4px');
+    await expect(lastStyle.borderRadius).toBe('4px 4px 8px 8px');
+  },
+};
+
+export const VerticalMixedStates: Story = {
+  name: 'Pionowo — zróżnicowane stany',
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'Pionowa grupa z trzema wariantami we wszystkich rozmiarach: zwykły, nieaktywny i gradient.',
+      },
+      source: {
+        code: `<AbyssButtonGroup vertical>
+  <AbyssButton label="Aktywny" size="big" />
+  <AbyssButton label="Nieaktywny" size="big" :disable="true" />
+  <AbyssButton
+    label="Gradient"
+    size="big"
+    gradient
+    icon-right="sym_r_note_stack_add"
+    :gradient-colors="['#FF7194', '#028096']"
+  />
+</AbyssButtonGroup>`,
+      },
+    },
+  },
+  render: () => ({
+    components: { AbyssButtonGroup, AbyssButton },
+    setup() {
+      return { sizes: BUTTON_SIZES, gradientColors: GRADIENT_COLORS };
+    },
+    template: `
+      <div style="${sizesLayoutStyle}">
+        <div v-for="size in sizes" :key="size" style="width: 280px;">
+          <div style="margin-bottom: 8px; font-size: 12px; color: rgba(255,255,255,0.6);">
+            {{ 'Grupa pionowa ' + size }}
+          </div>
+          <AbyssButtonGroup vertical>
+            <AbyssButton label="Aktywny" :size="size" />
+            <AbyssButton label="Nieaktywny" :size="size" disable />
+            <AbyssButton
+              label="Gradient"
+              :size="size"
+              gradient
+              icon-right="sym_r_note_stack_add"
+              :gradient-colors="gradientColors"
+            />
+          </AbyssButtonGroup>
+        </div>
+      </div>
+    `,
+  }),
+  play: async ({ canvas }) => {
+    const buttons = canvas.getAllByRole('button');
+
+    await expect(buttons).toHaveLength(9);
+
+    for (let index = 0; index < 3; index += 1) {
+      const groupStart = index * 3;
+      await expect(buttons[groupStart]).toBeEnabled();
+      await expect(buttons[groupStart + 1]).toBeDisabled();
+      await expect(buttons[groupStart + 2]).toBeEnabled();
+      await expect(buttons[groupStart + 2]).toHaveClass('gradient');
+    }
+  },
+};
+
+export const VerticalMixedStatesFlat: Story = {
+  name: 'Pionowo — zróżnicowane stany (flat)',
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'Pionowa grupa z trzema wariantami flat we wszystkich rozmiarach: zwykły, nieaktywny i gradient flat.',
+      },
+      source: {
+        code: `<AbyssButtonGroup vertical>
+  <AbyssButton label="Aktywny" size="big" flat />
+  <AbyssButton label="Nieaktywny" size="big" flat :disable="true" />
+  <AbyssButton
+    label="Gradient"
+    size="big"
+    flat
+    gradient
+    icon-right="sym_r_note_stack_add"
+    :gradient-colors="['#FF7194', '#028096']"
+  />
+</AbyssButtonGroup>`,
+      },
+    },
+  },
+  render: () => ({
+    components: { AbyssButtonGroup, AbyssButton },
+    setup() {
+      return { sizes: BUTTON_SIZES, gradientColors: GRADIENT_COLORS };
+    },
+    template: `
+      <div style="${sizesLayoutStyle}">
+        <div v-for="size in sizes" :key="size" style="width: 280px;">
+          <div style="margin-bottom: 8px; font-size: 12px; color: rgba(255,255,255,0.6);">
+            {{ 'Grupa pionowa flat ' + size }}
+          </div>
+          <AbyssButtonGroup vertical>
             <AbyssButton label="Aktywny" :size="size" flat />
             <AbyssButton label="Nieaktywny" :size="size" flat disable />
             <AbyssButton

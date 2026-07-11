@@ -62,7 +62,7 @@ export interface AbyssNavHeaderProps {
   backLabel?: string;
   /** Przykleja nagłówek do góry kontenera przewijania. */
   sticky?: boolean;
-  /** Wartość CSS `top` dla trybu sticky oraz odstęp od górnej krawędzi (np. `12px`, `56px`). */
+  /** Wartość CSS `top` dla trybu sticky. */
   stickyTop?: string;
   style?: string | Record<string, string>;
   class?:
@@ -78,7 +78,7 @@ const props = withDefaults(defineProps<AbyssNavHeaderProps>(), {
   backIcon: 'sym_r_arrow_back',
   backLabel: 'Wstecz',
   sticky: true,
-  stickyTop: '12px',
+  stickyTop: 'var(--abyss-scroll-view-content-padding-top, 0)',
   style: '',
   class: '',
 });
@@ -120,12 +120,11 @@ function handleBackClick(): void {
 
 <style scoped lang="scss">
 .abyss-nav-header {
-  --abyss-nav-header-top: 12px;
+  --abyss-nav-header-top: 0;
   position: relative;
   z-index: 10;
   width: 100%;
   min-width: 0;
-  margin-top: var(--abyss-nav-header-top);
   border-radius: 12px;
   background-color: rgba(black, 0.2);
   box-shadow: $shadow-card, $shadow-frame-medium;
@@ -172,7 +171,6 @@ function handleBackClick(): void {
     gap: 8px;
     min-width: 0;
     margin: 0;
-    font-size: 24px;
     font-weight: 400;
     line-height: 24px;
     color: white;
@@ -185,6 +183,8 @@ function handleBackClick(): void {
 
   &__title-text {
     min-width: 0;
+    font-size: 18px;
+    line-height: 18px;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
