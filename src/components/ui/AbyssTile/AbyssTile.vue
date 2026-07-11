@@ -3,6 +3,7 @@
     class="abyss-tile"
     :class="{
       'abyss-tile--monospace': props.monospace,
+      'abyss-tile--truncate': props.truncate,
     }"
   >
     <div v-if="hasTitle" class="abyss-tile__title">
@@ -21,9 +22,13 @@ import { computed } from 'vue';
 export interface AbyssTileProps {
   title?: string;
   monospace?: boolean;
+  /** Obcina treść w jednej linii z wielokropkiem — pełna wartość dostępna poza kafelkiem. */
+  truncate?: boolean;
 }
 
-const props = defineProps<AbyssTileProps>();
+const props = withDefaults(defineProps<AbyssTileProps>(), {
+  truncate: false,
+});
 
 const hasTitle = computed(() => Boolean(props.title?.trim()));
 </script>
@@ -50,10 +55,18 @@ const hasTitle = computed(() => Boolean(props.title?.trim()));
   }
 
   &__content {
+    min-width: 0;
     color: rgba(white, 0.88);
     font-size: 0.92rem;
     line-height: 1.35;
     word-break: break-word;
+  }
+
+  &--truncate &__content {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    word-break: normal;
   }
 
   &--monospace &__content {

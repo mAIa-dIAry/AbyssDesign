@@ -93,6 +93,7 @@ const computedStyle = computed(() => [
 
   > * {
     direction: ltr;
+    min-width: 0;
   }
 
   &--align-right {

@@ -5,6 +5,7 @@
       {
         'abyss-table--as-card': asCard,
         'abyss-table--fixed-height': hasFixedHeight,
+        'abyss-table--expandable': isExpandable,
       },
       props.class,
     ]"
@@ -62,7 +63,7 @@
     <template #header="headerProps">
       <slot name="header" v-bind="headerProps">
         <q-tr :props="headerProps">
-          <q-th auto-width />
+          <q-th v-if="isExpandable" auto-width />
           <q-th
             v-for="col in headerProps.cols"
             :key="col.name"
@@ -77,7 +78,7 @@
     <template #body="bodyProps">
       <slot name="body" v-bind="bodyProps">
         <q-tr :props="bodyProps">
-          <q-td auto-width>
+          <q-td v-if="isExpandable" auto-width>
             <AbyssButton
               flat
               size="small"
@@ -85,18 +86,27 @@
               @click="bodyProps.expand = !bodyProps.expand"
             />
           </q-td>
-          <template v-for="col in bodyProps.cols" :key="col.name">
+          <template
+            v-for="(col, colIndex) in bodyProps.cols"
+            :key="col.name"
+          >
             <slot
               :name="`body-cell-${col.name}`"
               v-bind="cellScope(bodyProps, col)"
             >
-              <q-td :props="cellScope(bodyProps, col)">
+              <q-td
+                :props="cellScope(bodyProps, col)"
+                :class="{
+                  'abyss-table__param-cell': isParamCell(colIndex),
+                }"
+              >
                 {{ col.value }}
               </q-td>
             </slot>
           </template>
         </q-tr>
         <q-tr
+          v-if="isExpandable"
           v-show="bodyProps.expand"
           class="abyss-table__expand-row"
           no-hover
@@ -258,12 +268,18 @@ export interface AbyssTableProps
   height?: number | string;
   /** Styl kontenera jak `AbyssCard` — tło, radius 16px i cień karty. */
   asCard?: boolean;
+  /**
+   * Włącza kolumnę rozwijania wierszy i slot `row-expand`.
+   * Domyślnie wyłączone; włącza się też automatycznie, gdy użyty jest slot `row-expand`.
+   */
+  expandable?: boolean;
 }
 
 const props = withDefaults(defineProps<AbyssTableProps>(), {
   asCard: false,
   height: 0,
   hideSearch: false,
+  expandable: false,
 });
 
 const emit = defineEmits<{
@@ -336,6 +352,14 @@ watch(
 );
 
 const slots = useSlots();
+
+const isExpandable = computed(
+  () => props.expandable || Boolean(slots['row-expand']),
+);
+
+function isParamCell(colIndex: string | number): boolean {
+  return !props.asCard && colIndex === 0;
+}
 
 const forwardedSlotNames = computed(() =>
   Object.keys(slots).filter(
@@ -500,6 +524,7 @@ const tableProps = computed((): Omit<QTableProps, LockedQTableProps> => {
     titleIcon: _titleIcon,
     height: _height,
     asCard: _asCard,
+    expandable: _expandable,
     onVirtualScroll: _onVirtualScroll,
     ...rest
   } = props;
@@ -627,6 +652,7 @@ defineOptions({
   --panel-radius: 12px;
   --panel-background: #{rgba(white, 0.01)};
   --table-header-background: #{rgba(white, 0.08)};
+  --table-param-background: #{rgba(white, 0.08)};
   --table-separator-color: #{rgba(white, 0.28)};
 
   box-sizing: border-box;
@@ -638,6 +664,43 @@ defineOptions({
   box-shadow: $shadow-small, $shadow-frame-soft;
   overflow: hidden;
   height: auto;
+
+  &:not(.abyss-table--as-card) {
+    --panel-radius: 0;
+    --panel-background: transparent;
+
+    border-radius: 0;
+    background: transparent;
+    box-shadow: none;
+    overflow: visible;
+
+    :deep(.q-table__top),
+    :deep(.q-table__bottom),
+    :deep(.q-table__middle) {
+      background-color: transparent;
+    }
+
+    :deep(tbody tr:not(.abyss-table__expand-row) > td) {
+      background-color: transparent;
+    }
+
+    :deep(tbody td:not(.abyss-table__expand-cell)::before) {
+      background: transparent !important;
+    }
+
+    :deep(tbody .abyss-table__param-cell) {
+      background-color: var(--table-param-background);
+    }
+
+    &:not(.abyss-table--fixed-height) {
+      :deep(.q-table__middle),
+      :deep(.q-table__middle.scroll) {
+        overflow-x: auto;
+        overflow-y: visible;
+        max-height: none;
+      }
+    }
+  }
 
   :deep(.q-table__top),
   :deep(.q-table__bottom),
@@ -714,7 +777,7 @@ defineOptions({
     @include scrollbar;
   }
 
-  &:not(.abyss-table--fixed-height) {
+  &:not(.abyss-table--fixed-height).abyss-table--as-card {
     :deep(.q-table__middle.scroll) {
       overflow-x: auto;
       overflow-y: hidden;

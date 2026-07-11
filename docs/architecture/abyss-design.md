@@ -257,6 +257,57 @@ Reguły:
 - Każda sekcja w osobnej `AbyssCard` (lub `AbyssGrid` z kafelkami `AbyssTile` dla list równorzędnych elementów).
 - Nie buduj własnych kontenerów sekcji — używaj komponentów powierzchni.
 
+### 6. Tabela danych (`AbyssTable`)
+
+`AbyssTable` ma dwa tryby prezentacji kontenera:
+
+| Tryb | Prop | Kiedy używać |
+| ---- | ---- | ------------ |
+| **Osadzony** (domyślny) | brak `as-card` | tabela klucz–wartość w dialogu, panelu szczegółów, wewnątrz karty |
+| **Karta** | `as-card` | główna tabela strony (użytkownicy, kolejka zadań, archiwum) |
+
+#### Tryb osadzony (bez `as-card`)
+
+- **Bez zaokrągleń** — kontener nie ma `border-radius`.
+- **Bez tła kontenera** — brak tła panelu i cienia karty.
+- **Nagłówek kolumn** — pełne tło wiersza nagłówka (`thead`) jak w standardowej tabeli.
+- **Tło tylko komórek parametrów w `tbody`** — pierwsza kolumna wierszy danych ma tło `--table-param-background`; komórki wartości i wiersze rozwinięcia są przezroczyste.
+- **Bez rozwijania wierszy** — kolumna +/- nie jest renderowana, dopóki nie ustawisz `expandable` lub nie użyjesz slotu `row-expand`.
+
+Typowy układ tabeli parametrów w `AbyssDialog`:
+
+```html
+<AbyssTable
+  :rows="rows"
+  :columns="columns"
+  row-key="id"
+  hide-search
+  :rows-per-page-options="[0]"
+/>
+```
+
+Kolumny: pierwsza z etykietą parametru (`param`), druga z wartością (`value`). Paginacja i wyszukiwarka zwykle wyłączone (`hide-search`, `rows-per-page-options="[0]"`).
+
+#### Tryb karta (`as-card`)
+
+- Tło, zaokrąglenie 16px i cień jak w `AbyssCard`.
+- Tło wierszy danych na wszystkich kolumnach.
+- Tytuł w `#top-left` z opcjonalną ikoną (`title-icon`); akcje kontekstowe w `#header-append`.
+
+#### Rozwijane wiersze
+
+Domyślnie **wyłączone**. Włącz tylko gdy wiersz ma dodatkową treść poza komórkami:
+
+```html
+<AbyssTable expandable as-card :rows="rows" :columns="columns" row-key="id">
+  <template #row-expand="bodyProps">
+    {{ bodyProps.row.details }}
+  </template>
+</AbyssTable>
+```
+
+Prop `expandable` lub obecność slotu `row-expand` aktywuje kolumnę +/- i wiersz rozwinięcia.
+
 ---
 
 ## Do / Don't
@@ -299,6 +350,7 @@ Reguły:
 - `AbyssDialog` — [`src/components/ui/AbyssDialog/AbyssDialog.stories.ts`](../../src/components/ui/AbyssDialog/AbyssDialog.stories.ts)
 - `AbyssForm` — [`src/components/ui/AbyssForm/AbyssForm.stories.ts`](../../src/components/ui/AbyssForm/AbyssForm.stories.ts)
 - `AbyssGrid` — [`src/components/ui/AbyssGrid/AbyssGrid.stories.ts`](../../src/components/ui/AbyssGrid/AbyssGrid.stories.ts)
+- `AbyssTable` — [`src/components/ui/AbyssTable/AbyssTable.stories.ts`](../../src/components/ui/AbyssTable/AbyssTable.stories.ts)
 
 Przykłady użycia w ekranach aplikacji Maia znajdują się w repozytorium `maia-app`.
 

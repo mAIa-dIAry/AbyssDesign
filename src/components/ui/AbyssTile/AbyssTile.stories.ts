@@ -8,6 +8,7 @@ import { withAbyssBackground } from '@/stories/AbyssBackgroundDecorator';
 type AbyssTileStoryArgs = {
   title?: string;
   monospace?: boolean;
+  truncate?: boolean;
   content?: string;
 };
 
@@ -35,6 +36,10 @@ const meta: Meta<AbyssTileStoryArgs> = {
     monospace: {
       control: 'boolean',
       description: 'Monospace dla wartości (np. identyfikator sieci)',
+    },
+    truncate: {
+      control: 'boolean',
+      description: 'Obcina treść w jednej linii z wielokropkiem',
     },
     content: {
       control: 'text',
@@ -148,6 +153,39 @@ export const SummaryRow: Story = {
           <AbyssTile title="Status">Połączono</AbyssTile>
           <AbyssTile title="Sieć" monospace>net-a1b2-c3d4</AbyssTile>
           <AbyssTile title="Urządzenia">3</AbyssTile>
+        </AbyssGrid>
+      </div>
+    `,
+  }),
+};
+
+export const LongContent: Story = {
+  name: 'Obcięta treść',
+  args: {
+    title: 'Błąd',
+    content:
+      "Output validation failed after 3 attempts: Schema validation error: 2 validation errors for DailyAnalysisOutput version Input should be '1.0' [type=literal_error, input_value=1, input_type=int]",
+    truncate: true,
+  },
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'Długi komunikat jest obcinany w kafelku — pełna treść dostępna poza podglądem (np. w modalu logów).',
+      },
+    },
+  },
+  render: (args) => ({
+    components: { AbyssTile, AbyssGrid },
+    setup: () => ({ args, storyGridStyle: STORY_TILE_GRID_STYLE }),
+    template: `
+      <div :style="storyGridStyle">
+        <AbyssGrid :max-columns="4" column-size="240px" content-rows>
+          <AbyssTile title="Status">Błąd</AbyssTile>
+          <AbyssTile title="Worker">void-desktop</AbyssTile>
+          <AbyssTile title="Błąd" :truncate="args.truncate">
+            {{ args.content }}
+          </AbyssTile>
         </AbyssGrid>
       </div>
     `,

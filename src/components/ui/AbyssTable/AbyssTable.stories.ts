@@ -157,6 +157,12 @@ const meta: Meta<typeof AbyssTable> = {
         "Styl kontenera jak AbyssCard — tło, border-radius 16px i cień karty",
       table: { defaultValue: { summary: "false" } },
     },
+    expandable: {
+      control: "boolean",
+      description:
+        "Włącza kolumnę rozwijania wierszy i slot row-expand. Domyślnie wyłączone.",
+      table: { defaultValue: { summary: "false" } },
+    },
     height: {
       control: "number",
       description:
@@ -168,8 +174,10 @@ const meta: Meta<typeof AbyssTable> = {
     docs: {
       description: {
         component:
-          "Opiniowany wrapper na `QTable`: ciemny motyw, wyszukiwarka, sortowanie, rozwijane wiersze i paginacja są wbudowane. " +
-          "Domyślnie (`height=0`) tabela rośnie z treścią. Ustaw `height`, aby włączyć scroll wewnętrzny i sticky header.",
+          "Opiniowany wrapper na `QTable`: ciemny motyw, wyszukiwarka, sortowanie, opcjonalne rozwijane wiersze i paginacja są wbudowane. " +
+          "Domyślnie (`height=0`) tabela rośnie z treścią. Ustaw `height`, aby włączyć scroll wewnętrzny i sticky header. " +
+          "Tryb bez `as-card` (domyślny) służy osadzonym tabelom parametrów — bez zaokrągleń i tła kontenera; tło ma wyłącznie pierwsza kolumna. " +
+          "Rozwijanie wierszy wymaga `expandable` lub slotu `row-expand`.",
       },
     },
   },
@@ -184,7 +192,7 @@ export const BasePreset: Story = {
     docs: {
       description: {
         story:
-          "Minimalne użycie komponentu — cała konfiguracja UI jest domyślna w `AbyssTable`.",
+          "Minimalne użycie komponentu — bez rozwijania wierszy, bez stylu karty.",
       },
       source: {
         code: `<AbyssTable
@@ -219,11 +227,150 @@ export const BasePreset: Story = {
     await expect(title).not.toBeNull();
     await expect(title).toHaveTextContent("Treats");
 
+    const expandButtons = canvasElement.querySelectorAll(
+      ".abyss-table__expand-row, .abyss-table--expandable",
+    );
+    await expect(expandButtons.length).toBe(0);
+
     const searchInput = canvasElement.querySelector("input");
     await expect(searchInput).not.toBeNull();
 
     const pagination = canvasElement.querySelector(".q-table__bottom");
     await expect(pagination).not.toBeNull();
+  },
+};
+
+const parameterColumns = [
+  {
+    name: "param",
+    label: "Parametr",
+    field: "param",
+    align: "left" as const,
+    style: "width: 35%",
+  },
+  {
+    name: "value",
+    label: "Wartość",
+    field: "value",
+    align: "left" as const,
+  },
+];
+
+const parameterRows = [
+  { id: "version", param: "Wersja", value: "1.0" },
+  { id: "day", param: "Dzień", value: "2026-06-21" },
+  {
+    id: "summary",
+    param: "Podsumowanie",
+    value: "Druga notatka z dnia synchronizacji offline.",
+  },
+  {
+    id: "state",
+    param: "Aktualizacja stanu",
+    value: "Synchronizacja offline zakończona.",
+  },
+  { id: "silence", param: "Ocena ciszy", value: "—" },
+];
+
+export const ParameterTable: Story = {
+  name: "Tabela parametrów",
+  parameters: {
+    docs: {
+      description: {
+        story:
+          "Tryb osadzony (bez `as-card`) — tabela klucz–wartość w dialogu lub panelu. " +
+          "Brak zaokrągleń i tła kontenera; tło ma wyłącznie kolumna parametrów. " +
+          "Rozwijanie wierszy domyślnie wyłączone.",
+      },
+      source: {
+        code: `<AbyssTable
+  :rows="rows"
+  :columns="columns"
+  row-key="id"
+  hide-search
+  :rows-per-page-options="[0]"
+/>`,
+      },
+    },
+  },
+  render: () => ({
+    components: { AbyssTable },
+    setup() {
+      return { columns: parameterColumns, rows: parameterRows };
+    },
+    template: `
+      <AbyssTable
+        :rows="rows"
+        :columns="columns"
+        row-key="id"
+        hide-search
+        :rows-per-page-options="[0]"
+      />
+    `,
+  }),
+  play: async ({ canvasElement }) => {
+    const table = canvasElement.querySelector(".abyss-table");
+    await expect(table).not.toBeNull();
+    await expect(table).not.toHaveClass("abyss-table--as-card");
+    await expect(table).not.toHaveClass("abyss-table--expandable");
+
+    const paramCells = canvasElement.querySelectorAll(
+      ".abyss-table__param-cell",
+    );
+    await expect(paramCells.length).toBeGreaterThan(0);
+  },
+};
+
+export const ExpandableRows: Story = {
+  name: "Rozwijane wiersze",
+  parameters: {
+    docs: {
+      description: {
+        story:
+          "Prop `expandable` włącza kolumnę +/- i slot `row-expand`. " +
+          "Bez tego propu wiersze nie rozwijają się.",
+      },
+      source: {
+        code: `<AbyssTable
+  expandable
+  as-card
+  title="Treats"
+  :rows="rows"
+  :columns="columns"
+  row-key="name"
+>
+  <template #row-expand="bodyProps">
+    Szczegóły: {{ bodyProps.row.name }}
+  </template>
+</AbyssTable>`,
+      },
+    },
+  },
+  render: () => ({
+    components: { AbyssTable },
+    setup() {
+      return { columns, rows };
+    },
+    template: `
+      <AbyssTable
+        expandable
+        as-card
+        title="Treats"
+        :rows="rows"
+        :columns="columns"
+        row-key="name"
+      >
+        <template #row-expand="bodyProps">
+          <div class="text-left">
+            Szczegóły: {{ bodyProps.row.name }}
+          </div>
+        </template>
+      </AbyssTable>
+    `,
+  }),
+  play: async ({ canvasElement }) => {
+    const table = canvasElement.querySelector(".abyss-table");
+    await expect(table).toHaveClass("abyss-table--expandable");
   },
 };
 

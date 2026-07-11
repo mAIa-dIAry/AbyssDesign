@@ -1,0 +1,19 @@
+---
+description: Modyfikacje komponentów i API Abyss Design — synchronizacja dokumentacji
+globs: src/components/ui/**/*
+alwaysApply: false
+---
+
+# Po każdej modyfikacji komponentu Abyss
+
+Na **końcu** pracy nad zmianą w `src/components/ui/` uruchom skill **`sync-abyss-design-rules`**.
+
+Skill:
+
+1. wyekstrahuje regułę z diffu,
+2. skonfrontuje ją z `docs/architecture/abyss-design.md` i powiązanymi źródłami,
+3. zaktualizuje dokumentację przy jawnej sprzeczności,
+4. sprawdzi spójność z innymi częściami designu,
+5. zaproponuje opcje zunifikowania, jeśli wystąpi konflikt między dokumentami.
+
+Nie pomijaj tego kroku — nawet przy drobnych poprawkach propsów lub stories.
