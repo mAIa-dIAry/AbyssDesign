@@ -23,7 +23,7 @@ const meta: Meta<AbyssPanelStoryArgs> = {
       description: {
         component:
           'Panel z obramowaniem i opcjonalnym nagłówkiem. Nie styluje treści HTML — ' +
-          'proza i Markdown idą przez AbyssContent w slocie (np. VersionChangelog).',
+          'proza i Markdown idą przez AbyssContent w slocie (np. ChangeLog w MaiaApp) lub AbyssMarkdown z przełącznikiem preview/code.',
       },
     },
   },

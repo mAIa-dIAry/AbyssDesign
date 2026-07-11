@@ -35,11 +35,12 @@ Najważniejsze zasady interpretacji:
 2. **Formularze i standardowe karty — tylko propsy.** W `AbyssCard`, `AbyssForm`, `AbyssDialog` (ustawienia, auth, potwierdzenia) nie dodawaj własnych klas, stylów inline ani nadpisań SCSS na prymitywach Abyss. Układ kontroluj propsami (`full-width`, `AbyssGrid`, sloty karty itd.).
 3. **Komponenty złożone mogą stylować prymitywy.** Przy budowie domenowych komponentów wyższego rzędu (np. edytor, pasek narzędzi archiwum) dozwolone jest przekazywanie `class` i `style` do `AbyssInput`, `AbyssButton` itd. — o ile logika layoutu pozostaje w komponencie nadrzędnym, a nie rozproszona po widokach formularzowych.
 4. **Warstwy tymczasowe to `AbyssDialog`.** Decyzje, potwierdzenia i skupione wprowadzanie danych realizuj dialogiem — nie buduj własnych overlayów.
-5. **Jedna czytelna hierarchia akcji na blok.** Użytkownik ma od razu widzieć akcję główną, wspierającą i informacyjną. Realizuj to kombinacją `gradient`, `gradientColors`, `flat`, `embedded` i `full-width` na `AbyssButton`.
-6. **Operacje destrukcyjne:** `AbyssButton` z `gradient` + `gradient-colors="danger"` oraz kontekst ryzyka przez `AbyssInfo`, ikonografię i copy w `AbyssCard`.
-7. **Formularze:** pola (`AbyssInput`, `AbyssSelect`, `AbyssToggle` itd.) mają wewnętrzny układ — nie owijaj ich dodatkowym `AbyssGrid`. Przyciski akcji pod polami układaj w `AbyssGrid` ze stałymi `INPUT_COLUMN_SIZE` i `INPUT_GRID_MAX_COLUMNS` (patrz `AbyssForm` w Storybooku).
-8. **Daty i czas:** wyłącznie `AbyssDate`, `AbyssTime` albo `AbyssInput` z `type="date"`, `type="time"`, `type="datetime-local"`.
-9. **Feedback po akcjach:** powodzenie lub niepowodzenie operacji (zapis, usunięcie, ponowienie itd.) komunikuj **Quasar Notify** (`$q.notify` / `Notify.create`), nie `AbyssInfo`. `AbyssInfo` służy wyłącznie do **statycznych** komunikatów kontekstowych osadzonych w układzie strony.
+5. **Scroll w dialogu — tylko body.** W `AbyssDialog` jedynym pionowym kontenerem przewijania jest `abyss-dialog__body`. Taby i nawigacja idą do slotu `navigation` (poza body). Treść w body nie może mieć własnych pionowych scrollbarów — używaj `AbyssTable` bez `height`, `AbyssCode` z `scrollable={false}`, `AbyssMarkdown` w trybie osadzonym bez wewnętrznych paneli ze scrollem.
+6. **Jedna czytelna hierarchia akcji na blok.** Użytkownik ma od razu widzieć akcję główną, wspierającą i informacyjną. Realizuj to kombinacją `gradient`, `gradientColors`, `flat`, `embedded` i `full-width` na `AbyssButton`.
+7. **Operacje destrukcyjne:** `AbyssButton` z `gradient` + `gradient-colors="danger"` oraz kontekst ryzyka przez `AbyssInfo`, ikonografię i copy w `AbyssCard`.
+8. **Formularze:** pola (`AbyssInput`, `AbyssSelect`, `AbyssToggle` itd.) mają wewnętrzny układ — nie owijaj ich dodatkowym `AbyssGrid`. Przyciski akcji pod polami układaj w `AbyssGrid` ze stałymi `INPUT_COLUMN_SIZE` i `INPUT_GRID_MAX_COLUMNS` (patrz `AbyssForm` w Storybooku).
+9. **Daty i czas:** wyłącznie `AbyssDate`, `AbyssTime` albo `AbyssInput` z `type="date"`, `type="time"`, `type="datetime-local"`.
+10. **Feedback po akcjach:** powodzenie lub niepowodzenie operacji (zapis, usunięcie, ponowienie itd.) komunikuj **Quasar Notify** (`$q.notify` / `Notify.create`), nie `AbyssInfo`. `AbyssInfo` służy wyłącznie do **statycznych** komunikatów kontekstowych osadzonych w układzie strony.
 
 ---
 
@@ -65,12 +66,17 @@ Przykład niedozwolonego użycia: karta „Konto” w ustawieniach z `class="set
 | Komponent          | Rola                           | Kluczowe propsy / sloty                                                                 |
 | ------------------ | ------------------------------ | --------------------------------------------------------------------------------------- |
 | `AbyssCard`        | kontener sekcji                | `title`, sloty `header-prepend`, `header-append`, `content`, `footer` (rzadko)           |
-| `AbyssDialog`      | warstwa tymczasowa nad treścią | `model-value`, sloty `header`, `content`, `actions`; przyciski w stopce zawsze `flat`   |
+| `AbyssDialog`      | warstwa tymczasowa nad treścią | `model-value`, sloty `header`, `navigation` (taby poza scrollowym body), domyślny content, `actions`; przyciski w stopce zawsze `flat`   |
 | `AbyssTitle`       | hierarchia nagłówków           | `level` (`h1`–`h6`), `size` (`lg`, `md`, `sm`)                                          |
 | `AbyssInfo`        | statyczny komunikat kontekstowy | `type`, `title`, `icon` — pusty stan, ostrzeżenie przed akcją, trwała wskazówka; **nie** feedback po akcji |
 | `AbyssButtonGroup` | zestaw równorzędnych akcji     | dzieci: wyłącznie `AbyssButton`                                                         |
 | `AbyssGrid`        | responsywna siatka             | `column-size`, `max-columns`, `column-gap`, `row-gap`, `align`, `content-rows`          |
 | `AbyssForm`        | wrapper formularza             | `v-model`, `sync`, `@update-form`, `@submit-form`                                       |
+| `AbyssPanel`       | panel z opcjonalnym nagłówkiem | `title`, `flush`, slot `title`                                                          |
+| `AbyssContent`     | typografia gotowego HTML       | `html`, `mode` (`html-note` \| `html-changelog`), `size`, `tone`                        |
+| `AbyssMarkdown`    | podgląd Markdown + kod źródłowy | `source`, `v-model` (`preview` \| `code`), `content-mode`, `embedded`                  |
+| `AbyssCode`        | kolorowany kod (JSON)          | `value`, `language` (`json` \| `abyss-json`), `colorTheme` (domyślnie `one-dark`)       |
+| `AbyssDebug`       | karta debugowania danych       | `data` — cienki wrapper nad `AbyssCode language="abyss-json"`                           |
 
 ### Hierarchia `AbyssTitle`
 
@@ -242,9 +248,46 @@ Reguły:
 
 ### 3. Dialog potwierdzenia
 
-- `AbyssDialog` z treścią w slocie `content`.
+- `AbyssDialog` z treścią w domyślnym slocie (body).
+- **Scroll:** wyłącznie `abyss-dialog__body` przewija treść w pionie. Nie ustawiaj `max-height` / `overflow: auto` na wrapperach w body, nie używaj `AbyssTable` z propem `height`, `AbyssCode` z domyślnym `scrollable` ani textarea z własnym scrollem.
+- **Nawigacja / taby:** slot `#navigation` między nagłówkiem a body — poza obszarem scrolla.
 - Stopka: wszystkie przyciski `flat`; akcja operacyjna dodatkowo `gradient` + `gradient-colors`; anulowanie bez gradientu.
 - Przy istotnej lub nieodwracalnej decyzji — jawna akcja anulowania, nie tylko ikona zamknięcia.
+
+Przykład dialogu z tabami i treścią bez zagnieżdżonego scrolla:
+
+```html
+<AbyssDialog v-model="open" title="Wynik zadania" icon="sym_r_output">
+  <template #navigation>
+    <AbyssSwitcher v-model="tab" :options="tabOptions" />
+  </template>
+
+  <AbyssTable
+    v-if="tab === 'table'"
+    :rows="rows"
+    :columns="columns"
+    row-key="id"
+    hide-search
+    :height="0"
+    :rows-per-page-options="[0]"
+  />
+
+  <AbyssMarkdown
+    v-else-if="tab === 'markdown'"
+    :source="markdownSource"
+    model-value="preview"
+    embedded
+    :show-view-switcher="false"
+  />
+
+  <AbyssCode
+    v-else
+    :value="payload"
+    language="abyss-json"
+    :scrollable="false"
+  />
+</AbyssDialog>
+```
 
 ### 4. Toolbar lub segment
 
@@ -257,7 +300,20 @@ Reguły:
 - Każda sekcja w osobnej `AbyssCard` (lub `AbyssGrid` z kafelkami `AbyssTile` dla list równorzędnych elementów).
 - Nie buduj własnych kontenerów sekcji — używaj komponentów powierzchni.
 
-### 6. Tabela danych (`AbyssTable`)
+### 6. Markdown i kod
+
+| Komponent | Kiedy używać | Nie używać gdy |
+| --------- | ------------ | -------------- |
+| `AbyssMarkdown` | generyczny podgląd Markdown z przełącznikiem preview/code | logika domenowa (fetch changelogu, zwijanie) — to warstwa aplikacji |
+| `AbyssContent` | render gotowego HTML (notatka, changelog po sanityzacji) | potrzebujesz przełącznika kod źródłowy / podgląd |
+| `AbyssCode` | JSON z kolorowaniem składni (`json` lub drzewo `abyss-json`) | pełny edytor kodu wielojęzycznego — na razie tylko JSON |
+| `AbyssDebug` | szybki podgląd obiektu w karcie debug | generyczny renderer kodu poza kontekstem debug — użyj `AbyssCode` |
+
+- `AbyssMarkdown` parsuje Markdown w komponencie (`marked` jako peer dependency) i sanityzuje HTML przed `AbyssContent`.
+- Prop `embedded` na `AbyssMarkdown` pomija `AbyssPanel` — stosuj w złożonych komponentach aplikacji (np. `ChangeLog` w MaiaApp), które same zarządzają panelem i zwijaniem.
+- `AbyssCode` — domyślny motyw `one-dark` (paleta One Dark Pro); alternatywy: `github-dark`, `monokai`. W dialogu: `scrollable={false}`.
+
+### 7. Tabela danych (`AbyssTable`)
 
 `AbyssTable` ma dwa tryby prezentacji kontenera:
 
@@ -273,6 +329,7 @@ Reguły:
 - **Nagłówek kolumn** — pełne tło wiersza nagłówka (`thead`) jak w standardowej tabeli.
 - **Tło tylko komórek parametrów w `tbody`** — pierwsza kolumna wierszy danych ma tło `--table-param-background`; komórki wartości i wiersze rozwinięcia są przezroczyste.
 - **Bez rozwijania wierszy** — kolumna +/- nie jest renderowana, dopóki nie ustawisz `expandable` lub nie użyjesz slotu `row-expand`.
+- **Wyrównanie do krawędzi kontenera** — w `AbyssCard` (slot `content`) i `AbyssDialog` (body) osadzona tabela dostaje ujemne marginesy poziome równe paddingowi kontenera, żeby krawędzie tabeli zrównały się z krawędziami karty lub modala. Skrajne kolumny dostają padding poziomy równy `--card-padding` / `--dialog-padding`. Nie dotyczy trybu `as-card`.
 
 Typowy układ tabeli parametrów w `AbyssDialog`:
 
@@ -308,6 +365,26 @@ Domyślnie **wyłączone**. Włącz tylko gdy wiersz ma dodatkową treść poza 
 
 Prop `expandable` lub obecność slotu `row-expand` aktywuje kolumnę +/- i wiersz rozwinięcia.
 
+#### Kolumna akcji
+
+- Nagłówek kolumny może mieć etykietę (np. „Akcje”).
+- W wierszach: trigger menu **tylko z ikoną** (`sym_r_more_vert`), bez `:label` — dostępność przez `aria-label`.
+- Menu rozwijane (`AbyssDropdown`) zachowuje pełne etykiety poszczególnych akcji.
+
+```html
+<AbyssButton
+  flat
+  size="medium"
+  icon="sym_r_more_vert"
+  class="icon-button"
+  :aria-label="t('routes.workers.actions.menu')"
+>
+  <AbyssDropdown anchor="bottom right" self="top right">
+    <!-- akcje z :label -->
+  </AbyssDropdown>
+</AbyssButton>
+```
+
 ---
 
 ## Do / Don't
@@ -324,7 +401,8 @@ Prop `expandable` lub obecność slotu `row-expand` aktywuje kolumnę +/- i wier
 - Używaj `AbyssInfo` wyłącznie do statycznych komunikatów kontekstowych (pusty stan, ostrzeżenie, trwała wskazówka).
 - Używaj `AbyssDate` / `AbyssTime` (lub `AbyssInput` z odpowiednim `type`) jako jedynego sposobu wyboru daty i czasu.
 - Ustawiaj i zmieniaj hasło wyłącznie w dedykowanym `AbyssDialog`.
-- Umieszczaj przyciski formularza w `AbyssGrid` z `INPUT_COLUMN_SIZE` i `INPUT_GRID_MAX_COLUMNS`.
+- Używaj `AbyssMarkdown` dla generycznego podglądu Markdown; logikę changelogu trzymaj w komponencie aplikacji (`ChangeLog`).
+- Używaj `AbyssCode` zamiast własnego `<pre>` dla kolorowanego JSON.
 
 ### Don't
 
@@ -340,6 +418,8 @@ Prop `expandable` lub obecność slotu `row-expand` aktywuje kolumnę +/- i wier
 - Nie owijaj `AbyssInput` ani `AbyssSelect` w dodatkowy `AbyssGrid`.
 - Nie używaj natywnych selektorów daty/czasu systemowych.
 - Nie używaj `AbyssInfo` z `v-if` / `v-show` do pokazywania sukcesu lub błędu po akcji użytkownika — użyj Quasar Notify.
+- Nie dodawaj zagnieżdżonych pionowych scrollbarów w treści `AbyssDialog` — przewijaj wyłącznie body dialogu.
+- Nie powtarzaj etykiety kolumny akcji (np. „Akcje”) w każdym wierszu tabeli — w komórce wystarczy ikona menu z `aria-label`.
 
 ---
 
@@ -351,6 +431,9 @@ Prop `expandable` lub obecność slotu `row-expand` aktywuje kolumnę +/- i wier
 - `AbyssForm` — [`src/components/ui/AbyssForm/AbyssForm.stories.ts`](../../src/components/ui/AbyssForm/AbyssForm.stories.ts)
 - `AbyssGrid` — [`src/components/ui/AbyssGrid/AbyssGrid.stories.ts`](../../src/components/ui/AbyssGrid/AbyssGrid.stories.ts)
 - `AbyssTable` — [`src/components/ui/AbyssTable/AbyssTable.stories.ts`](../../src/components/ui/AbyssTable/AbyssTable.stories.ts)
+- `AbyssMarkdown` — [`src/components/ui/AbyssMarkdown/AbyssMarkdown.stories.ts`](../../src/components/ui/AbyssMarkdown/AbyssMarkdown.stories.ts)
+- `AbyssCode` — [`src/components/ui/AbyssCode/AbyssCode.stories.ts`](../../src/components/ui/AbyssCode/AbyssCode.stories.ts)
+- `AbyssDebug` — [`src/components/ui/AbyssDebug/AbyssDebug.stories.ts`](../../src/components/ui/AbyssDebug/AbyssDebug.stories.ts)
 
 Przykłady użycia w ekranach aplikacji Maia znajdują się w repozytorium `maia-app`.
 

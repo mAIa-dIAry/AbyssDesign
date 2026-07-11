@@ -41,3 +41,10 @@ export { PIN_LENGTH } from './utils/pinCode';
 export { resolveDesktopShortcutFromKeyboardInput } from './utils/desktopShortcut';
 export { injectGradientPresetsPlugin } from './vite/inject-gradient-presets';
 export { abyssI18nMessages } from './i18n';
+export { markdownToContentHtml } from './utils/markdownToHtml';
+export {
+  sanitizeChangelogHtml,
+  sanitizeMarkdownHtml,
+  sanitizeMarkdownByMode,
+  type MarkdownSanitizeMode,
+} from './utils/sanitizeHtml';

@@ -7,7 +7,11 @@
     @update:model-value="emit('update:modelValue', $event)"
     @hide="emit('close')"
   >
-    <div class="abyss-dialog" :class="$props.class" :style="style">
+    <div
+      class="abyss-dialog"
+      :class="[$props.class]"
+      :style="style"
+    >
       <slot name="header">
         <div v-if="hasHeader" class="abyss-dialog__header">
           <div class="abyss-dialog__header-prepend">
@@ -33,13 +37,19 @@
         </div>
       </slot>
 
-      <AbyssSeparator v-if="hasHeader && (hasBody || hasFooter)" />
+      <AbyssSeparator
+        v-if="hasHeader && (hasNavigation || hasBody || hasFooter)"
+      />
+
+      <div v-if="hasNavigation" class="abyss-dialog__navigation">
+        <slot name="navigation" />
+      </div>
 
       <div v-if="hasBody" class="abyss-dialog__body">
         <slot />
       </div>
 
-      <AbyssSeparator v-if="hasBody && hasFooter" />
+      <AbyssSeparator v-if="(hasBody || hasNavigation) && hasFooter" />
 
       <slot name="footer">
         <div v-if="hasFooter" class="abyss-dialog__footer">
@@ -145,6 +155,8 @@ const hasHeader = computed(() => {
     slots.header
   );
 });
+
+const hasNavigation = computed(() => !!slots.navigation);
 
 const hasBody = computed(() => !!slots.default);
 
@@ -283,6 +295,21 @@ function getActionButtonProps(
     line-height: 24px;
   }
 
+  &__navigation {
+    flex-shrink: 0;
+    padding: 12px var(--dialog-padding) 0;
+
+    &:empty {
+      display: none;
+    }
+  }
+
+  &:has(.abyss-dialog__navigation:not(:empty)) {
+    .abyss-dialog__body {
+      padding-top: 12px;
+    }
+  }
+
   &__body {
     min-height: 0;
     overflow: auto;
@@ -308,6 +335,44 @@ function getActionButtonProps(
       &:last-child {
         margin-bottom: 0;
       }
+    }
+
+    // Jedyny pionowy scroll w dialogu — treść rośnie, przewija body.
+    :deep(.abyss-code),
+    :deep(.abyss-markdown__source),
+    :deep(.q-table__middle),
+    :deep(.q-table__middle.scroll),
+    :deep(.q-field__control),
+    :deep(textarea) {
+      max-height: none !important;
+      overflow-y: visible !important;
+    }
+
+    :deep(.abyss-table:not(.abyss-table--fixed-height) .q-table__middle),
+    :deep(.abyss-table:not(.abyss-table--fixed-height) .q-table__middle.scroll) {
+      overflow-x: auto;
+      overflow-y: visible !important;
+    }
+
+    :deep(.abyss-table:not(.abyss-table--as-card)) {
+      --table-edge-inset: var(--dialog-padding);
+
+      margin-inline: calc(var(--table-edge-inset) * -1);
+      width: calc(100% + 2 * var(--table-edge-inset));
+    }
+
+    :deep(.abyss-table:not(.abyss-table--as-card) thead tr th:first-child),
+    :deep(.abyss-table:not(.abyss-table--as-card) tbody tr:not(.abyss-table__expand-row) > td:first-child) {
+      padding-inline-start: var(--table-edge-inset, var(--dialog-padding));
+    }
+
+    :deep(.abyss-table:not(.abyss-table--as-card) thead tr th:last-child),
+    :deep(.abyss-table:not(.abyss-table--as-card) tbody tr:not(.abyss-table__expand-row) > td:last-child) {
+      padding-inline-end: var(--table-edge-inset, var(--dialog-padding));
+    }
+
+    :deep(.abyss-table:not(.abyss-table--as-card) tbody tr.abyss-table__expand-row > td.abyss-table__expand-cell) {
+      padding-inline: var(--table-edge-inset, var(--dialog-padding));
     }
   }
 

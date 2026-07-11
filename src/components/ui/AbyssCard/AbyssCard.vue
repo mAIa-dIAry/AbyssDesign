@@ -159,7 +159,28 @@ const hasFooter = computed(() => {
     :deep(.abyss-separator) {
       margin-left: calc(var(--card-padding) * -1);
       margin-right: calc(var(--card-padding) * -1);
-      width: calc(100% + 32px);
+      width: calc(100% + 2 * var(--card-padding));
+    }
+
+    :deep(.abyss-table:not(.abyss-table--as-card)) {
+      --table-edge-inset: var(--card-padding);
+
+      margin-inline: calc(var(--table-edge-inset) * -1);
+      width: calc(100% + 2 * var(--table-edge-inset));
+    }
+
+    :deep(.abyss-table:not(.abyss-table--as-card) thead tr th:first-child),
+    :deep(.abyss-table:not(.abyss-table--as-card) tbody tr:not(.abyss-table__expand-row) > td:first-child) {
+      padding-inline-start: var(--table-edge-inset, var(--card-padding));
+    }
+
+    :deep(.abyss-table:not(.abyss-table--as-card) thead tr th:last-child),
+    :deep(.abyss-table:not(.abyss-table--as-card) tbody tr:not(.abyss-table__expand-row) > td:last-child) {
+      padding-inline-end: var(--table-edge-inset, var(--card-padding));
+    }
+
+    :deep(.abyss-table:not(.abyss-table--as-card) tbody tr.abyss-table__expand-row > td.abyss-table__expand-cell) {
+      padding-inline: var(--table-edge-inset, var(--card-padding));
     }
   }
 }

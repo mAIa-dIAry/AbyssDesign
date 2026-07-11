@@ -4,6 +4,7 @@ import { expect, fn, waitFor } from 'storybook/test';
 import AbyssButton from '@/components/ui/AbyssButton/AbyssButton.vue';
 import AbyssButtonGroup from '@/components/ui/AbyssButtonGroup/AbyssButtonGroup.vue';
 import AbyssDialog from '@/components/ui/AbyssDialog/AbyssDialog.vue';
+import AbyssSwitcher from '@/components/ui/AbyssSwitcher/AbyssSwitcher.vue';
 import type { GradientColorsInput } from '@/defines/semantic-gradients';
 import { withAbyssBackgroundDialogScope } from '@/stories/StoryDialogScopeDecorator';
 
@@ -75,8 +76,11 @@ const meta: Meta<AbyssDialogStoryArgs> = {
       description: {
         component:
           'Dialog Abyss oparty o q-dialog. Nagłówek i stopka używają tej samej konwencji slotów co AbyssCard: ' +
-          'header-prepend, header, header-append oraz footer-prepend, footer, footer-append. ' +
+          'header-prepend, header, header-append, slot `navigation` (taby poza scrollowym body) ' +
+          'oraz footer-prepend, footer, footer-append. ' +
           'Props title, icon, closeButton i actions pozostają wspierane jako domyślna zawartość slotów.\n\n' +
+          '**Scroll:** jedynym pionowym kontenerem przewijania jest `abyss-dialog__body`. ' +
+          'Slot `navigation` (taby) jest poza body. Treść w body nie może mieć własnych pionowych scrollbarów.\n\n' +
           '**Przyciski w stopce** — zgodnie z konwencją AbyssButton:\n' +
           '- każdy przycisk w stopce dialogu jest `flat`;\n' +
           '- anulowanie: samo `flat`, bez gradientu;\n' +
@@ -386,6 +390,85 @@ export const WithFooterPrepend: Story = {
       await expect(deleteButton).toHaveClass('flat');
       await expect(deleteButton).toHaveClass('gradient');
     });
+  },
+};
+
+export const WithNavigationTabs: Story = {
+  name: 'Z nawigacją (taby)',
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'Slot `navigation` trzyma taby poza przewijanym body — nagłówek i przełącznik pozostają widoczne przy długiej treści.',
+      },
+      source: {
+        code: `<AbyssDialog v-model="isOpen" title="Wynik zadania" icon="sym_r_output" close-button>
+  <template #navigation>
+    <AbyssSwitcher v-model="activeTab" :options="tabOptions" />
+  </template>
+
+  <section v-for="section in sections" :key="section.id">
+    <strong>{{ section.title }}</strong>
+    <p>{{ section.text }}</p>
+  </section>
+</AbyssDialog>`,
+      },
+    },
+  },
+  render: () => ({
+    components: { AbyssDialog, AbyssButton, AbyssSwitcher },
+    setup() {
+      const isOpen = ref(true);
+      const activeTab = ref('summary');
+      const tabOptions = [
+        { name: 'summary', label: 'Podsumowanie', icon: 'sym_r_summarize' },
+        { name: 'details', label: 'Szczegóły', icon: 'sym_r_list' },
+      ];
+      const sections = Array.from({ length: 10 }, (_, index) => ({
+        id: index + 1,
+        title: `Sekcja ${index + 1}`,
+        text: 'Treść panelu przewijana niezależnie od nawigacji tabsów nad body.',
+      }));
+
+      return { isOpen, activeTab, tabOptions, sections };
+    },
+    template: `
+      <div>
+        <div v-if="!isOpen" style="${openDialogTriggerStyle}">
+          <AbyssButton label="Otwórz dialog" @click="isOpen = true" />
+        </div>
+
+        <AbyssDialog
+          v-model="isOpen"
+          title="Wynik zadania"
+          icon="sym_r_output"
+          close-button
+        >
+          <template #navigation>
+            <AbyssSwitcher v-model="activeTab" :options="tabOptions" />
+          </template>
+
+          <section v-for="section in sections" :key="section.id">
+            <strong>{{ section.title }}</strong>
+            <p style="margin: 8px 0 0;">{{ section.text }}</p>
+          </section>
+        </AbyssDialog>
+      </div>
+    `,
+  }),
+  play: async ({ canvas, canvasElement }) => {
+    await waitFor(async () => {
+      await expect(canvas.getByText('Wynik zadania')).toBeVisible();
+      await expect(canvas.getByRole('radio', { name: /Podsumowanie/i })).toBeVisible();
+      await expect(canvas.getByText('Sekcja 1')).toBeVisible();
+    });
+
+    const navigation = canvasElement.querySelector('.abyss-dialog__navigation');
+    const body = canvasElement.querySelector('.abyss-dialog__body');
+
+    await expect(navigation).toBeTruthy();
+    await expect(body).toBeTruthy();
+    await expect(navigation?.contains(body ?? null)).toBe(false);
   },
 };
 
