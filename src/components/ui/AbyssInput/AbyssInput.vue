@@ -120,6 +120,9 @@
                   @update:model-value="handleDateDraftUpdate"
                   @confirm="handleDateConfirm"
                   mask="YYYY-MM-DD"
+                  :options="dateOptions"
+                  :default-year-month="defaultYearMonth"
+                  :today-btn="dateOptions ? false : true"
                   @close="datePopupRef?.hide()"
                 />
               </q-popup-proxy>
@@ -221,6 +224,10 @@ export interface AbyssInputProps {
   /** Usuwa cień pola — wariant bez wypukłości, np. w nagłówku tabeli. */
   flat?: boolean;
   size?: 'normal' | 'small';
+  /** Quasar QDate `options` — np. ograniczenie wybieralnych dni (format daty: YYYY/MM/DD). */
+  dateOptions?: (date: string) => boolean;
+  /** Quasar QDate `default-year-month` — np. `2026/07`. */
+  defaultYearMonth?: string;
 }
 
 const props = withDefaults(defineProps<AbyssInputProps>(), {

@@ -226,13 +226,8 @@ function select(id: string) {
 }
 
 function handleTabClick(id: string) {
-  if (isMobile.value) {
-    select(id);
-    emit('open', id);
-    return;
-  }
-
   select(id);
+  emit('open', id);
 }
 
 function getTabButtonProps(tab: AbyssSettingsTab) {
