@@ -9,8 +9,18 @@ const RELOAD_SIMULATION_MS = 1500;
 const RELOAD_STORY_HINT_STYLE =
   "flex-shrink: 0; margin: 0 0 8px; opacity: 0.72; font-size: 13px;";
 const RELOAD_STORY_RELOAD_STYLE = "flex: 1 1 auto; min-height: 0;";
+const SCROLL_VIEW_STORY_PAGE_CHROME_DESKTOP =
+  "flex-shrink: 0; padding: 24px 24px 12px; border-bottom: 1px solid rgba(255,255,255,0.08); opacity: 0.72; font-size: 13px; box-sizing: border-box;";
+const SCROLL_VIEW_STORY_PAGE_CHROME_MOBILE =
+  "flex-shrink: 0; padding: calc(env(safe-area-inset-top, 0px) + 12px) 8px 12px; border-bottom: 1px solid rgba(255,255,255,0.08); opacity: 0.72; font-size: 13px; box-sizing: border-box;";
 const RELOAD_STORY_EMPTY_STATE_STYLE =
   "display: flex; flex: 1 1 auto; flex-direction: column; justify-content: center; align-items: center; min-height: 100%; padding: 16px; box-sizing: border-box;";
+
+function scrollViewStoryChromeStyle(device: "mobile" | "desktop" | "web" = "desktop"): string {
+  return device === "mobile"
+    ? SCROLL_VIEW_STORY_PAGE_CHROME_MOBILE
+    : SCROLL_VIEW_STORY_PAGE_CHROME_DESKTOP;
+}
 
 function reloadStoryFrameStyle(height: number, width = 480): string {
   return [
@@ -79,7 +89,8 @@ const meta: Meta<AbyssScrollViewStoryArgs> = {
     docs: {
       description: {
         component:
-          "Przewijany kontener strony z domyślnymi paddingami treści (zależnymi od `device`). " +
+          "Przewijany kontener strony z domyślnymi paddingami bocznymi i dolnymi (zależnymi od `device`). " +
+          "Górny inset nie jest częścią komponentu — zapewnia go strona (toolbar, `AbyssNavHeader` lub stały nagłówek). " +
           "Opcjonalnie obsługuje odświeżanie od góry i od dołu — domyślnie wyłączone (`disabledTop` / `disabledBottom`). " +
           "Loadery są stałymi elementami listy; aktywacja przy progu `activationThreshold` (8 px).",
       },
@@ -227,6 +238,7 @@ export const Default: Story = {
         reloadRef,
         scrollFromBottom,
         bottomActivated,
+        scrollViewStoryChromeStyle,
         ...handlers,
       };
     },
@@ -242,6 +254,9 @@ export const Default: Story = {
           Od dołu: {{ scrollFromBottom }}px
           <span v-if="bottomActivated">— loader aktywny</span>
         </p>
+        <div :style="scrollViewStoryChromeStyle(args.device ?? 'desktop')">
+          Stały toolbar / nagłówek strony (padding u góry poza AbyssScrollView)
+        </div>
         <AbyssScrollView
           ref="reloadRef"
           device="desktop"
@@ -281,26 +296,8 @@ export const Default: Story = {
       },
       source: {
         code: `
-<script setup lang="ts">
-import { ref } from 'vue';
-
-const loadingTop = ref(false);
-const loadingBottom = ref(false);
-
-async function handleRefreshTop() {
-  loadingTop.value = true;
-  await fetchOlderItems();
-  loadingTop.value = false;
-}
-
-async function handleRefreshBottom() {
-  loadingBottom.value = true;
-  await fetchLatestItems();
-  loadingBottom.value = false;
-}
-</script>
-
-<template>
+<div class="page-list">
+  <header class="page-list__toolbar"><!-- padding u góry strony --></header>
   <AbyssScrollView
     device="desktop"
     :disabled-top="false"
@@ -312,7 +309,7 @@ async function handleRefreshBottom() {
   >
     <!-- przewijalna zawartość -->
   </AbyssScrollView>
-</template>`,
+</div>`,
       },
     },
   },
@@ -322,12 +319,18 @@ export const EmptyList: Story = {
   name: "Pusta lista",
   render: () => ({
     components: { AbyssScrollView },
-    setup: useReloadHandlers,
+    setup: () => ({
+      ...useReloadHandlers(),
+      scrollViewStoryChromeStyle,
+    }),
     template: `
       <div :style="'${reloadStoryFrameStyle(360, 420)}'">
         <p :style="'${RELOAD_STORY_HINT_STYLE}'">
           Treść ma min-height 100% viewportu + wysokość loaderów — odświeżanie działa nawet bez elementów.
         </p>
+        <div :style="scrollViewStoryChromeStyle('desktop')">
+          Stały toolbar / nagłówek strony (padding u góry poza AbyssScrollView)
+        </div>
         <AbyssScrollView
           device="desktop"
           :style="'${RELOAD_STORY_RELOAD_STYLE}'"
@@ -481,6 +484,7 @@ export const LoadingStates: Story = {
       return {
         items,
         reloadSimulationMs: RELOAD_SIMULATION_MS,
+        scrollViewStoryChromeStyle,
         ...topDemo,
         ...bottomDemo,
       };
@@ -491,6 +495,9 @@ export const LoadingStates: Story = {
           <p :style="'${RELOAD_STORY_HINT_STYLE}'">
             Ładowanie u góry — symulacja {{ reloadSimulationMs / 1000 }} s, potem spinner znika.
           </p>
+          <div :style="scrollViewStoryChromeStyle('desktop')">
+            Stały toolbar / nagłówek strony
+          </div>
           <AbyssScrollView
             ref="topReloadRef"
             device="desktop"
@@ -516,6 +523,9 @@ export const LoadingStates: Story = {
           <p :style="'${RELOAD_STORY_HINT_STYLE}'">
             Ładowanie u dołu — symulacja {{ reloadSimulationMs / 1000 }} s, potem spinner znika.
           </p>
+          <div :style="scrollViewStoryChromeStyle('desktop')">
+            Stały toolbar / nagłówek strony
+          </div>
           <AbyssScrollView
             ref="bottomReloadRef"
             device="desktop"
@@ -567,6 +577,7 @@ export const LoadingStatesEmptyList: Story = {
       return {
         reloadSimulationMs: RELOAD_SIMULATION_MS,
         emptyStateStyle: RELOAD_STORY_EMPTY_STATE_STYLE,
+        scrollViewStoryChromeStyle,
         ...topDemo,
         ...bottomDemo,
       };
@@ -577,6 +588,9 @@ export const LoadingStatesEmptyList: Story = {
           <p :style="'${RELOAD_STORY_HINT_STYLE}'">
             Pusty stan — ładowanie u góry ({{ reloadSimulationMs / 1000 }} s).
           </p>
+          <div :style="scrollViewStoryChromeStyle('desktop')">
+            Stały toolbar / nagłówek strony
+          </div>
           <AbyssScrollView
             ref="topReloadRef"
             device="desktop"
@@ -600,6 +614,9 @@ export const LoadingStatesEmptyList: Story = {
           <p :style="'${RELOAD_STORY_HINT_STYLE}'">
             Pusty stan — ładowanie u dołu ({{ reloadSimulationMs / 1000 }} s).
           </p>
+          <div :style="scrollViewStoryChromeStyle('desktop')">
+            Stały toolbar / nagłówek strony
+          </div>
           <AbyssScrollView
             ref="bottomReloadRef"
             device="desktop"
@@ -651,10 +668,13 @@ export const OnlyTop: Story = {
     components: { AbyssScrollView },
     setup() {
       const handlers = useReloadHandlers();
-      return { args, demoItems, ...handlers };
+      return { args, demoItems, scrollViewStoryChromeStyle, ...handlers };
     },
     template: `
       <div :style="'${reloadStoryFrameStyle(360, 420)}'">
+        <div :style="scrollViewStoryChromeStyle('desktop')">
+          Stały toolbar / nagłówek strony (padding u góry poza AbyssScrollView)
+        </div>
         <AbyssScrollView
           device="desktop"
           :style="'${RELOAD_STORY_RELOAD_STYLE}'"

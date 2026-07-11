@@ -2,7 +2,7 @@ import type { Meta, StoryObj } from '@storybook/vue3';
 import type { PropType } from 'vue';
 import { computed, defineComponent, ref, watch } from 'vue';
 import { expect } from 'storybook/test';
-import AbyssSettings from '@/components/ui/AbyssSettings/AbyssSettings.vue';
+import AbyssSidebarNav from '@/components/ui/AbyssSidebarNav/AbyssSidebarNav.vue';
 import AbyssTemplate from '@/components/ui/AbyssTemplate/AbyssTemplate.vue';
 import AbyssNavigation from '@/components/ui/AbyssNavigation/AbyssNavigation.vue';
 import AbyssBackground from '@/components/ui/AbyssBackground/AbyssBackground.vue';
@@ -45,61 +45,61 @@ const MOBILE_FRAME_STYLE =
 const MOBILE_LANDSCAPE_FRAME_STYLE =
   'position:relative;width:100%;max-width:844px;height:min(100vh,390px);overflow:hidden;box-shadow:0 24px 80px rgba(0,0,0,0.35);';
 const MOBILE_STORY_SCROLLBAR_HIDDEN_STYLES = `
-  .abyss-settings-story--scrollbarless .abyss-template__overflow-wrapper,
-  .abyss-settings-story--scrollbarless .abyss-settings__sidebar,
-  .abyss-settings-story--scrollbarless .abyss-settings__content,
-  .abyss-settings-story--scrollbarless .abyss-settings__pane--list,
-  .abyss-settings-story--scrollbarless .abyss-settings__detail-content {
+  .abyss-sidebar-nav-story--scrollbarless .abyss-template__overflow-wrapper,
+  .abyss-sidebar-nav-story--scrollbarless .abyss-sidebar-nav__sidebar,
+  .abyss-sidebar-nav-story--scrollbarless .abyss-sidebar-nav__content,
+  .abyss-sidebar-nav-story--scrollbarless .abyss-sidebar-nav__pane--list,
+  .abyss-sidebar-nav-story--scrollbarless .abyss-sidebar-nav__detail-content {
     scrollbar-width: none;
     -ms-overflow-style: none;
   }
 
-  .abyss-settings-story--scrollbarless .abyss-template__overflow-wrapper::-webkit-scrollbar,
-  .abyss-settings-story--scrollbarless .abyss-settings__sidebar::-webkit-scrollbar,
-  .abyss-settings-story--scrollbarless .abyss-settings__content::-webkit-scrollbar,
-  .abyss-settings-story--scrollbarless .abyss-settings__pane--list::-webkit-scrollbar,
-  .abyss-settings-story--scrollbarless .abyss-settings__detail-content::-webkit-scrollbar {
+  .abyss-sidebar-nav-story--scrollbarless .abyss-template__overflow-wrapper::-webkit-scrollbar,
+  .abyss-sidebar-nav-story--scrollbarless .abyss-sidebar-nav__sidebar::-webkit-scrollbar,
+  .abyss-sidebar-nav-story--scrollbarless .abyss-sidebar-nav__content::-webkit-scrollbar,
+  .abyss-sidebar-nav-story--scrollbarless .abyss-sidebar-nav__pane--list::-webkit-scrollbar,
+  .abyss-sidebar-nav-story--scrollbarless .abyss-sidebar-nav__detail-content::-webkit-scrollbar {
     display: none;
     width: 0;
     height: 0;
   }
 `;
 const SETTINGS_CONTENT_STORY_STYLES = `
-  .abyss-settings-story__tab {
+  .abyss-sidebar-nav-story__tab {
     display: flex;
     flex-direction: column;
     gap: 16px;
   }
 
-  .abyss-settings-story__card .abyss-card-content {
+  .abyss-sidebar-nav-story__card .abyss-card-content {
     display: flex;
     flex-direction: column;
     gap: 14px;
   }
 
-  .abyss-settings-story__description,
-  .abyss-settings-story__note {
+  .abyss-sidebar-nav-story__description,
+  .abyss-sidebar-nav-story__note {
     margin: 0;
     line-height: 1.5;
   }
 
-  .abyss-settings-story__description {
+  .abyss-sidebar-nav-story__description {
     font-size: 14px;
     color: rgba(255, 255, 255, 0.72);
   }
 
-  .abyss-settings-story__note {
+  .abyss-sidebar-nav-story__note {
     font-size: 12px;
     color: rgba(255, 255, 255, 0.5);
   }
 
-  .abyss-settings-story__swatches {
+  .abyss-sidebar-nav-story__swatches {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(92px, 1fr));
     gap: 12px;
   }
 
-  .abyss-settings-story__swatch {
+  .abyss-sidebar-nav-story__swatch {
     display: flex;
     flex-direction: column;
     gap: 8px;
@@ -109,7 +109,7 @@ const SETTINGS_CONTENT_STORY_STYLES = `
     box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.08);
   }
 
-  .abyss-settings-story__swatch-preview {
+  .abyss-sidebar-nav-story__swatch-preview {
     display: block;
     width: 100%;
     aspect-ratio: 1 / 1;
@@ -117,13 +117,13 @@ const SETTINGS_CONTENT_STORY_STYLES = `
     box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.14);
   }
 
-  .abyss-settings-story__swatch-label {
+  .abyss-sidebar-nav-story__swatch-label {
     font-size: 12px;
     text-align: center;
     color: rgba(255, 255, 255, 0.78);
   }
 
-  .abyss-settings-story__keybind {
+  .abyss-sidebar-nav-story__keybind {
     padding: 12px 14px;
     border-radius: 16px;
     background: rgba(255, 255, 255, 0.04);
@@ -142,7 +142,7 @@ const tabs = [
 ];
 </script>
 
-<AbyssSettings :tabs="tabs" model-value="appearance">
+<AbyssSidebarNav :tabs="tabs" model-value="appearance">
   <template #appearance>
     <AbyssCard title="Gradient tła">...</AbyssCard>
   </template>
@@ -160,10 +160,10 @@ const tabs = [
     <AbyssCard title="Skala interfejsu">...</AbyssCard>
     <AbyssCard title="Uruchamianie aplikacji">...</AbyssCard>
   </template>
-</AbyssSettings>`;
+</AbyssSidebarNav>`;
 
 const AppearanceTabPreview = defineComponent({
-  name: 'AbyssSettingsStoryAppearanceTabPreview',
+  name: 'AbyssSidebarNavStoryAppearanceTabPreview',
   components: {
     AbyssCard,
   },
@@ -180,28 +180,28 @@ const AppearanceTabPreview = defineComponent({
     };
   },
   template: `
-    <div class="abyss-settings-story__tab">
-      <AbyssCard class="abyss-settings-story__card" title="Gradient tła">
+    <div class="abyss-sidebar-nav-story__tab">
+      <AbyssCard class="abyss-sidebar-nav-story__card" title="Gradient tła">
         <template #header-prepend>
           <q-icon name="sym_r_palette" size="20px" />
         </template>
 
         <template #content>
-          <p class="abyss-settings-story__description">
+          <p class="abyss-sidebar-nav-story__description">
             Wybierz preset gradientu tła dla aplikacji i utrzymaj spójny kontrast na kartach.
           </p>
 
-          <div class="abyss-settings-story__swatches">
+          <div class="abyss-sidebar-nav-story__swatches">
             <div
               v-for="preset in presets"
               :key="preset.label"
-              class="abyss-settings-story__swatch"
+              class="abyss-sidebar-nav-story__swatch"
             >
               <span
-                class="abyss-settings-story__swatch-preview"
+                class="abyss-sidebar-nav-story__swatch-preview"
                 :style="resolveGradientStyle(preset.colors)"
               />
-              <span class="abyss-settings-story__swatch-label">{{ preset.label }}</span>
+              <span class="abyss-sidebar-nav-story__swatch-label">{{ preset.label }}</span>
             </div>
           </div>
         </template>
@@ -211,7 +211,7 @@ const AppearanceTabPreview = defineComponent({
 });
 
 const SecurityTabPreview = defineComponent({
-  name: 'AbyssSettingsStorySecurityTabPreview',
+  name: 'AbyssSidebarNavStorySecurityTabPreview',
   components: {
     AbyssCard,
     AbyssToggle,
@@ -224,9 +224,9 @@ const SecurityTabPreview = defineComponent({
     };
   },
   template: `
-    <div class="abyss-settings-story__tab">
+    <div class="abyss-sidebar-nav-story__tab">
       <AbyssCard
-        class="abyss-settings-story__card"
+        class="abyss-sidebar-nav-story__card"
         title="Blokada aplikacji"
       >
         <template #header-prepend>
@@ -246,7 +246,7 @@ const SecurityTabPreview = defineComponent({
 });
 
 const DataTabPreview = defineComponent({
-  name: 'AbyssSettingsStoryDataTabPreview',
+  name: 'AbyssSidebarNavStoryDataTabPreview',
   components: {
     AbyssButton,
     AbyssCard,
@@ -254,14 +254,14 @@ const DataTabPreview = defineComponent({
     AbyssInfo,
   },
   template: `
-    <div class="abyss-settings-story__tab">
-      <AbyssCard class="abyss-settings-story__card" title="Konto">
+    <div class="abyss-sidebar-nav-story__tab">
+      <AbyssCard class="abyss-sidebar-nav-story__card" title="Konto">
         <template #header-prepend>
           <q-icon name="sym_r_person" size="20px" />
         </template>
 
         <template #content>
-          <p class="abyss-settings-story__description">
+          <p class="abyss-sidebar-nav-story__description">
             Opcjonalne logowanie synchronizuje notatki z chmurą.
           </p>
 
@@ -281,13 +281,13 @@ const DataTabPreview = defineComponent({
         </template>
       </AbyssCard>
 
-      <AbyssCard class="abyss-settings-story__card" title="Kopia zapasowa">
+      <AbyssCard class="abyss-sidebar-nav-story__card" title="Kopia zapasowa">
         <template #header-prepend>
           <q-icon name="sym_r_database" size="20px" />
         </template>
 
         <template #content>
-          <p class="abyss-settings-story__description">
+          <p class="abyss-sidebar-nav-story__description">
             Eksportuj notatki do pliku JSON albo odtwórz dane z wcześniej zapisanej kopii.
           </p>
 
@@ -306,7 +306,7 @@ const DataTabPreview = defineComponent({
         </template>
       </AbyssCard>
 
-      <AbyssCard class="abyss-settings-story__card" title="Reset danych">
+      <AbyssCard class="abyss-sidebar-nav-story__card" title="Reset danych">
         <template #header-prepend>
           <q-icon name="sym_r_delete_forever" size="20px" />
         </template>
@@ -330,7 +330,7 @@ const DataTabPreview = defineComponent({
 });
 
 const AccessibilityTabPreview = defineComponent({
-  name: 'AbyssSettingsStoryAccessibilityTabPreview',
+  name: 'AbyssSidebarNavStoryAccessibilityTabPreview',
   components: {
     AbyssCard,
     AbyssInfo,
@@ -359,8 +359,8 @@ const AccessibilityTabPreview = defineComponent({
     };
   },
   template: `
-    <div class="abyss-settings-story__tab">
-      <AbyssCard class="abyss-settings-story__card" title="Skala interfejsu">
+    <div class="abyss-sidebar-nav-story__tab">
+      <AbyssCard class="abyss-sidebar-nav-story__card" title="Skala interfejsu">
         <template #header-prepend>
           <q-icon name="sym_r_zoom_in_map" size="20px" />
         </template>
@@ -380,13 +380,13 @@ const AccessibilityTabPreview = defineComponent({
         </template>
       </AbyssCard>
 
-      <AbyssCard class="abyss-settings-story__card" title="Skrót globalny">
+      <AbyssCard class="abyss-sidebar-nav-story__card" title="Skrót globalny">
         <template #header-prepend>
           <q-icon name="sym_r_window" size="20px" />
         </template>
 
         <template #content>
-          <p class="abyss-settings-story__description">
+          <p class="abyss-sidebar-nav-story__description">
             Włącz skrót do szybkiego tworzenia notatki bez przechodzenia do okna aplikacji.
           </p>
 
@@ -396,7 +396,7 @@ const AccessibilityTabPreview = defineComponent({
             full-width
           />
 
-          <div class="abyss-settings-story__keybind">Ctrl + Shift + M</div>
+          <div class="abyss-sidebar-nav-story__keybind">Ctrl + Shift + M</div>
 
           <AbyssInfo type="warning" icon="warning" title="Uwaga">
             Upewnij się, że skrót nie koliduje z globalnymi skrótami innych aplikacji.
@@ -405,7 +405,7 @@ const AccessibilityTabPreview = defineComponent({
       </AbyssCard>
 
       <AbyssCard
-        class="abyss-settings-story__card"
+        class="abyss-sidebar-nav-story__card"
         title="Uruchamianie aplikacji"
       >
         <template #header-prepend>
@@ -431,16 +431,16 @@ const AccessibilityTabPreview = defineComponent({
   `,
 });
 
-const meta: Meta<typeof AbyssSettings> = {
-  title: 'UI/AbyssSettings',
-  component: AbyssSettings,
+const meta: Meta<typeof AbyssSidebarNav> = {
+  title: 'UI/AbyssSidebarNav',
+  component: AbyssSidebarNav,
   tags: ['autodocs'],
   parameters: {
     layout: 'fullscreen',
     docs: {
       description: {
         component:
-          'Komponent ustawień renderujący listę sekcji i zawartość aktywnej zakładki. Przy szerokim viewportcie pokazuje sidebar oraz panel treści obok siebie, a przy wąskim przełącza się między listą sekcji i widokiem szczegółów. Treść poszczególnych sekcji przekazywana jest przez sloty nazwane tak samo jak `id` elementów z `tabs`, na przykład `appearance` albo `security`. Dodatkowe elementy wewnątrz sidebara można wstawić przez sloty `sidebar-prepend` i `sidebar-append` renderowane odpowiednio przed i po liście zakładek.',
+          'Komponent nawigacji bocznej z zakładkami renderujący listę sekcji i zawartość aktywnej zakładki. Przy szerokim viewportcie pokazuje sidebar oraz panel treści obok siebie, a przy wąskim przełącza się między listą sekcji i widokiem szczegółów. Na `device="desktop"` i `device="web"` sidebar oraz panel treści używają mixin scrollbara. Treść poszczególnych sekcji przekazywana jest przez sloty nazwane tak samo jak `id` elementów z `tabs`, na przykład `appearance` albo `security`. Dodatkowe elementy wewnątrz sidebara można wstawić przez sloty `sidebar-prepend` i `sidebar-append` renderowane odpowiednio przed i po liście zakładek.',
       },
     },
   },
@@ -448,16 +448,16 @@ const meta: Meta<typeof AbyssSettings> = {
     tabs: {
       control: false,
       description:
-        'Lista sekcji ustawień. Każdy obiekt definiuje `id`, etykietę oraz opcjonalną ikonę. Wartość `id` musi odpowiadać nazwie slotu z treścią danej sekcji.',
+        'Lista sekcji nawigacji. Każdy obiekt definiuje `id`, etykietę oraz opcjonalną ikonę. Wartość `id` musi odpowiadać nazwie slotu z treścią danej sekcji.',
       table: {
-        type: { summary: 'AbyssSettingsTab[]' },
+        type: { summary: 'AbyssSidebarNavTab[]' },
       },
     },
     modelValue: {
       control: 'select',
       options: ['', ...TABS.map((tab) => tab.id)],
       description:
-        "Id aktywnej sekcji ustawień. Wartość `''` pozostawia wybór komponentowi, który wtedy ustawia pierwszą pozycję z listy `tabs` jako aktywną.",
+        "Id aktywnej sekcji. Wartość `''` pozostawia wybór komponentowi, który wtedy ustawia pierwszą pozycję z listy `tabs` jako aktywną.",
       table: {
         type: { summary: 'string' },
         defaultValue: { summary: "''" },
@@ -472,19 +472,29 @@ const meta: Meta<typeof AbyssSettings> = {
         defaultValue: { summary: 'false' },
       },
     },
+    device: {
+      control: 'select',
+      options: ['desktop', 'web', 'mobile'],
+      description:
+        'Kontekst urządzenia shellu aplikacji. Mixin scrollbara stosowany jest w układzie desktopowym dla `desktop` i `web`.',
+      table: {
+        type: { summary: "'desktop' | 'web' | 'mobile'" },
+        defaultValue: { summary: "'desktop'" },
+      },
+    },
   },
 };
 export default meta;
 
-type Story = StoryObj<typeof AbyssSettings>;
+type Story = StoryObj<typeof AbyssSidebarNav>;
 
 const Wrapper = defineComponent({
-  name: 'AbyssSettingsStoryWrapper',
+  name: 'AbyssSidebarNavStoryWrapper',
   components: {
     AbyssTemplate,
     AbyssNavigation,
     AbyssBackground,
-    AbyssSettings,
+    AbyssSidebarNav,
     AbyssButton,
     AppearanceTabPreview,
     SecurityTabPreview,
@@ -493,7 +503,7 @@ const Wrapper = defineComponent({
   },
   props: {
     shellDevice: {
-      type: String as () => 'desktop' | 'mobile',
+      type: String as () => 'desktop' | 'mobile' | 'web',
       required: true,
     },
     shellOrientation: {
@@ -599,7 +609,7 @@ const Wrapper = defineComponent({
         </template>
 
         <template #content>
-          <AbyssSettings
+          <AbyssSidebarNav
             :device="shellDevice"
             :detail-open="isDetailOpen"
             :tabs="tabs"
@@ -643,7 +653,7 @@ const Wrapper = defineComponent({
             <template #accessibility>
               <AccessibilityTabPreview />
             </template>
-          </AbyssSettings>
+          </AbyssSidebarNav>
         </template>
       </AbyssTemplate>
     </div>
@@ -666,6 +676,36 @@ export const Desktop: Story = {
   render: (args) => ({
     components: { Wrapper },
     setup: () => ({ args, shellDevice: 'desktop' as const }),
+    template: `
+      <div style="${STORY_STAGE_STYLE}">
+        <div style="${DESKTOP_FRAME_STYLE}">
+          <Wrapper v-bind="args" :shell-device="shellDevice" />
+        </div>
+      </div>
+    `,
+  }),
+  args: {
+    tabs: TABS,
+    modelValue: 'appearance',
+  },
+};
+
+export const Web: Story = {
+  name: 'Web',
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'Wariant webowy shellu z `device="web"`. Sidebar i panel treści korzystają z mixin scrollbara w układzie desktopowym.',
+      },
+      source: {
+        code: SETTINGS_SOURCE_CODE,
+      },
+    },
+  },
+  render: (args) => ({
+    components: { Wrapper },
+    setup: () => ({ args, shellDevice: 'web' as const }),
     template: `
       <div style="${STORY_STAGE_STYLE}">
         <div style="${DESKTOP_FRAME_STYLE}">
@@ -748,7 +788,7 @@ export const DesktopNarrow: Story = {
     docs: {
       description: {
         story:
-          'Desktopowy shell na wąskim oknie. Komponent settingsów przełącza się tu w układ listy i szczegółu, ale zachowuje desktopowy kontekst strony.',
+          'Desktopowy shell na wąskim oknie. Komponent nawigacji bocznej przełącza się tu w układ listy i szczegółu, ale zachowuje desktopowy kontekst strony.',
       },
       source: {
         code: SETTINGS_SOURCE_CODE,
@@ -824,7 +864,7 @@ export const MobileLandscape: Story = {
       scrollbarlessStyles: MOBILE_STORY_SCROLLBAR_HIDDEN_STYLES,
     }),
     template: `
-      <div class="abyss-settings-story--scrollbarless" style="${STORY_STAGE_STYLE}">
+      <div class="abyss-sidebar-nav-story--scrollbarless" style="${STORY_STAGE_STYLE}">
         <component :is="'style'">{{ scrollbarlessStyles }}</component>
         <div style="${MOBILE_LANDSCAPE_FRAME_STYLE}">
           <Wrapper
@@ -847,3 +887,4 @@ export const MobileLandscape: Story = {
     await expect(await canvas.findByText('Gradient tła')).toBeVisible();
   },
 };
+

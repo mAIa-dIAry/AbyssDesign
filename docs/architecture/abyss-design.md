@@ -80,8 +80,8 @@ Przykład niedozwolonego użycia: karta „Konto” w ustawieniach z `class="set
 | `AbyssCode`        | kolorowany kod (JSON)          | `value`, `language` (`json` \| `abyss-json`), `colorTheme` (domyślnie `one-dark`)       |
 | `AbyssDebug`       | karta debugowania danych       | `data` — cienki wrapper nad `AbyssCode language="abyss-json"`                           |
 | `AbyssTemplate`    | szkielet aplikacji (nav, content) | `device`, `orientation`, `screenRadius`; slot `content` bez scrollu i paddingu        |
-| `AbyssScrollView`  | przewijany obszar strony       | `device`, `padded`, opcjonalny reload (`disabledTop` / `disabledBottom`, domyślnie wyłączony); paddingi treści per `device` |
-| `AbyssSettings`    | układ ustawień (sidebar + detail) | własny scroll paneli; nie wymaga `AbyssScrollView` na poziomie strony                 |
+| `AbyssScrollView`  | przewijany obszar strony       | `device`, `padded`, opcjonalny reload; padding boczny i dolny per `device` (góra: strona) |
+| `AbyssSidebarNav`  | układ sidebar + detail (nawigacja zakładek) | własny scroll paneli z mixin scrollbara na `desktop`/`web`; nie wymaga `AbyssScrollView` na poziomie strony |
 
 ---
 
@@ -92,14 +92,15 @@ Podział odpowiedzialności między komponentami layoutu:
 | Komponent | Scroll | Padding treści |
 | --------- | ------ | -------------- |
 | `AbyssTemplate` → slot `content` | **Nie** — `overflow: hidden` | **Nie** |
-| `AbyssScrollView` | **Tak** — viewport przewija treść | **Tak** — domyślne insety zależne od `device` (`padded`, domyślnie `true`) |
-| `AbyssSettings` | **Tak** — wewnętrznie w sidebarze i panelu detail | Własne insety paneli |
+| `AbyssScrollView` | **Tak** — viewport przewija treść | **Tak** — boki i dół per `device`; góra `0` (inset u góry na stronie) |
+| `AbyssSidebarNav` | **Tak** — wewnętrznie w sidebarze i panelu treści (`desktop`/`web`: mixin scrollbara) | Własne insety paneli |
 | Edytor / full-bleed | Własny layout 100% wysokości | W komponencie domenowym |
 
 ### Presety paddingów `AbyssScrollView`
 
-- **desktop / web:** `24px` ze wszystkich stron
-- **mobile:** góra `calc(safe-area-inset-top + 12px)`, boki `8px`, dół `24px`
+- **góra:** `0` — inset u góry zapewnia strona (toolbar, `AbyssNavHeader`, safe-area w layoucie strony)
+- **desktop / web:** boki i dół `24px`
+- **mobile:** boki `8px`, dół `24px`
 - Nadpisanie: propsy `paddingTop`, `paddingInline`, `paddingBottom` (px)
 
 ### Odświeżanie list (reload)
@@ -112,9 +113,12 @@ Podział odpowiedzialności między komponentami layoutu:
 
 ```vue
 <div class="page-example">
+  <div class="page-example__toolbar">
+    <!-- stały nagłówek / toolbar z własnym paddingiem u góry -->
+  </div>
   <div class="page-example__content">
     <AbyssScrollView :device="device" class="page-example__scroll">
-      <!-- treść -->
+      <!-- przewijalna treść -->
     </AbyssScrollView>
   </div>
 </div>
@@ -466,7 +470,7 @@ Prop `expandable` lub obecność slotu `row-expand` aktywuje kolumnę +/- i wier
 - Nie używaj natywnych selektorów daty/czasu systemowych.
 - Nie używaj `AbyssInfo` z `v-if` / `v-show` do pokazywania sukcesu lub błędu po akcji użytkownika — użyj Quasar Notify.
 - Nie dodawaj zagnieżdżonych pionowych scrollbarów w treści `AbyssDialog` — przewijaj wyłącznie body dialogu.
-- Nie dodawaj paddingu ani `overflow: auto` na wrapperze contentu `AbyssTemplate` — to odpowiedzialność `AbyssScrollView` lub `AbyssSettings`.
+- Nie dodawaj paddingu ani `overflow: auto` na wrapperze contentu `AbyssTemplate` — to odpowiedzialność `AbyssScrollView` lub `AbyssSidebarNav`.
 - Nie uzależniaj scrollu strony od ujemnych marginesów kompensujących padding szablonu.
 
 ---

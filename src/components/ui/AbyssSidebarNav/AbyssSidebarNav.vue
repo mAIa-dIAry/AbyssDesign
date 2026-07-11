@@ -1,26 +1,26 @@
-﻿<template>
+<template>
   <div
     ref="containerEl"
-    class="abyss-settings"
+    class="abyss-sidebar-nav"
     :class="[
-      `abyss-settings--${layoutMode}`,
-      `abyss-settings--device-${props.device}`,
+      `abyss-sidebar-nav--${layoutMode}`,
+      `abyss-sidebar-nav--device-${props.device}`,
     ]"
   >
     <aside
       v-if="showListPane"
       :class="[
         isMobile
-          ? 'abyss-settings__pane abyss-settings__pane--list'
-          : 'abyss-settings__sidebar',
+          ? 'abyss-sidebar-nav__pane abyss-sidebar-nav__pane--list'
+          : 'abyss-sidebar-nav__sidebar',
       ]"
     >
-      <div class="abyss-settings__sidebar-content">
+      <div class="abyss-sidebar-nav__sidebar-content">
         <slot name="sidebar-prepend" />
 
         <AbyssSeparator v-if="hasSidebarPrepend" />
 
-        <div class="abyss-settings__sidebar-list">
+        <div class="abyss-sidebar-nav__sidebar-list">
           <AbyssButton
             v-for="tab in tabs"
             :key="tab.id"
@@ -29,9 +29,9 @@
             full-width
             v-bind="getTabButtonProps(tab)"
             :class="[
-              'abyss-settings__tab-button',
+              'abyss-sidebar-nav__tab-button',
               {
-                'abyss-settings__tab-button--mobile': isMobile,
+                'abyss-sidebar-nav__tab-button--mobile': isMobile,
               },
             ]"
             @click="handleTabClick(tab.id)"
@@ -49,12 +49,12 @@
       :key="detailPaneKey"
       :class="[
         isMobile
-          ? 'abyss-settings__pane abyss-settings__pane--detail'
-          : 'abyss-settings__content',
+          ? 'abyss-sidebar-nav__pane abyss-sidebar-nav__pane--detail'
+          : 'abyss-sidebar-nav__content',
       ]"
     >
       <template v-if="isMobile">
-        <header class="abyss-settings__app-bar">
+        <header class="abyss-sidebar-nav__app-bar">
           <AbyssButton
             icon="sym_r_arrow_back"
             embedded
@@ -66,8 +66,8 @@
             :label="activeTab?.label ?? ''"
           />
         </header>
-        <div class="abyss-settings__detail-content">
-          <div class="abyss-settings__detail-content-inner">
+        <div class="abyss-sidebar-nav__detail-content">
+          <div class="abyss-sidebar-nav__detail-content-inner">
             <slot v-if="activeId" :name="activeId" :active-id="activeId" />
           </div>
         </div>
@@ -94,22 +94,28 @@ import { useI18n } from 'vue-i18n';
 import AbyssButton from '@/components/ui/AbyssButton/AbyssButton.vue';
 import AbyssSeparator from '@/components/ui/AbyssSeparator/AbyssSeparator.vue';
 import AbyssTitle from '@/components/ui/AbyssTitle/AbyssTitle.vue';
-import { ABYSS_SETTINGS_MOBILE_MAX_WIDTH } from './AbyssSettings.constants';
+import { ABYSS_SIDEBAR_NAV_MOBILE_MAX_WIDTH } from './AbyssSidebarNav.constants';
 
-export interface AbyssSettingsTab {
+export interface AbyssSidebarNavTab {
   id: string;
   label: string;
   icon?: string;
 }
 
-export interface AbyssSettingsProps {
-  device?: 'desktop' | 'mobile';
-  tabs: AbyssSettingsTab[];
+export interface AbyssSidebarNavProps {
+  device?: 'desktop' | 'mobile' | 'web';
+  tabs: AbyssSidebarNavTab[];
   modelValue?: string;
   detailOpen?: boolean;
 }
 
-const props = withDefaults(defineProps<AbyssSettingsProps>(), {
+/** @deprecated Use AbyssSidebarNavTab */
+export type AbyssSettingsTab = AbyssSidebarNavTab;
+
+/** @deprecated Use AbyssSidebarNavProps */
+export type AbyssSettingsProps = AbyssSidebarNavProps;
+
+const props = withDefaults(defineProps<AbyssSidebarNavProps>(), {
   device: 'desktop',
   modelValue: '',
   detailOpen: false,
@@ -129,7 +135,7 @@ const emit = defineEmits<{
 const internalId = ref<string>(props.modelValue || props.tabs[0]?.id || '');
 
 const isMobile = computed(
-  () => containerWidth.value <= ABYSS_SETTINGS_MOBILE_MAX_WIDTH,
+  () => containerWidth.value <= ABYSS_SIDEBAR_NAV_MOBILE_MAX_WIDTH,
 );
 const isSinglePageMode = computed(
   () => hasMeasuredLayout.value && !isMobile.value,
@@ -230,7 +236,7 @@ function handleTabClick(id: string) {
   emit('open', id);
 }
 
-function getTabButtonProps(tab: AbyssSettingsTab) {
+function getTabButtonProps(tab: AbyssSidebarNavTab) {
   return {
     ...(tab.icon ? { icon: tab.icon } : {}),
     iconRight: 'sym_r_chevron_right',
@@ -252,8 +258,8 @@ function back() {
 </script>
 
 <style lang="scss" scoped>
-.abyss-settings {
-  .abyss-settings__sidebar-list {
+.abyss-sidebar-nav {
+  .abyss-sidebar-nav__sidebar-list {
     :deep(.abyss-button) {
       .q-btn__content {
         width: 100%;
@@ -267,7 +273,7 @@ function back() {
     }
   }
 
-  .abyss-settings__sidebar {
+  .abyss-sidebar-nav__sidebar {
     overflow: auto;
     min-height: 0;
 
@@ -292,14 +298,21 @@ function back() {
     height: 100%;
     overflow: hidden;
 
-    .abyss-settings__sidebar {
+    &:not(.abyss-sidebar-nav--device-mobile) {
+      .abyss-sidebar-nav__sidebar,
+      .abyss-sidebar-nav__content {
+        @include scrollbar;
+      }
+    }
+
+    .abyss-sidebar-nav__sidebar {
       max-width: 320px;
       flex: 1;
       min-width: 240px;
       box-shadow: $shadow-sidebar;
     }
 
-    .abyss-settings__content {
+    .abyss-sidebar-nav__content {
       background: rgba(black, 0.25);
       padding: 24px;
       flex: 2;
@@ -307,7 +320,7 @@ function back() {
       min-height: 0;
     }
 
-    &.abyss-settings--device-mobile {
+    &.abyss-sidebar-nav--device-mobile {
       --landscape-safe-top: env(safe-area-inset-top, 0px);
       --landscape-safe-bottom: env(safe-area-inset-bottom, 0px);
       --landscape-bottom-offset: max(
@@ -316,21 +329,21 @@ function back() {
       );
       height: 100%;
 
-      .abyss-settings__sidebar {
+      .abyss-sidebar-nav__sidebar {
         max-width: 280px;
       }
 
-      .abyss-settings__sidebar-content {
+      .abyss-sidebar-nav__sidebar-content {
         padding-top: var(--landscape-safe-top);
         padding-bottom: calc(var(--landscape-bottom-offset) - 8px);
       }
 
-      .abyss-settings__sidebar-list {
+      .abyss-sidebar-nav__sidebar-list {
         gap: 2px;
         padding: 8px 6px;
       }
 
-      .abyss-settings__content {
+      .abyss-sidebar-nav__content {
         background: linear-gradient(
           to right,
           rgba(black, 0.25) 0,
@@ -338,7 +351,7 @@ function back() {
           rgba(black, 0) 100%
         );
         padding: calc(8px + var(--landscape-safe-top)) 28px
-          calc(8px + var(--landscape-safe-bottom)) 16px;
+          calc(8px + var(--landscape-bottom-offset)) 16px;
       }
     }
   }
@@ -347,15 +360,15 @@ function back() {
     height: 100%;
     overflow: hidden;
 
-    &.abyss-settings--device-desktop {
+    &.abyss-sidebar-nav--device-desktop {
       height: 100%;
 
-      .abyss-settings__detail-content {
+      .abyss-sidebar-nav__detail-content {
         background: rgba(black, 0.25);
       }
     }
 
-    .abyss-settings__pane {
+    .abyss-sidebar-nav__pane {
       height: 100%;
       min-height: 0;
 
@@ -373,7 +386,7 @@ function back() {
         display: flex;
         flex-direction: column;
 
-        .abyss-settings__app-bar {
+        .abyss-sidebar-nav__app-bar {
           display: flex;
           align-items: center;
           box-shadow: $shadow-sidebar;
@@ -385,7 +398,7 @@ function back() {
           }
         }
 
-        .abyss-settings__detail-content {
+        .abyss-sidebar-nav__detail-content {
           background: linear-gradient(
             to bottom,
             rgba(black, 0.25) 0,
@@ -393,7 +406,7 @@ function back() {
             rgba(black, 0) 100%
           );
 
-          .abyss-settings--device-desktop & {
+          .abyss-sidebar-nav--device-desktop & {
             background: rgba(black, 0.25);
           }
 
@@ -407,8 +420,8 @@ function back() {
       }
     }
 
-    &.abyss-settings--device-desktop {
-      .abyss-settings__detail-content {
+    &.abyss-sidebar-nav--device-desktop {
+      .abyss-sidebar-nav__detail-content {
         background-color: rgba(black, 0.25);
         background-image: none;
       }

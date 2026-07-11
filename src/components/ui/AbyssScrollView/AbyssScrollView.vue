@@ -87,7 +87,7 @@ export interface AbyssScrollViewProps {
   device: "mobile" | "desktop" | "web";
   /** Stosuje standardowe paddingi treści strony. */
   padded?: boolean;
-  /** Nadpisanie górnego paddingu treści (px). */
+  /** Nadpisanie górnego paddingu treści (px). Domyślnie `0` — inset u góry zapewnia strona (toolbar, nagłówek). */
   paddingTop?: number;
   /** Nadpisanie bocznego paddingu treści (px). */
   paddingInline?: number;
@@ -375,11 +375,7 @@ const contentPaddingTop = computed(() => {
     return `${props.paddingTop}px`;
   }
 
-  if (props.device === "mobile") {
-    return "calc(var(--safe-area-top-offset, env(safe-area-inset-top, 0px)) + 12px)";
-  }
-
-  return "24px";
+  return "0px";
 });
 
 const contentPaddingInline = computed(() => {
@@ -439,7 +435,6 @@ const bottomSectionInsetPx = computed(() => {
 });
 
 const rootStyle = computed(() => ({
-  "--safe-area-top-offset": "env(safe-area-inset-top, 0px)",
   "--abyss-scroll-view-loader-height": `${loaderHeight.value}px`,
   "--abyss-scroll-view-indicator-padding-top": `${indicatorPaddingTopPx.value}px`,
   "--abyss-scroll-view-indicator-padding-bottom": `${indicatorPaddingBottomPx.value}px`,
@@ -1169,7 +1164,6 @@ defineExpose({
 
 <style scoped lang="scss">
 .abyss-scroll-view {
-  --safe-area-top-offset: env(safe-area-inset-top, 0px);
   display: flex;
   flex-direction: column;
   min-height: 0;
@@ -1183,18 +1177,6 @@ defineExpose({
     overscroll-behavior: contain;
     -webkit-overflow-scrolling: touch;
     @include scrollbar;
-
-    &.device--mobile {
-      mask-image: linear-gradient(
-        to bottom,
-        transparent 0,
-        rgba(0, 0, 0, 0.3) calc(var(--safe-area-top-offset) * 0.5),
-        black calc(var(--safe-area-top-offset) + 12px),
-        black 100%
-      );
-      mask-repeat: no-repeat;
-      mask-size: 100% 100%;
-    }
   }
 
   &__content {
