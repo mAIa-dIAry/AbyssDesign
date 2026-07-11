@@ -182,6 +182,12 @@
 
     .abyss-button.full-width {
       justify-content: flex-start;
+
+      .q-btn__content {
+        justify-content: flex-start;
+        width: 100%;
+        text-align: left;
+      }
     }
   }
 

@@ -19,7 +19,8 @@ const meta: Meta<typeof AbyssButtonGroup> = {
   argTypes: {
     class: {
       control: 'text',
-      description: 'Dodatkowe klasy CSS dla grupy przycisków',
+      description:
+        'Dodatkowe klasy CSS grupy. Dozwolone w komponentach złożonych. Nie stosuj w standardowych formularzach i kartach.',
       table: {
         defaultValue: { summary: '""' },
       },

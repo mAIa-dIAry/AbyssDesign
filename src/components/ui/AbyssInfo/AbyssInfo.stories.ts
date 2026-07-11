@@ -16,11 +16,14 @@ const meta: Meta<typeof AbyssInfo> = {
     docs: {
       description: {
         component:
-          'Komponent informacyjny AbyssInfo służy do wyświetlania komunikatów kontekstowych: ' +
-          'informacji, ostrzeżeń, błędów, potwierdzeń i hintów. ' +
+          'Komponent informacyjny AbyssInfo służy do **statycznych** komunikatów kontekstowych osadzonych w układzie ekranu: ' +
+          'pustych stanów, ostrzeżeń przed akcją destrukcyjną, trwałych wskazówek. ' +
           'Posiada **wymaganą** ikonę, **wymaganą** treść w domyślnym slocie oraz opcjonalny tytuł. ' +
           'Tło używa semantycznego gradientu (`info`, `warning`, `danger`, `success`, `hint`); ' +
           'lewa kolumna z ikoną pokazuje gradient bez overlay, prawy panel ma półprzezroczysty overlay z białym tytułem i treścią.\n\n' +
+          '> **Feedback po akcjach użytkownika** (sukces zapisu, błąd API, usunięcie rekordu) realizuj przez **Quasar Notify** (`$q.notify`), ' +
+          'nie przez `AbyssInfo`. Nie przełączaj widoczności `AbyssInfo` reaktywnie po operacji — to antywzorzec. ' +
+          'Szczegóły: [`docs/architecture/abyss-design.md`](../../../docs/architecture/abyss-design.md#feedback-po-akcjach-użytkownika).\n\n' +
           '> Użycie bez ikony lub bez treści w slocie jest niedozwolone. ' +
           'Jeśli komunikat nie wymaga calloutu z ikoną, używaj zwykłego tekstu zamiast `AbyssInfo`.\n\n' +
           '### Zalecane ikony i etykiety\n\n' +

@@ -20,7 +20,7 @@ const meta = {
     docs: {
       description: {
         component:
-          'Komponent listy rozwijanej (select) – wrapper na `QSelect` z stylowaniem Abyss Design System. Umożliwia wybór jednej lub wielu wartości z listy opcji. Obsługuje filtrowanie, chipy, własne szablony opcji, walidację, tryb tworzenia nowych wartości i wiele innych funkcji.',
+          'Lista rozwijana Abyss. Wybór jednej lub wielu wartości z listy opcji. Obsługuje filtrowanie, chipy, sloty szablonów opcji, walidację i tryb tworzenia nowych wartości.',
       },
     },
   },
@@ -129,8 +129,16 @@ const meta = {
         'Sposób wyświetlania listy opcji. Domyślnie używa menu także na mobile, żeby zachowanie było spójne z desktopem.',
       table: { defaultValue: { summary: 'menu' } },
     },
-    style: { control: 'object' },
-    class: { control: 'text' },
+    style: {
+      control: 'object',
+      description:
+        'Dodatkowe style CSS. Dozwolone w komponentach złożonych (np. edytor). Nie stosuj w standardowych formularzach i kartach.',
+    },
+    class: {
+      control: 'text',
+      description:
+        'Dodatkowe klasy CSS. Dozwolone w komponentach złożonych (np. edytor). Nie stosuj w standardowych formularzach i kartach.',
+    },
   },
 } satisfies Meta<AbyssSelectStoryArgs>;
 

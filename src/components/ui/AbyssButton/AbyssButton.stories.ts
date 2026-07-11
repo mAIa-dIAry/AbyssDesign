@@ -93,7 +93,16 @@ const meta: Meta<AbyssButtonStoryArgs> = {
     },
     style: {
       control: 'object',
-      description: 'Dodatkowe style CSS dla przycisku',
+      description:
+        'Dodatkowe style CSS. Dozwolone w komponentach złożonych aplikacji (np. edytor). Nie stosuj w standardowych formularzach i kartach.',
+      table: {
+        defaultValue: { summary: '""' },
+      },
+    },
+    class: {
+      control: 'text',
+      description:
+        'Dodatkowe klasy CSS. Dozwolone w komponentach złożonych aplikacji (np. edytor). Nie stosuj w standardowych formularzach i kartach.',
       table: {
         defaultValue: { summary: '""' },
       },
@@ -162,7 +171,7 @@ const meta: Meta<AbyssButtonStoryArgs> = {
     gradientColors: {
       control: 'object',
       description:
-        'Kolor semantyczny akcji: `theme` (globalne CTA), `success` (potwierdzenie), `info` (zapis/edycja), `warning` (uwaga, istotne zmiany), `danger` (nieodwracalne), `hint` (informacja/poboczny proces). Tablica CSS nadpisuje kolory motywu.',
+        'Kolor semantyczny akcji: `theme`, `success`, `info`, `warning`, `danger`, `hint`. Używaj wyłącznie kluczy semantycznych.',
       table: {
         type: { summary: 'string[] | SemanticGradientKey' },
         defaultValue: { summary: 'undefined' },
@@ -248,20 +257,13 @@ type GradientColorOption = {
   gradientColors: GradientColorsInput;
 };
 
-const CUSTOM_GRADIENT_COLORS = ['#FF7194', '#028096'] as const;
-
-const GRADIENT_COLOR_OPTIONS: GradientColorOption[] = [
-  ...SEMANTIC_GRADIENTS.map((gradient) => ({
+const GRADIENT_COLOR_OPTIONS: GradientColorOption[] = SEMANTIC_GRADIENTS.map(
+  (gradient) => ({
     id: gradient.key,
     label: gradient.label,
     gradientColors: gradient.key,
-  })),
-  {
-    id: 'custom',
-    label: 'Własne kolory',
-    gradientColors: [...CUSTOM_GRADIENT_COLORS],
-  },
-];
+  }),
+);
 
 function gradientColorOptionSourceCode(
   option: GradientColorOption,
@@ -1161,7 +1163,7 @@ export const SemanticGradientColors: Story = {
   parameters: {
     docs: {
       description: {
-        story: `Wszystkie warianty prop \`gradientColors\`: \`${SEMANTIC_GRADIENTS.map((g) => g.key).join('`, `')}\` oraz własna tablica kolorów CSS. Zobacz story „Zastosowanie kolorów semantycznych” i opisy w \`semantic-gradients.ts\`.`,
+        story: `Wszystkie klucze semantyczne prop \`gradientColors\`: \`${SEMANTIC_GRADIENTS.map((g) => g.key).join('`, `')}\`. Zobacz story „Zastosowanie kolorów semantycznych”.`,
       },
       source: {
         code: gradientColorOptionsSourceCode(),
@@ -1177,7 +1179,7 @@ export const FlatSemanticGradientColors: Story = {
   parameters: {
     docs: {
       description: {
-        story: `Płaski wariant (\`flat\`) dla wszystkich opcji \`gradientColors\`: semantyczne klucze (\`${SEMANTIC_GRADIENTS.map((g) => g.key).join('`, `')}\`, w tym \`theme\`) oraz własna tablica kolorów CSS.`,
+        story: `Płaski wariant (\`flat\`) dla wszystkich kluczy \`gradientColors\`: \`${SEMANTIC_GRADIENTS.map((g) => g.key).join('`, `')}\`.`,
       },
       source: {
         code: gradientColorOptionsSourceCode(true),

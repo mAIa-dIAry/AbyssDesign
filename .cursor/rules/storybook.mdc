@@ -6,24 +6,17 @@ alwaysApply: false
 
 # Wytyczne: Storybook (Abyss Design)
 
+## Dokumentacja w stories
+
+- Dokumentuj **propsy, sloty i zdarzenia** — w tym `class` i `style`, gdy są częścią publicznego API komponentu.
+- Przy opisie `class` / `style` zaznacz: dozwolone przy budowie **komponentów złożonych** (np. edytor); **niedozwolone** w wzorcach formularzy i standardowych kart.
+- W `docs.source.code` dla wzorców formularza/karty (`AbyssForm`, ustawienia, auth) — tylko propsy Abyss, bez klas strony ani nadpisań SCSS.
+- Kolory semantyczne przycisków w formularzach/kartach: wyłącznie klucze `gradient-colors` (`theme`, `success`, `info`, `warning`, `danger`, `hint`).
+
 ## Przyciski w stories
 
 - Używaj wyłącznie `AbyssButton` — nigdy natywnego `<button>`.
-- W układach `flex-direction: column` ustaw `align-items: flex-start` na kontenerze (lub `align-self: flex-start` na przycisku). Domyślne `align-items: stretch` rozciąga helper/trigger na całą szerokość kontenera.
-- Pełna szerokość przycisku tylko przez jawny prop `full-width` — nie przez layout flex.
-
-```html
-<!-- Dobrze -->
-<div style="display: flex; flex-direction: column; align-items: flex-start; gap: 8px;">
-  <AbyssButton label="Zmień kolory" size="small" @click="changeColors" />
-  <AbyssGradientBox :colors="colors" />
-</div>
-
-<!-- Źle — przycisk rozciąga się na całą szerokość -->
-<div style="display: flex; flex-direction: column; gap: 8px;">
-  <AbyssButton label="Zmień kolory" size="small" @click="changeColors" />
-</div>
-```
+- Pełna szerokość przycisku tylko przez prop `full-width`.
 
 ## Pozostałe zasady
 

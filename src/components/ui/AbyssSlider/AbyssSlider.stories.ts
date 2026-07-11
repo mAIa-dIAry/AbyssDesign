@@ -14,7 +14,7 @@ const meta: Meta<typeof AbyssSlider> = {
     docs: {
       description: {
         component:
-          'Komponent suwaka (slider) – wrapper na `QSlider` z stylowaniem Abyss Design System. Pozwala użytkownikowi wybrać wartość liczbową z określonego zakresu. Obsługuje etykiety, znaczniki, ograniczenia wewnętrzne, orientację pionową oraz tryb tylko do odczytu.',
+          'Suwak Abyss do wyboru wartości liczbowej z określonego zakresu. Obsługuje etykiety, znaczniki (`markerLabels`), ograniczenia wewnętrzne, orientację pionową i tryb tylko do odczytu.',
       },
     },
   },
@@ -108,8 +108,16 @@ const meta: Meta<typeof AbyssSlider> = {
       control: 'text',
       description: 'Nazwa pola formularza (dla natywnego form submit)',
     },
-    style: { control: 'object' },
-    class: { control: 'text' },
+    style: {
+      control: 'object',
+      description:
+        'Dodatkowe style CSS. Dozwolone w komponentach złożonych (np. edytor). Nie stosuj w standardowych formularzach i kartach.',
+    },
+    class: {
+      control: 'text',
+      description:
+        'Dodatkowe klasy CSS. Dozwolone w komponentach złożonych (np. edytor). Nie stosuj w standardowych formularzach i kartach.',
+    },
   },
 };
 

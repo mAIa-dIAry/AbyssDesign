@@ -66,3 +66,7 @@ defineOptions({
 });
 </script>
 
+<style lang="scss">
+@use 'helpers/dropdown-menu.scss';
+</style>
+

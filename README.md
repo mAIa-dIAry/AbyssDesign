@@ -37,9 +37,9 @@ Po deployu na GitHub Pages dokumentacja komponentów jest dostępna publicznie (
 
 ## Standard systemowy
 
-Kanoniczny dokument reguł projektowych: [`docs/architecture/abyss-design.md`](docs/architecture/abyss-design.md).
+Kanoniczny dokument używania systemu: [`docs/architecture/abyss-design.md`](docs/architecture/abyss-design.md).
 
-Storybook dokumentuje API komponentów; decyzje systemowe (spacing, radius, hierarchia akcji) — w pliku powyżej.
+Storybook dokumentuje API komponentów (propsy, sloty, zdarzenia); reguły formularzy, kart i komponentów złożonych — w pliku powyżej.
 
 ## Integracja z Quasar
 

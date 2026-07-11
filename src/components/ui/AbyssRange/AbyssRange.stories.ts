@@ -14,7 +14,7 @@ const meta: Meta<typeof AbyssRange> = {
     docs: {
       description: {
         component:
-          'Komponent zakresu (range) – wrapper na `QRange` z stylowaniem Abyss Design System. Pozwala użytkownikowi wybrać przedział wartości między minimum a maksimum. Model to obiekt `{ min, max }`. Obsługuje etykiety, znaczniki, ograniczenia wewnętrzne, przeciąganie zakresu i orientację pionową.',
+          'Zakres Abyss do wyboru przedziału wartości `{ min, max }`. Obsługuje etykiety, znaczniki, ograniczenia wewnętrzne, przeciąganie zakresu i orientację pionową.',
       },
     },
   },
@@ -123,8 +123,16 @@ const meta: Meta<typeof AbyssRange> = {
       control: 'text',
       description: 'Nazwa pola formularza (dla natywnego form submit)',
     },
-    style: { control: 'object' },
-    class: { control: 'text' },
+    style: {
+      control: 'object',
+      description:
+        'Dodatkowe style CSS. Dozwolone w komponentach złożonych (np. edytor). Nie stosuj w standardowych formularzach i kartach.',
+    },
+    class: {
+      control: 'text',
+      description:
+        'Dodatkowe klasy CSS. Dozwolone w komponentach złożonych (np. edytor). Nie stosuj w standardowych formularzach i kartach.',
+    },
   },
 };
 

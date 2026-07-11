@@ -12,7 +12,7 @@ const meta: Meta<typeof AbyssProgress> = {
     docs: {
       description: {
         component:
-          'Własny komponent paska postępu. Obsługuje tryb określony (value 0–1) oraz nieokreślony (indeterminate) z animacją CSS.',
+          'Pasek postępu Abyss. Obsługuje tryb określony (`value` 0–1) oraz nieokreślony (`indeterminate`). Domyślny wygląd wystarcza w większości przypadków — modyfikuj wyłącznie udokumentowane propsy (`glow`, `value`, `indeterminate`).',
       },
     },
   },
@@ -21,11 +21,6 @@ const meta: Meta<typeof AbyssProgress> = {
       control: { type: 'range', min: 0, max: 1, step: 0.01 },
       description: 'Wartość postępu od 0 do 1',
       table: { defaultValue: { summary: '0' } },
-    },
-    color: {
-      control: 'color',
-      description: 'Kolor paska postępu (CSS color)',
-      table: { defaultValue: { summary: 'white' } },
     },
     indeterminate: {
       control: 'boolean',
@@ -37,13 +32,31 @@ const meta: Meta<typeof AbyssProgress> = {
       description: 'Czy pasek ma emitować poświatę',
       table: { defaultValue: { summary: 'true' } },
     },
+    color: {
+      control: 'color',
+      description:
+        'Kolor paska postępu. Stosuj w komponentach złożonych (np. wskaźnik w edytorze). W standardowych formularzach/kartach używaj domyślnego wyglądu.',
+      table: { defaultValue: { summary: 'white' } },
+    },
     trackColor: {
       control: 'color',
-      description: 'Kolor tła tracka (CSS color)',
+      description:
+        'Kolor tła tracka. Tylko dla specjalistycznych komponentów złożonych — nie w formularzach/kartach.',
     },
     borderColor: {
       control: 'color',
-      description: 'Kolor obramowania tracka (CSS color)',
+      description:
+        'Kolor obramowania tracka. Tylko dla specjalistycznych komponentów złożonych — nie w formularzach/kartach.',
+    },
+    style: {
+      control: 'object',
+      description:
+        'Dodatkowe style CSS. Dozwolone w komponentach złożonych. Nie stosuj w standardowych formularzach i kartach.',
+    },
+    class: {
+      control: 'text',
+      description:
+        'Dodatkowe klasy CSS. Dozwolone w komponentach złożonych. Nie stosuj w standardowych formularzach i kartach.',
     },
   },
 };
@@ -55,7 +68,7 @@ export const Default: Story = {
   name: 'Domyślny',
   parameters: {
     docs: {
-      description: { story: 'Podstawowy pasek postępu z wartością 60%.' },
+      description: { story: 'Podstawowy pasek postępu z wartością 65%.' },
     },
   },
   args: {
@@ -87,7 +100,7 @@ export const Indeterminate: Story = {
     docs: {
       description: {
         story:
-          'Tryb indeterminate – animacja bez ustalonej wartości, np. podczas ładowania.',
+          'Tryb `indeterminate` — animacja bez ustalonej wartości, np. podczas ładowania.',
       },
     },
   },
@@ -111,16 +124,13 @@ export const NoGlow: Story = {
     docs: {
       description: {
         story:
-          'Wariant bez efektu glow. Używany m.in. w liczniku postępu edytora notatek.',
+          'Wariant z `glow={false}` — kompaktowy wskaźnik postępu, np. w edytorze notatek.',
       },
     },
   },
   args: {
     value: 0.42,
     glow: false,
-    color: 'rgba(255, 255, 255, 0.2)',
-    trackColor: 'rgba(255, 255, 255, 0.02)',
-    borderColor: 'rgba(255, 255, 255, 0.3)',
   },
   render: (args) => ({
     components: { AbyssProgress },
@@ -137,34 +147,5 @@ export const NoGlow: Story = {
     const progress = canvasElement.querySelector('.abyss-progress');
 
     await expect(progress).toHaveClass('abyss-progress--no-glow');
-  },
-};
-
-export const CustomColor: Story = {
-  name: 'Własny kolor',
-  parameters: {
-    docs: {
-      description: {
-        story:
-          'Pasek postępu z niestandardowym kolorem przekazanym przez prop color.',
-      },
-    },
-  },
-  render: () => ({
-    components: { AbyssProgress },
-    template: `
-      <div style="display: flex; flex-direction: column; gap: 16px; width: 320px;">
-        <AbyssProgress :value="0.6" color="hsl(187, 72%, 57%)" />
-        <AbyssProgress :value="0.6" color="hsl(134, 70%, 43%)" />
-        <AbyssProgress :value="0.6" color="hsl(45, 100%, 50%)" />
-        <AbyssProgress :value="0.6" color="hsl(0, 78%, 56%)" />
-      </div>
-    `,
-  }),
-  play: async ({ canvasElement }) => {
-    const bars = canvasElement.querySelectorAll('.abyss-progress');
-    await expect(bars[0]).toHaveStyle({
-      '--progress-color': 'hsl(187, 72%, 57%)',
-    });
   },
 };

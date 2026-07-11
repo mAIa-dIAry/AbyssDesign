@@ -7,9 +7,9 @@ import { Meta } from '@storybook/addon-docs/blocks';
     <span className="abyss-eyebrow">Abyss Design System</span>
     <h1>Abyss Design</h1>
     <p className="abyss-subtitle">
-      {'Kompletny standard stosowania systemu znajduje się w '}
+      {'Standard używania komponentów Abyss (propsy, sloty, wzorce kompozycji) znajduje się w '}
       <span className="abyss-inline-code">docs/architecture/abyss-design.md</span>
-      {'. Ta strona jest wejściem do Storybooka i skrótem do głównych reguł.'}
+      {'. Storybook dokumentuje API poszczególnych komponentów.'}
     </p>
   </div>
 
@@ -28,19 +28,9 @@ import { Meta } from '@storybook/addon-docs/blocks';
           {', gdy potrzebujesz API komponentu, przykładów propsów i scenariuszy interakcji.'}
         </li>
         <li>
-          Traktuj ten landing jako mapę systemu, a nie drugie źródło prawdy dla spacingu,
-          radiusów i hierarchii akcji.
+          Traktuj ten landing jako mapę komponentów, a nie drugie źródło prawdy dla API i reguł
+          propsów.
         </li>
-      </ul>
-    </section>
-
-    <section className="abyss-panel">
-      <h2>Rdzeń standardu</h2>
-      <ul className="abyss-list abyss-list--compact">
-        <li><strong>Spacing:</strong> 4 / 8 / 12 / 16 / 24</li>
-        <li><strong>Border radius:</strong> 6 / 8 / 12</li>
-        <li><strong>Blur:</strong> tylko warstwy tymczasowe</li>
-        <li><strong>CTA:</strong> jedna główna akcja na blok</li>
       </ul>
     </section>
 
@@ -82,6 +72,11 @@ import { Meta } from '@storybook/addon-docs/blocks';
       <section className="abyss-feature-item">
         <h3>Informacja i status</h3>
         <p>AbyssInfo, AbyssProgress, AbyssGradientBadge, AbyssGradientBox, AbyssTimeline, AbyssTimelineItem, AbyssKeybind, AbyssSettings</p>
+        <p>
+          <span className="abyss-inline-code">AbyssInfo</span>
+          {' służy do statycznych komunikatów kontekstowych (pusty stan, ostrzeżenie przed akcją). Powodzenie lub niepowodzenie operacji użytkownika komunikuj przez Quasar Notify — nie przez dynamiczny '}
+          <span className="abyss-inline-code">AbyssInfo</span>.
+        </p>
       </section>
     </div>
 
@@ -96,8 +91,8 @@ import { Meta } from '@storybook/addon-docs/blocks';
       </div>
 
       <div className="abyss-rule">
-        <strong>Nie rozciągaj systemu lokalnie</strong>
-        <p>Nie dodawaj własnych spacingów, radiusów i pseudo-wariantów przycisków dla pojedynczego widoku.</p>
+        <strong>Formularze i karty bez custom styli</strong>
+        <p>W standardowych kartach i formularzach wygląd pochodzi wyłącznie z propsów Abyss. Klasy i style są dozwolone w komponentach złożonych aplikacji (np. edytor).</p>
       </div>
 
       <div className="abyss-rule">
@@ -130,10 +125,10 @@ import { Meta } from '@storybook/addon-docs/blocks';
       </div>
 
       <div className="abyss-link-card">
-        <span>Reguły implementacyjne</span>
-        <div className="abyss-link-stack">
-          <code>.cursor/rules/styling.mdc</code>
-          <code>.cursor/rules/components-ui.mdc</code>
+        <span>Wzorce formularzy i układu</span>
+        <div className="abyss-link-stack abyss-link-stack--wrap">
+          <code>UI/AbyssForm</code>
+          <code>UI/AbyssGrid</code>
         </div>
       </div>
     </div>

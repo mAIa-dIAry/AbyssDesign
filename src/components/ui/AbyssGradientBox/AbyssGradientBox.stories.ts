@@ -30,7 +30,8 @@ const meta: Meta<typeof AbyssGradientBox> = {
     },
     colors: {
       control: 'object',
-      description: 'Kolory gradientu (minimum 2 poprawne kolory CSS)',
+      description:
+        'Kolory gradientu z presetów `GRADIENT_PRESETS` (minimum 2 kolory). Bez propa — domyślny gradient aplikacji.',
       table: {
         type: { summary: 'string[]' },
         defaultValue: { summary: 'undefined (domyślne kolory aplikacji)' },

@@ -1,59 +1,55 @@
 <template>
-  <div class="archive-search-pattern">
-    <div class="archive-search-pattern__toolbar">
-      <AbyssInput
-        v-model="searchQuery"
-        type="search"
-        :placeholder="searchPlaceholder"
-        :loading="isLoading"
-        class="archive-search-pattern__input"
-        @keydown.capture="handleSearchKeydown"
-      >
-        <template #prepend>
-          <div class="archive-search-pattern__search-prepend">
-            <AbyssButton
-              flat
-              size="medium"
-              icon="sym_r_calendar_month"
-              class="icon-button"
-              aria-label="Wybierz datę"
-              title="Wybierz datę"
-              @mousedown.prevent
-            >
-              <q-popup-proxy
-                ref="datePopupRef"
-                class="abyss-date-menu"
-                :breakpoint="0"
-                transition-show="abyss-dialog-jump-down"
-                transition-hide="abyss-dialog-jump-up"
-                @before-show="handleDatePickerBeforeShow"
-              >
-                <AbyssDate
-                  :model-value="datePickerValue"
-                  mask="YYYY-MM-DD"
-                  @update:model-value="handleDatePickerDraftUpdate"
-                  @confirm="handleDatePickerConfirm"
-                  @close="closeDatePopup"
-                />
-              </q-popup-proxy>
-            </AbyssButton>
+  <AbyssGrid row-gap="16px" data-testid="archive-search-pattern">
+    <AbyssInput
+      v-model="searchQuery"
+      type="search"
+      :placeholder="searchPlaceholder"
+      :loading="isLoading"
+      data-testid="archive-search-input"
+      @keydown.capture="handleSearchKeydown"
+    >
+      <template #prepend>
+        <AbyssButton
+          flat
+          size="medium"
+          icon="sym_r_calendar_month"
+          aria-label="Wybierz datę"
+          title="Wybierz datę"
+          data-testid="archive-search-date-trigger"
+          @mousedown.prevent
+        >
+          <q-popup-proxy
+            ref="datePopupRef"
+            class="abyss-date-menu"
+            :breakpoint="0"
+            transition-show="abyss-dialog-jump-down"
+            transition-hide="abyss-dialog-jump-up"
+            @before-show="handleDatePickerBeforeShow"
+          >
+            <AbyssDate
+              :model-value="datePickerValue"
+              mask="YYYY-MM-DD"
+              @update:model-value="handleDatePickerDraftUpdate"
+              @confirm="handleDatePickerConfirm"
+              @close="closeDatePopup"
+            />
+          </q-popup-proxy>
+        </AbyssButton>
 
-            <q-chip
-              v-if="selectedDateToken"
-              removable
-              remove-icon="sym_r_close"
-              dense
-              class="archive-search-pattern__date-chip"
-              @remove="clearDateToken"
-            >
-              {{ `@${selectedDateToken}` }}
-            </q-chip>
-          </div>
-        </template>
-      </AbyssInput>
-    </div>
+        <q-chip
+          v-if="selectedDateToken"
+          removable
+          remove-icon="sym_r_close"
+          dense
+          data-testid="archive-search-date-chip"
+          @remove="clearDateToken"
+        >
+          {{ `@${selectedDateToken}` }}
+        </q-chip>
+      </template>
+    </AbyssInput>
 
-    <div class="archive-search-pattern__controls">
+    <AbyssGrid column-gap="8px" row-gap="8px">
       <AbyssButton
         flat
         size="small"
@@ -72,14 +68,17 @@
         label="Wyczyść filtr daty"
         @click="clearDateToken"
       />
-    </div>
-  </div>
+    </AbyssGrid>
+  </AbyssGrid>
 </template>
 
 <script setup lang="ts">
 import { computed, ref } from 'vue';
 import AbyssButton from '@/components/ui/AbyssButton/AbyssButton.vue';
-import AbyssDate from '@/components/ui/AbyssDate/AbyssDate.vue';
+import AbyssDate, {
+  type AbyssDateModelValue,
+} from '@/components/ui/AbyssDate/AbyssDate.vue';
+import AbyssGrid from '@/components/ui/AbyssGrid/AbyssGrid.vue';
 import AbyssInput from '@/components/ui/AbyssInput/AbyssInput.vue';
 import type { QPopupProxy } from 'quasar';
 
@@ -106,8 +105,8 @@ function handleDatePickerBeforeShow(): void {
     selectedDateToken.value ?? formatDateInputValue(new Date());
 }
 
-function handleDatePickerDraftUpdate(dateValue: string | null): void {
-  if (!dateValue) {
+function handleDatePickerDraftUpdate(dateValue: AbyssDateModelValue): void {
+  if (!dateValue || typeof dateValue !== 'string') {
     return;
   }
 
@@ -157,59 +156,3 @@ function toggleLoading(): void {
   isLoading.value = !isLoading.value;
 }
 </script>
-
-<style scoped lang="scss">
-.archive-search-pattern {
-  width: 100%;
-  max-width: 720px;
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-}
-
-.archive-search-pattern__toolbar {
-  display: flex;
-  width: 100%;
-}
-
-.archive-search-pattern__input {
-  flex: 1 1 auto;
-  width: 100%;
-  min-width: 0;
-}
-
-.archive-search-pattern__search-prepend {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  min-width: 0;
-}
-
-.archive-search-pattern__date-chip.q-chip {
-  background: rgba(white, 0.1);
-  color: white;
-  border: 1px solid rgba(white, 0.12);
-  border-radius: 6px;
-  box-shadow: $shadow-small;
-  display: flex;
-  height: 28px;
-  margin: -14px 0 -14px -12px;
-  padding: 8px;
-
-  :deep(.q-chip__content) {
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-  }
-
-  :deep(.q-chip__icon--remove) {
-    color: rgba(white, 0.65);
-  }
-}
-
-.archive-search-pattern__controls {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-}
-</style>

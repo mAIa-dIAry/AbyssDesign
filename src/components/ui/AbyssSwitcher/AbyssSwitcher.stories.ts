@@ -73,11 +73,13 @@ const meta: Meta<typeof AbyssSwitcher> = {
     },
     style: {
       control: 'object',
-      description: 'Dodatkowe style CSS',
+      description:
+        'Dodatkowe style CSS. Dozwolone w komponentach złożonych (np. edytor). Nie stosuj w standardowych formularzach i kartach.',
     },
     class: {
       control: 'text',
-      description: 'Dodatkowe klasy CSS',
+      description:
+        'Dodatkowe klasy CSS. Dozwolone w komponentach złożonych (np. edytor). Nie stosuj w standardowych formularzach i kartach.',
     },
   },
   args: {

@@ -145,7 +145,8 @@ const meta: Meta<AbyssDialogStoryArgs> = {
     },
     class: {
       control: 'text',
-      description: 'Dodatkowe klasy CSS dla panelu dialogu.',
+      description:
+        'Dodatkowe klasy CSS panelu dialogu. Dozwolone w komponentach złożonych. Nie stosuj w standardowych dialogach formularzowych.',
       table: {
         defaultValue: { summary: '""' },
         type: { summary: 'string | object | array' },
@@ -153,7 +154,8 @@ const meta: Meta<AbyssDialogStoryArgs> = {
     },
     style: {
       control: 'object',
-      description: 'Dodatkowe style CSS dla panelu dialogu.',
+      description:
+        'Dodatkowe style CSS panelu dialogu. Dozwolone w komponentach złożonych. Nie stosuj w standardowych dialogach formularzowych.',
       table: {
         defaultValue: { summary: '""' },
         type: { summary: 'string | object' },

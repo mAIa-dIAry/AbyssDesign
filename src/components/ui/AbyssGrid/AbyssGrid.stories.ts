@@ -79,7 +79,8 @@ const meta: Meta<typeof AbyssGrid> = {
     },
     class: {
       control: 'text',
-      description: 'Dodatkowe klasy CSS dla wrappera.',
+      description:
+        'Dodatkowe klasy CSS wrappera. Dozwolone w komponentach złożonych. Nie stosuj w standardowych formularzach i kartach.',
       table: {
         defaultValue: { summary: '""' },
       },
@@ -194,7 +195,7 @@ export const NarrowContainer: Story = {
 };
 
 export const CustomSpacing: Story = {
-  name: 'Własne odstępy i rzędy',
+  name: 'Większe odstępy (columnGap, rowGap)',
   args: {
     align: 'left',
     maxColumns: 0,
@@ -207,7 +208,7 @@ export const CustomSpacing: Story = {
     docs: {
       description: {
         story:
-          'Wariant pokazujący konfigurację gęstości siatki przez propsy `columnGap`, `rowGap` i `rowSize`.',
+          'Konfiguracja gęstości siatki przez propsy `columnGap`, `rowGap` i `rowSize`.',
       },
     },
   },

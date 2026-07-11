@@ -1,233 +1,261 @@
 # Standard Abyss Design
 
-## Spis tresci
+## Spis treści
 
 - [Status i zakres](#status-i-zakres)
-- [Zasady nadrzedne](#zasady-nadrzedne)
-- [Skala spacingow](#skala-spacingow)
-- [Hierarchia border radius](#hierarchia-border-radius)
+- [Zasady nadrzędne](#zasady-nadrzędne)
+- [Formularze i karty vs komponenty złożone](#formularze-i-karty-vs-komponenty-złożone)
 - [Powierzchnie i warstwy](#powierzchnie-i-warstwy)
-- [Matryca przyciskow](#matryca-przyciskow)
-- [Recipes kompozycji](#recipes-kompozycji)
+- [Feedback po akcjach użytkownika](#feedback-po-akcjach-użytkownika)
+- [Matryca AbyssButton](#matryca-abyssbutton)
+- [Wzorce kompozycji](#wzorce-kompozycji)
 - [Do / Don't](#do--dont)
 - [Referencyjne implementacje](#referencyjne-implementacje)
-- [Powiazane pliki](#powiazane-pliki)
+- [Powiązane pliki](#powiązane-pliki)
 
 ---
 
 ## Status i zakres
 
-Ten dokument jest kanonicznym standardem stosowania Abyss Design w projekcie Maia. Opisuje nie tylko stan obecnych komponentow, ale takze twarde reguly dla nowych ekranow, nowych sekcji i dalszej rozbudowy design systemu.
+Ten dokument jest kanonicznym standardem **używania** Abyss Design w projekcie Maia. Opisuje, które komponenty wybierać i jak ustawiać ich propsy zgodnie z konwencją systemu.
 
-Najwazniejsze zasady interpretacji:
+Najważniejsze zasady interpretacji:
 
-- dla nowych ekranow ten dokument ma wyzszy priorytet niz lokalne nawyki z pojedynczych widokow,
-- Storybook dokumentuje API komponentow i pokazuje przyklady, ale nie jest glownym miejscem decyzji systemowych,
-- jezeli aktualny kod odbiega od tego dokumentu, traktuj to jako swiadomy dlug techniczny albo wyjatek do uzasadnienia, a nie jako nowa norme,
-- dokument obejmuje spacing, border radius, role powierzchni, hierarchie tytulow i wybor wariantu przycisku,
-- dokument nie zastępuje szczegolowego API komponentow ani nie wprowadza nowych tokenow bez zmiany implementacji systemowej.
-
----
-
-## Zasady nadrzedne
-
-1. Abyss jest warstwa pierwszego wyboru. Jezeli istnieje komponent z [src/components/ui](../../src/components/ui), uzywaj jego zamiast bezposrednio skladać Quasara.
-2. Statyczne elementy interfejsu buduj przez polprzezroczyste powierzchnie, cienie i ramki, a nie przez pelne, nieprzezroczyste bloki koloru.
-3. `backdrop-filter: blur()` jest zarezerwowany dla warstw tymczasowych nad trescia, takich jak dialogi, modale, menu i tooltipy. Nie stosuj blur na przyciskach, kartach, nawigacji i polach formularza.
-4. Nie wprowadzaj lokalnych skal spacingu ani nowych promieni naroznikow tylko dla jednego widoku. Jezeli wartosc nie miesci sie w obecnym systemie, to jest sygnal do zmiany systemowej, a nie do lokalnego obejscia.
-5. Kazdy kontener powinien miec jedna czytelna hierarchie akcji. Uzytkownik ma od razu widziec, ktora akcja jest glowna, ktora wspierajaca, a ktora tylko stanem.
-6. Operacje destrukcyjne oznaczaj kolorem `danger` na przycisku operacyjnym oraz buduj kontekst ryzyka przez kartę, `AbyssInfo`, ikonografię i copy.
-7. Nazwy wariantów przycisku sa semantyczne i musza pozostac spójne z API: `flat`, `current`, `toggled`, `gradient`, `gradientColors`, `fullWidth`, `size="small"`.
+- interfejs budujesz z komponentów `src/components/ui` i ich udokumentowanych propsów, slotów oraz zdarzeń,
+- Storybook dokumentuje API każdego komponentu — ten plik opisuje reguły łączenia komponentów w ekrany,
+- **zakres tego dokumentu to głównie formularze, standardowe karty i dialogi** — tam obowiązują restrykcyjne reguły bez custom styli,
+- komponenty wyższego rzędu w aplikacji (np. edytor notatek) mogą używać `class` i `style` na prymitywach Abyss — patrz sekcja [Formularze i karty vs komponenty złożone](#formularze-i-karty-vs-komponenty-złożone),
+- jeżeli aktualny kod odbiega od tego dokumentu, traktuj to jako świadomy dług techniczny, a nie nową normę.
 
 ---
 
-## Skala spacingow
+## Zasady nadrzędne
 
-Podstawowa skala spacingu Abyss opiera sie na pieciu stopniach. Nie dodawaj nowych podstawowych wartosci bez aktualizacji systemu.
-
-| Wartosc | Rola                         | Uzywaj w                                                                                                   | Nie uzywaj do                                                     |
-| ------- | ---------------------------- | ---------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------- |
-| `4px`   | Mikro-odstep                 | drobne oddechy w gestych ukladach, rytm nawigacji, korekta ciasnych grup ikon                              | glownego rytmu formularza, paddingu kart, odstepu miedzy sekcjami |
-| `8px`   | Odstep wewnatrz komponentu   | gapy w naglowkach, miedzy ikona i etykieta, wiersze pomocnicze, drobne grupy akcji                         | glownego stacku pol formularza i pionowych list sekcyjnych        |
-| `12px`  | Standardowy stack interakcji | pionowy rytm formularzy, tresc dialogow, grupy akcji w jednej sekcji, odstep miedzy elementami decyzyjnymi | zewnetrznego paddingu kart i rozdzielania duzych sekcji           |
-| `16px`  | Padding kontenera            | domyslny padding kart, dialogow i glownych blokow tresci                                                   | mikro-odstepow lub dekoracyjnego pompowania ciasnych komponentow  |
-| `24px`  | Separacja sekcji             | odstep miedzy kartami, grupami tresci i wiekszymi blokami strony                                           | odstepow pomiedzy pojedynczymi polami w jednej formie             |
-
-Reguly praktyczne:
-
-- `16px` jest wartoscia zewnetrzna, `12px` wartoscia wewnetrznego stacku. Najczesciej oznacza to: karta ma `padding: 16px`, a pola i akcje wewnatrz niej ukladaja sie co `12px`.
-- `8px` sluzy do lokalnych relacji w jednym komponencie, a nie do budowania glownej pionowej kompozycji calego bloku.
-- `24px` oddziela rodzenstwo na poziomie sekcji. Jezeli dwa elementy należa do tej samej decyzji lub tej samej porcji formularza, to zwykle nie powinny byc rozsuniete o `24px`.
-- Gdy uzywasz `AbyssButtonGroup`, nie buduj dodatkowego rytmu recznie. Komponent sam zarzadza ciasnym laczeniem przyciskow.
-- Jezeli layout wymaga wiekszego oddechu niz `24px`, skladaj go z sekcji rozdzielonych systemowo, zamiast dokladac nowy token `20px`, `28px` lub `32px` lokalnie.
+1. **Abyss jest warstwą pierwszego wyboru.** Jeśli istnieje komponent w [src/components/ui](../../src/components/ui), używaj go zamiast składać interfejs bezpośrednio z Quasara.
+2. **Formularze i standardowe karty — tylko propsy.** W `AbyssCard`, `AbyssForm`, `AbyssDialog` (ustawienia, auth, potwierdzenia) nie dodawaj własnych klas, stylów inline ani nadpisań SCSS na prymitywach Abyss. Układ kontroluj propsami (`full-width`, `AbyssGrid`, sloty karty itd.).
+3. **Komponenty złożone mogą stylować prymitywy.** Przy budowie domenowych komponentów wyższego rzędu (np. edytor, pasek narzędzi archiwum) dozwolone jest przekazywanie `class` i `style` do `AbyssInput`, `AbyssButton` itd. — o ile logika layoutu pozostaje w komponencie nadrzędnym, a nie rozproszona po widokach formularzowych.
+4. **Warstwy tymczasowe to `AbyssDialog`.** Decyzje, potwierdzenia i skupione wprowadzanie danych realizuj dialogiem — nie buduj własnych overlayów.
+5. **Jedna czytelna hierarchia akcji na blok.** Użytkownik ma od razu widzieć akcję główną, wspierającą i informacyjną. Realizuj to kombinacją `gradient`, `gradientColors`, `flat`, `embedded` i `full-width` na `AbyssButton`.
+6. **Operacje destrukcyjne:** `AbyssButton` z `gradient` + `gradient-colors="danger"` oraz kontekst ryzyka przez `AbyssInfo`, ikonografię i copy w `AbyssCard`.
+7. **Formularze:** pola (`AbyssInput`, `AbyssSelect`, `AbyssToggle` itd.) mają wewnętrzny układ — nie owijaj ich dodatkowym `AbyssGrid`. Przyciski akcji pod polami układaj w `AbyssGrid` ze stałymi `INPUT_COLUMN_SIZE` i `INPUT_GRID_MAX_COLUMNS` (patrz `AbyssForm` w Storybooku).
+8. **Daty i czas:** wyłącznie `AbyssDate`, `AbyssTime` albo `AbyssInput` z `type="date"`, `type="time"`, `type="datetime-local"`.
+9. **Feedback po akcjach:** powodzenie lub niepowodzenie operacji (zapis, usunięcie, ponowienie itd.) komunikuj **Quasar Notify** (`$q.notify` / `Notify.create`), nie `AbyssInfo`. `AbyssInfo` służy wyłącznie do **statycznych** komunikatów kontekstowych osadzonych w układzie strony.
 
 ---
 
-## Hierarchia border radius
+## Formularze i karty vs komponenty złożone
 
-System promieni naroznikow jest celowo waski. Dzieki temu powierzchnie z roznych czesci aplikacji pozostaja w jednej rodzinie wizualnej.
+| Kontekst | Custom `class` / `style` / SCSS | Co stosować |
+| -------- | ------------------------------- | ----------- |
+| Formularze (`AbyssForm`), standardowe karty ustawień, dialogi auth/hasło | **Zabronione** na prymitywach Abyss | wyłącznie propsy i sloty komponentów |
+| Komponenty złożone aplikacji (edytor, dedykowany toolbar, widok domenowy) | **Dozwolone** na prymitywach Abyss wewnątrz komponentu nadrzędnego | `class` / `style` + propsy; stylowanie zamknięte w jednym pliku komponentu |
+| Storybook — wzorce formularza/karty | **Zabronione** w przykładach `docs.source.code` | tylko propsy Abyss |
+| Storybook — API komponentu | **Dokumentuj** props `class` i `style` | opis kiedy są właściwe (komponenty złożone) |
 
-| Wartosc | Rola                | Stosuj dla                                                                                          | Nie stosuj dla                                                           |
-| ------- | ------------------- | --------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------ |
-| `6px`   | Radius kompaktowy   | malych przyciskow, gestych toolbariow, drobnych kontrolek                                           | kart, dialogow i glownych CTA                                            |
-| `8px`   | Radius domyslny     | przyciskow, kart, dialogow, formularzy i wiekszosci powierzchni systemu                             | tylko wtedy, gdy komponent ma wyraznie kompaktowa role                   |
-| `12px`  | Radius ekspozycyjny | wyjatkowych, bardziej ekspozycyjnych powierzchni, elementow marketingowych albo kart ilustracyjnych | standardowych komponentow aplikacyjnych bez potrzeby dodatkowego akcentu |
-| `50%`   | Ksztalt kolisty     | intencjonalnie kolowych affordancji i ikonograficznych akcentow                                     | zwyklych kart, przyciskow tekstowych i formularzy                        |
+Przykład dozwolonego użycia: komponent `NoteEditor` w MaiaApp opakowuje `AbyssInput` / `AbyssButton` własnymi klasami BEM w scoped SCSS — to nie jest formularz ustawień ani standardowa karta.
 
-Reguly praktyczne:
-
-- `8px` to domyslny promien Abyss. Jezeli nie masz bardzo konkretnego powodu, zaczynaj od niego.
-- `6px` jest redukcja gestosci, a nie osobnym stylem wizualnym. Uzywaj go tylko tam, gdzie element rzeczywiscie ma byc mniejszy i bardziej narzedziowy.
-- Nie dodawaj lokalnie wartosci takich jak `10px`, `14px` czy `18px`. To zwykle daje efekt elementu z innego systemu.
-- W grupach przyciskow nie nadpisuj recznie pojedynczych naroznikow. Za ksztalt odpowiada `AbyssButtonGroup`.
+Przykład niedozwolonego użycia: karta „Konto” w ustawieniach z `class="settings-card--custom"` na `AbyssCard` lub `AbyssInput` zamiast `AbyssInfo` + propsów przycisku.
 
 ---
 
 ## Powierzchnie i warstwy
 
-### Podstawowe powierzchnie
+### Podstawowe komponenty
 
-| Element            | Rola                            | Uzywaj gdy                                                                         | Nie uzywaj gdy                                                                |
-| ------------------ | ------------------------------- | ---------------------------------------------------------------------------------- | ----------------------------------------------------------------------------- |
-| `AbyssCard`        | podstawowy kontener sekcji      | grupujesz powiazane pola, informacje lub akcje w jednej powierzchni                | potrzebujesz tylko pojedynczej etykiety lub malego hintu bez struktury sekcji |
-| `AbyssDialog`      | warstwa tymczasowa nad trescia  | prosisz o decyzje, potwierdzenie albo skupione wprowadzenie danych                 | treść ma byc stale widoczna jako czesc ekranu                                 |
-| `AbyssTitle`       | naglowek sekcji i hierarchia typograficzna | chcesz nazwac strone informacyjna, karte, modal, podsekcje lub wyroznic konkretna sekcje (`h1`–`h6`) | potrzebujesz alertu, hintu lub tekstu pomocniczego                            |
-| `AbyssInfo`        | nazwany komunikat kontekstowy   | chcesz pokazac neutralny, ostrzegawczy lub ryzykowny callout z wyraznym znaczeniem | tresc nie ma tytulu ani nie niesie osobnej semantyki komunikatu               |
-| `AbyssButtonGroup` | ciasno zwiazany zestaw akcji    | budujesz toolbar, segment, steper lub zestaw rownorzednych przelaczalnych akcji    | akcje sa rozne semantycznie albo odlegle w hierarchii                         |
-
-### Hierarchia tytulow
-
-| Rozmiar | Rola                         | Typowe miejsce                                                |
-| ------- | ---------------------------- | ------------------------------------------------------------- |
-| `lg`    | tytul strony lub hero-sekcji | poczatek widoku, duzy blok otwierajacy                        |
-| `md`    | standardowy tytul sekcji     | naglowek karty, naglowek dialogu, glowny blok wewnatrz strony |
-| `sm`    | podsekcja lub mikro-naglowek | mniejsza grupa w karcie, lista, panel pomocniczy              |
+| Komponent          | Rola                           | Kluczowe propsy / sloty                                                                 |
+| ------------------ | ------------------------------ | --------------------------------------------------------------------------------------- |
+| `AbyssCard`        | kontener sekcji                | `title`, sloty `header-prepend`, `header-append`, `content`, `footer` (rzadko)           |
+| `AbyssDialog`      | warstwa tymczasowa nad treścią | `model-value`, sloty `header`, `content`, `actions`; przyciski w stopce zawsze `flat`   |
+| `AbyssTitle`       | hierarchia nagłówków           | `level` (`h1`–`h6`), `size` (`lg`, `md`, `sm`)                                          |
+| `AbyssInfo`        | statyczny komunikat kontekstowy | `type`, `title`, `icon` — pusty stan, ostrzeżenie przed akcją, trwała wskazówka; **nie** feedback po akcji |
+| `AbyssButtonGroup` | zestaw równorzędnych akcji     | dzieci: wyłącznie `AbyssButton`                                                         |
+| `AbyssGrid`        | responsywna siatka             | `column-size`, `max-columns`, `column-gap`, `row-gap`, `align`, `content-rows`          |
+| `AbyssForm`        | wrapper formularza             | `v-model`, `sync`, `@update-form`, `@submit-form`                                       |
 
 ### Hierarchia `AbyssTitle`
 
-| Poziom | Rola                              | Typowe miejsce                                      |
-| ------ | --------------------------------- | --------------------------------------------------- |
-| `h1`   | tytul strony informacyjnej        | polityka prywatnosci, regulamin, strona pomocy      |
-| `h2`   | tytul powierzchni                 | karta, dialog, modal                                |
-| `h3`   | podtytul pierwszego poziomu       | sekcja w karcie, modalu lub contencie               |
-| `h4`   | podtytul drugiego poziomu         | podsekcja w karcie lub modalu                       |
-| `h5`   | naglowek specjalny                | wyroznienie konkretnej sekcji                       |
-| `h6`   | mniejszy naglowek specjalny       | wyroznienie konkretnej sekcji                       |
+| `level` | Rola                       | Typowe miejsce                              |
+| ------- | -------------------------- | ------------------------------------------- |
+| `h1`    | tytuł strony informacyjnej | polityka prywatności, regulamin, pomoc      |
+| `h2`    | tytuł powierzchni          | karta, dialog                               |
+| `h3`    | podtytuł pierwszego poziomu| sekcja w karcie lub dialogu                 |
+| `h4`–`h6` | nagłówki pomocnicze      | wyodrębnienie podsekcji                     |
 
-Reguly praktyczne:
+| `size` | Rola                         |
+| ------ | ---------------------------- |
+| `lg`   | tytuł strony lub hero-sekcji |
+| `md`   | standardowy tytuł sekcji     |
+| `sm`   | podsekcja, mikro-nagłówek    |
 
-- `AbyssCard` jest podstawowa jednostka budowania sekcji. Ma domyslny `padding` kontentu `16px`, naglowek z rytmem `8px` i promien `8px`.
-- Karta z tytulem **zawsze** ma ikone w `header-prepend` odpowiadajaca tematowi sekcji.
-- Akcje kontekstowe karty (odswiezenie danych, filtr, ustawienia widoku) umieszczaj w `header-append` jako płaskie przyciski ikonowe.
-- Stopka karty (`footer`, `footer-prepend`, `footer-append`) jest zarezerwowana na specyficzne sytuacje — np. niezapisane zmiany w trakcie edycji. Nie stosuj footera w standardowym ukladzie karty.
-- `AbyssDialog` ma prawo do blur i mocniejszej separacji od tla, bo jest powierzchnia tymczasowa. Karta i przycisk takiego prawa nie maja.
-- `AbyssInfo` stosuj tylko wtedy, gdy komunikat ma wyrazny tytul lub status. Sam krotki opis nie uzasadnia calloutu.
-- `AbyssTitle` rozdziela semantyke naglowka od semantyki akcji. Nie zastępuj przycisku ani calloutu ozdobnym tytulem.
+### Reguły `AbyssCard`
+
+- Karta z tytułem **zawsze** ma ikonę w `header-prepend` odpowiadającą tematowi sekcji.
+- Akcje kontekstowe (odświeżenie, filtr) w `header-append` jako `AbyssButton` z `flat` i ewentualnie `size="small"`.
+- Stopka (`footer`, `footer-prepend`, `footer-append`) tylko w specyficznych sytuacjach (np. niezapisane zmiany) — nie w standardowym układzie.
+- `AbyssInfo` stosuj tylko, gdy komunikat ma tytuł lub status semantyczny **i jest częścią stałego układu ekranu** (np. pusty stan tabeli, ostrzeżenie przed usunięciem konta).
+- Nie używaj `AbyssInfo` do pokazywania wyniku akcji użytkownika (sukces/błąd po API) — do tego służy Quasar Notify.
 
 ---
 
-## Matryca przyciskow
+## Feedback po akcjach użytkownika
 
-### Kolory semantyczne (`gradient` + `gradientColors`)
+Po wykonaniu akcji przez użytkownika (zapis formularza, usunięcie rekordu, ponowienie zadania, błąd sieci) informacja zwrotna musi być **toastem Quasar**, nie komponentem `AbyssInfo`.
 
-Kolory semantyczne nadaja sie przez `gradient` oraz `gradientColors`. Sluza do rozroznienia znaczenia akcji operacyjnej w danym kontekscie — w klasycznym sensie primary z Bootstrapa, a nie jako globalne CTA calej aplikacji.
+| Sytuacja | Mechanizm | Przykład |
+| -------- | --------- | -------- |
+| Akcja zakończyła się sukcesem | `$q.notify({ type: 'positive', message })` | „Zadanie zostało usunięte.” |
+| Akcja zakończyła się błędem | `$q.notify({ type: 'negative', message })` | „Nie udało się usunąć zadania.” |
+| Trwały komunikat na stronie (pusty stan, ostrzeżenie przed destrukcją) | `AbyssInfo` | „Brak zadań w kolejce.” |
+| Błąd walidacji w formularzu | `AbyssInput` (`error`, `errorMessage`) lub `AbyssInfo` w dialogu | pole z błędnym hasłem |
 
-| Klucz     | Kiedy uzywac                                                                                              | Przyklady                                                                 | Nie uzywaj gdy                                                                                    |
-| --------- | --------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------- |
-| `theme`   | najistotniejsza funkcja globalna w calej aplikacji                                                        | dodanie notatki w dzienniku, aktualizacja subskrypcji                     | akcja jest tylko glowna w jednym bloku, dialogu lub formularzu                                    |
-| `success` | akceptacja lub potwierdzenie czegos                                                                       | zatwierdzenie wyboru, potwierdzenie zgody                                 | zapis, edycja albo operacja destrukcyjna                                                          |
-| `info`    | zapis i edycja                                                                                            | zapisz zmiany, edytuj profil                                              | operacja wymaga szczegolnej uwagi — wtedy `warning` ma priorytet                                  |
-| `warning` | akcje wymagajace uwagi lub zapis/potwierdzenie czegos istotnego                                           | zmiana hasla, potwierdzenie istotnej zmiany                               | zwykly zapis bez podwyzszonego ryzyka                                                             |
-| `danger`  | operacje nieodwracalne                                                                                    | usuniecie danych, trwale usuniecie konta                                  | akcja jest odwracalna albo tylko informacyjna                                                     |
-| `hint`    | akcje informacyjne lub prowadzace do pobocznego procesu                                                  | dowiedz sie wiecej, przejdz do pomocy, otworz szczegoly                   | glowna decyzja w dialogu, zapis, potwierdzenie albo destrukcja                                    |
+Reguły:
 
-Reguly praktyczne:
+- **Nie** przełączaj widoczności `AbyssInfo` reaktywnie po `@success` / `@click` / odpowiedzi API — to antywzorzec; użytkownik traci kontekst, a layout „skacze”.
+- Notify jest **efemeryczny** i nie zajmuje miejsca w układzie — pasuje do potwierdzenia operacji.
+- `AbyssInfo` pozostaje w miejscu, gdzie komunikat ma być **zawsze widoczny**, dopóki zmieni się stan ekranu (np. pojawią się dane, użytkownik zamknie dialog).
 
-- `theme` jest zarezerwowany dla najwazniejszych funkcji na skale calej aplikacji. To nie jest domyslna pierwsza akcja w bloku — to glowna akcja globalna.
-- Kolory `success`, `info`, `warning`, `danger` i `hint` sa kontekstowe. W dialogu z dwiema opcjami — np. potwierdzenie i anulowanie — przycisk operacyjny dostaje kolor zalezny od wykonywanej akcji.
-- `warning` ma priorytet nad `info`, gdy chodzi o zapis lub potwierdzenie czegos istotnego.
-- Nie uzywaj wariantu gradientowego, jesli akcja jest jedyna na liscie. Wtedy wystarczy domyslny przycisk bez `gradient`.
-- W jednym bloku decyzyjnym zwykle jest jeden przycisk operacyjny z kolorem semantycznym oraz ewentualnie akcje pomocnicze jako `flat` bez gradientu.
-- W naglowku i stopce `AbyssCard` oraz w `AbyssDialog` **wszystkie** przyciski uzywaja `flat`. Akcja operacyjna z kolorem semantycznym laczy `flat` + `gradient` + `gradientColors`.
+Przykład notify po sukcesie:
+
+```ts
+import { useQuasar } from 'quasar'
+
+const $q = useQuasar()
+
+function notifySuccess(message: string): void {
+  $q.notify({ type: 'positive', message })
+}
+
+function notifyError(message: string): void {
+  $q.notify({ type: 'negative', message })
+}
+```
+
+Przykład dozwolonego `AbyssInfo` (statyczny):
+
+```html
+<AbyssInfo type="hint" icon="lightbulb" :title="t('routes.workers.emptyJobsTitle')">
+  {{ t('routes.workers.emptyJobs') }}
+</AbyssInfo>
+```
+
+Przykład niedozwolonego użycia (dynamiczny feedback):
+
+```html
+<!-- ❌ Nie: AbyssInfo pojawiający się po akcji -->
+<AbyssInfo v-if="actionMessage" type="success" icon="check_circle" :title="t('common.labels.success')">
+  {{ actionMessage }}
+</AbyssInfo>
+```
+
+Zamiast tego: `$q.notify({ type: 'positive', message: actionMessage })` i brak reaktywnego `AbyssInfo` na stronie.
+
+---
+
+## Matryca AbyssButton
+
+### Kolory semantyczne (`gradient` + `gradient-colors`)
+
+Używaj wyłącznie kluczy semantycznych — nie przekazuj własnych tablic kolorów.
+
+| Klucz     | Kiedy używać                                              | Przykłady                                      | Nie używaj gdy                                      |
+| --------- | --------------------------------------------------------- | ---------------------------------------------- | --------------------------------------------------- |
+| `theme`   | najistotniejsza funkcja globalna w całej aplikacji        | dodanie notatki, aktualizacja subskrypcji      | akcja jest tylko główna w jednym bloku lub dialogu  |
+| `success` | akceptacja lub potwierdzenie                              | zatwierdzenie wyboru, potwierdzenie zgody      | zapis, edycja, operacja destrukcyjna                |
+| `info`    | zapis i edycja                                            | zapisz zmiany, edytuj profil                   | operacja wymaga podwyższonej uwagi                  |
+| `warning` | akcje wymagające uwagi                                    | zmiana hasła, istotna zmiana                   | zwykły zapis bez podwyższonego ryzyka               |
+| `danger`  | operacje nieodwracalne                                    | usunięcie danych, trwałe usunięcie konta       | akcja odwracalna lub tylko informacyjna             |
+| `hint`    | akcje informacyjne lub prowadzące do pobocznego procesu  | dowiedz się więcej, otwórz szczegóły           | główna decyzja, zapis, potwierdzenie, destrukcja    |
+
+Reguły:
+
+- `theme` jest zarezerwowany dla najważniejszych funkcji na skalę całej aplikacji.
+- Kolory `success`, `info`, `warning`, `danger` i `hint` są kontekstowe — w dialogu z potwierdzeniem i anulowaniem przycisk operacyjny dostaje kolor zależny od wykonywanej akcji.
+- `warning` ma priorytet nad `info`, gdy chodzi o zapis lub potwierdzenie czegoś istotnego.
+- Nie używaj `gradient`, jeśli akcja jest jedyna na liście poza kartą/dialogiem.
+- W nagłówku i stopce `AbyssCard` oraz w `AbyssDialog` **wszystkie** przyciski używają `flat`. Akcja operacyjna łączy `flat` + `gradient` + `gradient-colors`.
 
 ### Warianty semantyczne
 
-| Wariant   | Uzywaj gdy                                                          | Typowe miejsca                                                                                 | Nie uzywaj gdy                                                                               |
-| --------- | ------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------- |
-| domyslny  | to jest jedyna akcja na liscie albo akcja pomocnicza bez gradientu  | pojedynczy przycisk w sekcji, anulowanie w dialogu                                             | akcja jest glowna operacyjna w parze decyzyjnej — wtedy uzyj `gradient` z kolorem semantycznym |
-| `flat`    | kazdy przycisk w naglowku lub stopce karty albo dialogu; ikony w slotach `AbyssInput` | `AbyssCard` header-append, footer-append; akcje w `AbyssDialog`; `#prepend` / `#append` w `AbyssInput` | poza naglowkiem/stopka karty, dialogiem i slotami `AbyssInput` — `flat` nie jest dozwolony nigdzie indziej |
-| `current` | element reprezentuje aktualnie aktywny kontekst lub wybrany cel     | aktywna nawigacja, aktualnie wybrany rekord lub route                                          | stan mozna wylaczyc tym samym kliknieciem, albo jest to tymczasowy toggle                    |
-| `toggled` | element jest wlaczonym przełącznikiem, ale dalej pozostaje klikalny | toolbar formatowania, aktywne filtry, segmenty wyboru                                          | nawigacja, aktywny route, decyzje jednokrotne                                                |
-| `gradient`| akcja operacyjna ma wyrazne znaczenie semantyczne                   | globalne CTA (`theme`) poza karta/dialogiem; w karcie/dialogu zawsze razem z `flat`             | akcja jest jedyna na liscie poza karta/dialogiem; w headerze/stopce bez `flat`               |
+| Wariant    | Kiedy używać                                                                 | Nie używaj gdy                                                         |
+| ---------- | ---------------------------------------------------------------------------- | ---------------------------------------------------------------------- |
+| domyślny   | jedyna akcja na liście albo akcja pomocnicza bez gradientu                   | główna akcja operacyjna w parze decyzyjnej                            |
+| `flat`     | każdy przycisk w nagłówku/stopce karty i dialogu; ikony w `#prepend`/`#append` `AbyssInput` | poza kartą, dialogiem i slotami `AbyssInput`                         |
+| `current`  | aktualnie aktywny kontekst (nawigacja, wybrany rekord)                       | stan przełączalny toggle; tymczasowy filtr                             |
+| `toggled`  | włączony stan nadal klikalny (toolbar, filtry)                               | nawigacja, aktywny route                                               |
+| `gradient` | akcja operacyjna ze znaczeniem semantycznym                                   | bez `flat` w headerze/stopce karty i dialogu                         |
 
-Reguly praktyczne:
+### Modyfikatory układu
 
-- W jednym bloku tresci preferuj jedna glowna akcje operacyjna z kolorem semantycznym. Jezeli widzisz kilka gradientowych przyciskow o tym samym ciezarze, hierarchia jest nieczytelna.
-- W naglowku i stopce `AbyssCard` oraz w `AbyssDialog` kazdy przycisk jest `flat`. Akcja operacyjna dodatkowo dostaje `gradient` + `gradientColors`; akcja pomocnicza (anulowanie, ikona kontekstowa) zostaje jako samo `flat`.
-- `flat` poza karta, dialogiem i slotami `AbyssInput` nie jest dozwolony. Nie stosuj go w formularzach, listach, toolbarach ani na stronach — wyjatkiem sa wyłacznie ikony w `#prepend` / `#append` pola `AbyssInput` (zawsze `flat`, nigdy `embedded`).
-- `current` i `toggled` nie sa zamienne. `current` oznacza aktualnie wybrany kontekst, `toggled` oznacza aktywny stan, ktory mozna od razu cofnac.
-- Operacja destrukcyjna w dialogu uzywa `flat` + `gradient` + `gradientColors="danger"` na przycisku operacyjnym oraz kontekstu ryzyka przez `AbyssCard`, `AbyssInfo`, ikonografie i copy.
-
-### Modyfikatory ukladu i gestosci
-
-| Modyfikator    | Uzywaj gdy                                                 | Typowe miejsca                                                  | Nie uzywaj gdy                                                       |
-| -------------- | ---------------------------------------------------------- | --------------------------------------------------------------- | -------------------------------------------------------------------- |
-| `fullWidth`    | przycisk jest samodzielna akcja blokowa w pionowym stacku  | ustawienia, dialogi, formularze, sekcje decyzji na mobile       | akcje tworza toolbar, rownorzędny pasek lub ciasna grupe sterowania  |
-| `size="small"` | akcja ma charakter pomocniczy, narzedziowy albo ciasny     | toolbar, steper, nawigacja pomocnicza, kontrolki w naglowku     | glowny submit, glowne CTA sekcji, najwazniejsza decyzja w dialogu    |
-| `icon-only`    | znaczenie jest oczywiste z kontekstu i nie trzeba etykiety | toolbar z dobrze znanymi ikonami, strzalki, przycisk zamkniecia | glowna akcja formularza albo akcja o zlozonych konsekwencjach        |
-| `loading`      | akcja trwa i trzeba zablokowac ponowne klikniecie          | submit, import, eksport, zapis, dluzsze mutacje                 | krótki toggle lokalny, ktory nie ma osobnego cyklu oczekiwania       |
-| `percentage`   | postep ma wartosc informacyjna dla uzytkownika             | dluższe operacje z realnym procentem wykonania                  | przypadki, gdzie procent jest sztuczny albo nic nie wnosi do decyzji |
-
-Reguly praktyczne:
-
-- Dla samotnej akcji w pionowym stacku preferuj `fullWidth`. To jest domyslny uklad w ustawieniach, dialogach i sekcjach decyzyjnych.
-- `size="small"` redukuje gestosc, ale nie zmienia semantyki. Maly przycisk nadal nie powinien stawac sie glownym CTA ekranu.
-- `icon-only` wymaga szczegolnej dyscypliny: ikona musi byc rozpoznawalna, a rola przycisku czytelna z otoczenia.
-- Nie lacz semantycznie sprzecznych stanów. API pozwala na wizualne priorytety, ale standard zabrania projektowania przycisku jednoczesnie jako `current`, `toggled` i `flat`.
+| Prop           | Kiedy używać                                              |
+| -------------- | --------------------------------------------------------- |
+| `full-width`   | samodzielna akcja blokowa w pionowym stacku (dialog, formularz) |
+| `size="small"` | akcja pomocnicza, toolbar, nagłówek karty                 |
+| `icon-only`    | znaczenie oczywiste z kontekstu (zamknięcie, znane ikony) |
+| `loading`      | akcja trwa — blokada ponownego kliknięcia                 |
+| `percentage`   | postęp ma wartość informacyjną dla użytkownika            |
+| `embedded`     | akcja poboczna bez przyciągania uwagi (np. reset hasła)   |
 
 ---
 
-## Recipes kompozycji
+## Wzorce kompozycji
 
-### 1. Karta ustawien lub formularza
+### 1. Karta ustawień lub formularza
 
-- Uzyj `AbyssCard` jako glownej powierzchni.
-- W `header-prepend` umiesc ikone odpowiadajaca tytulowi sekcji.
-- Kontekstowe akcje karty (odswiezenie, filtr) umiesc w `header-append` jako płaskie przyciski ikonowe.
-- Trzymaj zewnetrzny padding sekcji w rytmie `16px`.
-- Pola (`AbyssInput`, `AbyssSelect`) umieszczaj bezposrednio w tresci karty — maja wewnetrzny `AbyssGrid` (etykieta + kontrolka) z `INPUT_COLUMN_SIZE` i `INPUT_GRID_MAX_COLUMNS`.
-- Przyciski akcji pod polami umieszczaj w `AbyssGrid` z `align="right"`, `:column-size="INPUT_COLUMN_SIZE"` i `:max-columns="INPUT_GRID_MAX_COLUMNS"`.
-- Glowna akcja zapisania lub przejscia dalej powinna byc jedna i najczesciej `fullWidth` w tresci karty albo w dialogu — nie w stopce karty.
-- Ustawianie lub zmiana hasla zawsze odbywa sie w dedykowanym `AbyssDialog`. W karcie zostaw tylko trigger (np. „Zmien haslo”, „Resetowanie hasla”); pola nowego lub obecnego hasla nie umieszczaj inline w karcie ustawien. Wyjatek stanowi wyłacznie logowanie (pole biezacego hasla w formularzu auth).
-- Nie uzywaj footera w standardowym ukladzie. Footer tylko w specyficznych sytuacjach, np. gdy uzytkownik ma niezapisane zmiany.
-- Jezeli karta ma komunikat kontekstowy, umiesc go blisko pola albo akcji, ktorej dotyczy, zamiast w osobnym odleglym calloucie.
+```html
+<AbyssCard title="Konto">
+  <template #header-prepend>
+    <q-icon name="sym_r_person" size="20px" />
+  </template>
+  <template #content>
+    <AbyssForm v-model="form" @update-form="store.apply">
+      <AbyssInput v-model="form.displayName" label="Nazwa wyświetlana" />
+      <AbyssToggle v-model="form.notifications" label="Powiadomienia" full-width />
+      <AbyssGrid align="right" :column-size="INPUT_COLUMN_SIZE" :max-columns="INPUT_GRID_MAX_COLUMNS">
+        <AbyssButton size="big" label="Zapisz" full-width />
+      </AbyssGrid>
+    </AbyssForm>
+  </template>
+</AbyssCard>
+```
+
+- Pola bez dodatkowego `AbyssGrid` — wewnętrzna siatka jest w `AbyssInput` / `AbyssSelect`.
+- Przyciski akcji w `AbyssGrid` z `INPUT_COLUMN_SIZE`, `INPUT_GRID_MAX_COLUMNS`, `size="big"`, `full-width`.
+- Zmiana hasła: trigger w karcie → dedykowany `AbyssDialog` z polami hasła (wyjątek: logowanie).
 
 ### 2. Blok destrukcyjny
 
-- Ryzyko buduj przez kontekst: karta o wyraznym charakterze, `AbyssInfo` z tytulem ostrzegawczym, ikona ryzyka.
-- Przycisk operacyjny uzywa `flat` + `gradient` + `gradientColors="danger"`.
-- Akcja anulowania w dialogu pozostaje jako samo `flat`, bez gradientu.
+```html
+<AbyssCard title="Usuń konto">
+  <template #header-prepend>
+    <q-icon name="sym_r_delete_forever" size="20px" />
+  </template>
+  <template #content>
+    <AbyssInfo type="danger" icon="warning" title="Ostrzeżenie">
+      Operacja jest nieodwracalna.
+    </AbyssInfo>
+    <AbyssGrid align="right" :column-size="INPUT_COLUMN_SIZE" :max-columns="INPUT_GRID_MAX_COLUMNS">
+      <AbyssButton flat gradient gradient-colors="danger" label="Usuń konto" full-width />
+    </AbyssGrid>
+  </template>
+</AbyssCard>
+```
 
-### 3. Dialog potwierdzenia lub skupionej akcji
+### 3. Dialog potwierdzenia
 
-- Uzyj `AbyssDialog`, bo jest to jedyna warstwa, ktora ma prawo do blur jako stalego srodka wyrazu.
-- Tresc dialogu trzymaj w rytmie `12px`, a cialo w paddingu `16px`.
-- Wszystkie przyciski w stopce dialogu sa `flat`. Akcja operacyjna dodatkowo dostaje `gradient` z kolorem semantycznym: `success` dla potwierdzenia, `info` dla zapisu, `warning` dla istotnych zmian, `danger` dla operacji nieodwracalnych.
-- Akcja anulowania pozostaje jako samo `flat`, bez gradientu.
-- Ikona zamkniecia nie zastępuje jawnej akcji anulowania tam, gdzie decyzja jest istotna lub nieodwracalna.
+- `AbyssDialog` z treścią w slocie `content`.
+- Stopka: wszystkie przyciski `flat`; akcja operacyjna dodatkowo `gradient` + `gradient-colors`; anulowanie bez gradientu.
+- Przy istotnej lub nieodwracalnej decyzji — jawna akcja anulowania, nie tylko ikona zamknięcia.
 
-### 4. Toolbar albo segment przelaczany
+### 4. Toolbar lub segment
 
-- Do zestawow akcji narzedziowych uzywaj `AbyssButtonGroup`.
-- Preferuj `size="small"` i, gdy potrzeba, `icon-only`.
-- Aktywny stan narzedzia pokazuj przez `toggled`, a nie przez `current`.
-- Nie grupuj w jednym `AbyssButtonGroup` akcji, ktore nie sa semantycznie rodzenstwem.
+- `AbyssButtonGroup` z `AbyssButton` (`size="small"`, opcjonalnie `icon-only`).
+- Aktywny stan narzędzia: `toggled`, nie `current`.
+- Grupuj tylko semantycznie równorzędne akcje.
 
-### 5. Sekcje rownorzedne na stronie
+### 5. Sekcje na stronie
 
-- Oddzielaj rodzenstwo sekcyjne `24px`, a nie dowolna lokalna wartoscia.
-- Wewnatrz kazdej sekcji wracaj do rytmu `16px` na zewnatrz i `12px` wewnatrz.
-- Jezeli jedna sekcja wymaga znacznie wiekszego oddechu niz inne, problemem zwykle jest kompozycja ekranu, a nie brak nowego tokenu spacingu.
+- Każda sekcja w osobnej `AbyssCard` (lub `AbyssGrid` z kafelkami `AbyssTile` dla list równorzędnych elementów).
+- Nie buduj własnych kontenerów sekcji — używaj komponentów powierzchni.
 
 ---
 
@@ -235,57 +263,48 @@ Reguly praktyczne:
 
 ### Do
 
-- Uzywaj ikony w `header-prepend` przy kazdym tytule `AbyssCard`.
-- Umieszczaj kontekstowe akcje karty w `header-append` jako płaskie przyciski ikonowe.
-- Uzywaj `8px` jako domyslnego border radius dla glownych powierzchni i przyciskow.
-- Uzywaj `16px` dla paddingu kart i `12px` dla pionowego rytmu form i dialogow.
-- Traktuj `flat` jako obowiazkowy wariant kazdego przycisku w naglowku/stopce `AbyssCard` i w `AbyssDialog`; akcje operacyjne lacz z `gradient`.
-- Traktuj `gradient` + `gradientColors` jako kontekstowa akcja operacyjna; `theme` tylko dla globalnych funkcji aplikacji.
-- Traktuj `current` jako oznaczenie aktualnego kontekstu, a `toggled` jako aktywnego, nadal klikalnego stanu.
-- Buduj ryzyko przez kontekst sekcji oraz `danger` na przycisku operacyjnym.
-- Uzywaj `AbyssInfo` tylko dla nazwanych komunikatow.
-- Uzywaj `AbyssDate` i `AbyssTime` (albo `AbyssInput` z `type="date"`, `type="time"`, `type="datetime-local"`) jako jedynego sposobu wyboru daty i czasu.
-- Ustawiaj i zmieniaj haslo wylacznie w dedykowanym `AbyssDialog`; w karcie zostaw tylko trigger otwierajacy dialog.
-- Umieszczaj przyciski formularza w `AbyssGrid` z `INPUT_COLUMN_SIZE` i `INPUT_GRID_MAX_COLUMNS`; pol (`AbyssInput`, `AbyssSelect`) nie owijaj recznie w dodatkowy `AbyssGrid`.
+- Używaj ikony w `header-prepend` przy każdym tytule `AbyssCard`.
+- Umieszczaj kontekstowe akcje karty w `header-append` jako `AbyssButton flat`.
+- Traktuj `flat` jako obowiązkowy wariant każdego przycisku w nagłówku/stopce `AbyssCard` i w `AbyssDialog`; akcje operacyjne łącz z `gradient`.
+- Używaj wyłącznie kluczy semantycznych w `gradient-colors`.
+- Traktuj `current` jako aktualny kontekst, a `toggled` jako aktywny, nadal klikalny stan.
+- Buduj ryzyko przez `AbyssInfo` + `gradient-colors="danger"` na przycisku operacyjnym.
+- Potwierdzaj powodzenie lub niepowodzenie akcji użytkownika przez Quasar Notify (`type: 'positive'` / `'negative'`).
+- Używaj `AbyssInfo` wyłącznie do statycznych komunikatów kontekstowych (pusty stan, ostrzeżenie, trwała wskazówka).
+- Używaj `AbyssDate` / `AbyssTime` (lub `AbyssInput` z odpowiednim `type`) jako jedynego sposobu wyboru daty i czasu.
+- Ustawiaj i zmieniaj hasło wyłącznie w dedykowanym `AbyssDialog`.
+- Umieszczaj przyciski formularza w `AbyssGrid` z `INPUT_COLUMN_SIZE` i `INPUT_GRID_MAX_COLUMNS`.
 
 ### Don't
 
-- Nie dokladaj blur do kart, przyciskow, stalej nawigacji i pol formularza.
-- Nie wprowadzaj lokalnych wartosci `10px`, `14px`, `20px` i podobnych, jezeli system nie przewiduje takiego stopnia.
-- Nie uzywaj `flat` poza naglowkiem/stopka `AbyssCard`, `AbyssDialog` i slotami `#prepend` / `#append` w `AbyssInput`.
-- Nie uzywaj footera `AbyssCard` w standardowym ukladzie — tylko w specyficznych sytuacjach (np. niezapisane zmiany).
-- Nie uzywaj `gradient`, gdy akcja jest jedyna na liscie.
-- Nie uzywaj `theme` dla lokalnej glownej akcji w bloku — to kolor globalnych funkcji aplikacji.
-- Nie uzywaj `current` do formatowania tekstu ani aktywnych filtrow wielokrotnego wyboru.
-- Nie uzywaj `icon-only` dla akcji o niejasnej albo nieodwracalnej konsekwencji.
-- Nie buduj recznie pseudo-grup przyciskow przez marginesy i lokalne radiusy, gdy istnieje `AbyssButtonGroup`.
-- Nie umieszczaj pol ustawiania lub zmiany hasla inline w `AbyssCard` — zawsze uzyj dedykowanego `AbyssDialog` (wyjatek: pole biezacego hasla przy logowaniu).
-- Nie owijaj recznie `AbyssInput` ani `AbyssSelect` w dodatkowy `AbyssGrid` — maja juz wewnetrzna siatke z tymi samymi stalymi co przyciski akcji.
-- Nie uzywaj natywnych selektorow daty ani czasu przegladarki/OS (`input type="date"`, `type="time"`, `type="datetime-local"` z wbudowanym UI systemowym). Zawsze uruchamiaj dokladnie `AbyssDate` / `AbyssTime` — bezposrednio lub przez `AbyssInput` z odpowiednim `type`.
+- Nie dodawaj własnych klas CSS, stylów inline ani nadpisań SCSS na prymitywach Abyss **w formularzach i standardowych kartach** — tam wystarczają propsy.
+- Nie używaj `flat` poza nagłówkiem/stopką `AbyssCard`, `AbyssDialog` i slotami `#prepend` / `#append` w `AbyssInput`.
+- Nie używaj footera `AbyssCard` w standardowym układzie.
+- Nie używaj `gradient`, gdy akcja jest jedyna na liście poza kartą/dialogiem.
+- Nie używaj `theme` dla lokalnej głównej akcji w bloku.
+- Nie przekazuj własnych tablic kolorów do `gradient-colors`.
+- Nie używaj `current` do aktywnych filtrów wielokrotnego wyboru — użyj `toggled`.
+- Nie używaj `icon-only` dla akcji o niejasnej lub nieodwracalnej konsekwencji.
+- Nie buduj pseudo-grup przycisków ręcznie — użyj `AbyssButtonGroup`.
+- Nie owijaj `AbyssInput` ani `AbyssSelect` w dodatkowy `AbyssGrid`.
+- Nie używaj natywnych selektorów daty/czasu systemowych.
+- Nie używaj `AbyssInfo` z `v-if` / `v-show` do pokazywania sukcesu lub błędu po akcji użytkownika — użyj Quasar Notify.
 
 ---
 
 ## Referencyjne implementacje
 
-- `AbyssButton` — [`src/components/ui/AbyssButton/AbyssButton.vue`](../../src/components/ui/AbyssButton/AbyssButton.vue)
-  Definicja wariantow `flat`, `current`, `toggled`, `gradient`, `gradientColors`, rozmiarow i modyfikatorow.
-- `AbyssButton` stories — [`src/components/ui/AbyssButton/AbyssButton.stories.ts`](../../src/components/ui/AbyssButton/AbyssButton.stories.ts)
-  Opisy semantyki wariantow i ich intencji projektowej.
-- `AbyssCard` — [`src/components/ui/AbyssCard/AbyssCard.vue`](../../src/components/ui/AbyssCard/AbyssCard.vue)
-  Domyslny padding `16px`, promien `8px` i struktura sekcyjna karty.
-- `AbyssDialog` — [`src/components/ui/AbyssDialog/AbyssDialog.vue`](../../src/components/ui/AbyssDialog/AbyssDialog.vue)
-  Zasady warstw tymczasowych, blur, rytmu tresci i akcji modalnych.
-- `AbyssTitle` — [`src/components/ui/AbyssTitle/AbyssTitle.vue`](../../src/components/ui/AbyssTitle/AbyssTitle.vue)
-  Hierarchia `lg`, `md`, `sm`.
+- `AbyssButton` — [`src/components/ui/AbyssButton/AbyssButton.stories.ts`](../../src/components/ui/AbyssButton/AbyssButton.stories.ts)
+- `AbyssCard` — [`src/components/ui/AbyssCard/AbyssCard.stories.ts`](../../src/components/ui/AbyssCard/AbyssCard.stories.ts)
+- `AbyssDialog` — [`src/components/ui/AbyssDialog/AbyssDialog.stories.ts`](../../src/components/ui/AbyssDialog/AbyssDialog.stories.ts)
 - `AbyssForm` — [`src/components/ui/AbyssForm/AbyssForm.stories.ts`](../../src/components/ui/AbyssForm/AbyssForm.stories.ts)
-  Układ formularza w karcie: pola z wewnetrznym `AbyssGrid`, przyciski w `AbyssGrid` z `INPUT_COLUMN_SIZE` i `INPUT_GRID_MAX_COLUMNS`.
+- `AbyssGrid` — [`src/components/ui/AbyssGrid/AbyssGrid.stories.ts`](../../src/components/ui/AbyssGrid/AbyssGrid.stories.ts)
 
-Przyklady uzycia w ekranach aplikacji Maia (konsument pakietu) znajduja sie w repozytorium `maia-app`.
+Przykłady użycia w ekranach aplikacji Maia znajdują się w repozytorium `maia-app`.
 
 ---
 
-## Powiazane pliki
+## Powiązane pliki
 
-- [`src/stories/AbyssDesign.mdx`](../../src/stories/AbyssDesign.mdx) — landing page w Storybooku, skrot i punkt wejscia.
-- [`src/scss/helpers/variables.scss`](../../src/scss/helpers/variables.scss) — cienie, transition, breakpoints i globalne tokeny pomocnicze.
-- [`docs/architecture/abyss-design.md`](./abyss-design.md) — ten dokument (kanoniczny standard systemowy).
+- [`src/stories/AbyssDesign.mdx`](../../src/stories/AbyssDesign.mdx) — landing page w Storybooku.
+- [`docs/architecture/abyss-design.md`](./abyss-design.md) — ten dokument.

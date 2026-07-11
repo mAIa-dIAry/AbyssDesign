@@ -18,7 +18,7 @@ const meta: Meta<typeof AbyssTime> = {
         component:
           'Jedyny dopuszczalny picker czasu w Abyss. Układ jak `AbyssDialog`: zegar w body, separator i stopka z Anuluj (`flat`) oraz Potwierdź (`flat` + `gradient` + `success`).\n\n' +
           `${nativePickerWarning}\n\n` +
-          'Przy osadzaniu w `q-popup-proxy` użyj `class="abyss-time-menu"` bezpośrednio na elemencie popup i ustaw `:breakpoint="0"`, żeby Quasar nie przełączał pickera na modal `QDialog` na małych viewportach. **Nie** używaj `content-class`, bo nie działa z tym komponentem.\n\n' +
+          'Przy osadzaniu w `q-popup-proxy` ustaw wymaganą klasę integracyjną `class="abyss-time-menu"` na elemencie popup oraz `:breakpoint="0"`, żeby Quasar nie przełączał pickera na modal `QDialog` na małych viewportach.\n\n' +
           '```html\n<q-popup-proxy class="abyss-time-menu" :breakpoint="0">\n  <AbyssTime v-model="time" @close="popup = false" />\n</q-popup-proxy>\n```',
       },
     },

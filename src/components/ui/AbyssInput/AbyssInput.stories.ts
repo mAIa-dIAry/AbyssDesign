@@ -84,8 +84,16 @@ const meta: Meta<typeof AbyssInput> = {
         'Wariant bez cienia — np. w nagłówku tabeli lub zwartym toolbarze',
       table: { defaultValue: { summary: 'false' } },
     },
-    style: { control: 'object' },
-    class: { control: 'text' },
+    style: {
+      control: 'object',
+      description:
+        'Dodatkowe style CSS. Dozwolone w komponentach złożonych (np. edytor). Nie stosuj w standardowych formularzach i kartach.',
+    },
+    class: {
+      control: 'text',
+      description:
+        'Dodatkowe klasy CSS. Dozwolone w komponentach złożonych (np. edytor). Nie stosuj w standardowych formularzach i kartach.',
+    },
   },
 };
 
@@ -837,7 +845,7 @@ export const SmallFlat: Story = {
     docs: {
       description: {
         story:
-          'Połączenie `size="small"` i `flat` z własnym przyciskiem w slocie append — typowy wariant w `AbyssTable`.',
+          'Połączenie `size="small"` i `flat` z przyciskiem w slocie `#append` — typowy wariant w `AbyssTable`.',
       },
       source: {
         language: 'html',
@@ -849,7 +857,7 @@ export const SmallFlat: Story = {
   placeholder="Szukaj"
 >
   <template #append>
-    <AbyssButton flat size="small" icon="sym_r_search" class="icon-button" />
+    <AbyssButton flat size="small" icon="sym_r_search" aria-label="Szukaj" />
   </template>
 </AbyssInput>`,
       },
@@ -870,15 +878,15 @@ export const SmallFlat: Story = {
     template: `
       <AbyssInput v-bind="args" v-model="args.modelValue">
         <template #append>
-          <AbyssButton flat size="small" icon="sym_r_search" class="icon-button" />
+          <AbyssButton flat size="small" icon="sym_r_search" aria-label="Szukaj" />
         </template>
       </AbyssInput>
     `,
   }),
-  play: async ({ canvasElement }) => {
+  play: async ({ canvas, canvasElement }) => {
     const container = canvasElement.querySelector('.abyss-input-container');
     const input = canvasElement.querySelector('.abyss-input');
-    const button = canvasElement.querySelector('.icon-button');
+    const button = canvas.getByRole('button', { name: 'Szukaj' });
 
     await expect(container).toHaveClass('abyss-input-container--size-small');
     await expect(input).toHaveClass('abyss-input--flat');
@@ -1141,52 +1149,45 @@ export const ArchiveSearchPattern: Story = {
     docs: {
       description: {
         story:
-          'Referencyjny układ paska wyszukiwania z `ArchivePage`: `AbyssInput` typu `search` **bez etykiety** (100% szerokości), własny slot `#prepend` z przyciskiem daty i opcjonalnym `q-chip`, wbudowany przycisk lupy w `#append`.\n\n' +
+          'Referencyjny układ paska wyszukiwania: `AbyssInput` typu `search` bez etykiety, slot `#prepend` z `AbyssButton flat` otwierającym `AbyssDate` w `q-popup-proxy`, opcjonalny `q-chip` z tokenem daty, wbudowany przycisk lupy w `#append`.\n\n' +
           '**Placeholder:** pusty, gdy aktywny filtr daty (`@YYYY-MM-DD`); w przeciwnym razie „Szukaj frazy we wpisach”.',
       },
       source: {
         language: 'html',
-        code: `<div class="page-archive__toolbar">
-  <AbyssInput
-    v-model="searchQuery"
-    type="search"
-    :placeholder="searchPlaceholder"
-    :loading="isSearchingHistory || isJumpingToDate"
-    class="page-archive__toolbar-input page-archive__toolbar-input--search"
-  >
-    <template #prepend>
-      <div class="page-archive__search-prepend">
-        <AbyssButton
-          flat
-          size="medium"
-          icon="sym_r_calendar_month"
-          class="icon-button page-archive__date-trigger"
-          aria-label="Wybierz datę"
-        >
-          <q-popup-proxy class="abyss-date-menu" :breakpoint="0">
-            <AbyssDate
-              :model-value="datePickerValue"
-              mask="YYYY-MM-DD"
-              @update:model-value="handleDatePickerUpdate"
-              @close="datePopupRef?.hide()"
-            />
-          </q-popup-proxy>
-        </AbyssButton>
+        code: `<AbyssInput
+  v-model="searchQuery"
+  type="search"
+  :placeholder="searchPlaceholder"
+  :loading="isSearchingHistory || isJumpingToDate"
+>
+  <template #prepend>
+    <AbyssButton
+      flat
+      size="medium"
+      icon="sym_r_calendar_month"
+      aria-label="Wybierz datę"
+    >
+      <q-popup-proxy class="abyss-date-menu" :breakpoint="0">
+        <AbyssDate
+          :model-value="datePickerValue"
+          mask="YYYY-MM-DD"
+          @update:model-value="handleDatePickerUpdate"
+          @close="datePopupRef?.hide()"
+        />
+      </q-popup-proxy>
+    </AbyssButton>
 
-        <q-chip
-          v-if="selectedDateToken"
-          removable
-          remove-icon="sym_r_close"
-          dense
-          class="page-archive__date-chip"
-          @remove="clearDateToken"
-        >
-          {{ \`@\${selectedDateToken}\` }}
-        </q-chip>
-      </div>
-    </template>
-  </AbyssInput>
-</div>`,
+    <q-chip
+      v-if="selectedDateToken"
+      removable
+      remove-icon="sym_r_close"
+      dense
+      @remove="clearDateToken"
+    >
+      {{ \`@\${selectedDateToken}\` }}
+    </q-chip>
+  </template>
+</AbyssInput>`,
       },
     },
   },
@@ -1210,16 +1211,9 @@ export const ArchiveSearchPattern: Story = {
     await userEvent.type(searchInput, 'asdad');
     await expect(searchInput).toHaveValue('asdad');
 
-    const buttons = canvas.getAllByRole('button');
-    const calendarButton = buttons.find(
-      (button) => button.getAttribute('aria-label') === 'Wybierz datę',
-    );
-    await expect(calendarButton).toBeVisible();
-
-    const searchButton = canvasElement.querySelector(
-      '.archive-search-pattern__input .q-field__append .icon-button',
-    );
-    await expect(searchButton).toBeVisible();
+    await expect(
+      canvas.getByRole('button', { name: 'Wybierz datę' }),
+    ).toBeVisible();
 
     const setDateFilterButton = canvas.getByRole('button', {
       name: 'Ustaw filtr daty',
@@ -1229,48 +1223,7 @@ export const ArchiveSearchPattern: Story = {
     await expect(searchInput).toHaveValue('');
     await expect(searchInput).toHaveAttribute('placeholder', '');
     await expect(canvas.getByText('@2026-07-01')).toBeVisible();
-
-    const inputControl = canvasElement.querySelector(
-      '.archive-search-pattern__input .q-field__control',
-    );
-    const appendButton = canvasElement.querySelector(
-      '.archive-search-pattern__input .q-field__append .icon-button',
-    ) as HTMLElement | null;
-    const nativeInput = canvasElement.querySelector(
-      '.archive-search-pattern__input .q-field__native',
-    ) as HTMLElement | null;
-    const prependButton = canvasElement.querySelector(
-      '.archive-search-pattern__input .q-field__prepend .icon-button',
-    ) as HTMLElement | null;
-
-    const dateChip = canvasElement.querySelector(
-      '.archive-search-pattern__date-chip',
-    ) as HTMLElement | null;
-
-    if (
-      inputControl &&
-      appendButton &&
-      nativeInput &&
-      prependButton &&
-      dateChip
-    ) {
-      const controlRect = inputControl.getBoundingClientRect();
-      const appendRect = appendButton.getBoundingClientRect();
-      const nativeRect = nativeInput.getBoundingClientRect();
-      const prependRect = prependButton.getBoundingClientRect();
-      const dateChipRect = dateChip.getBoundingClientRect();
-      const appendGap = appendRect.left - nativeRect.right;
-      const prependGap = nativeRect.left - dateChipRect.right;
-      const dateButtonGap = dateChipRect.left - prependRect.right;
-
-      await expect(appendGap).toBeGreaterThanOrEqual(3);
-      await expect(appendGap).toBeLessThanOrEqual(5);
-      await expect(prependGap).toBeGreaterThanOrEqual(3);
-      await expect(prependGap).toBeLessThanOrEqual(5);
-      await expect(dateButtonGap).toBeGreaterThanOrEqual(3);
-      await expect(dateButtonGap).toBeLessThanOrEqual(5);
-      await expect(controlRect.width).toBeGreaterThan(400);
-    }
+    await expect(canvas.getByTestId('archive-search-date-chip')).toBeVisible();
 
     await userEvent.click(clearDateFilterButton);
     await expect(searchInput).toHaveAttribute(

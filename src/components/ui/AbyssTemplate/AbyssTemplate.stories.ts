@@ -158,7 +158,7 @@ const meta: Meta<typeof AbyssTemplate> = {
     screenRadius: {
       control: 'text',
       description:
-        'Promień zaokrąglenia ekranu urządzenia mobilnego (np. `30px`). Używany w trybie **mobile** – wartość jest propagowana jako CSS custom property `--screen-radius` do całego layoutu, dzięki czemu nie trzeba jej osobno przekazywać do `AbyssNavigation`. Wartość można pobrać programowo z Capacitor Safe Area API (patrz przykład w story *Mobile*).',
+        'Promień zaokrąglenia ekranu urządzenia mobilnego. Prop `screenRadius` jest propagowany do zagnieżdżonych komponentów layoutu (w tym `AbyssNavigation`). Wartość można pobrać z Capacitor Safe Area API (patrz story *Mobile*).',
       table: {
         type: { summary: 'string' },
         defaultValue: { summary: "''" },
@@ -421,7 +421,7 @@ export const Mobile: Story = {
       description: {
         story:
           'Layout mobilny w orientacji pionowej z treścią i nawigacją dolną.\n\n' +
-          '`screenRadius` określa promień zaokrąglenia ekranu urządzenia. Wartość jest ustawiana raz na `AbyssTemplate` i automatycznie propagowana do wszystkich zagnieżdżonych komponentów (w tym `AbyssNavigation`) przez CSS custom property `--screen-radius` – **nie trzeba jej osobno przekazywać do `AbyssNavigation`**.\n\n' +
+          '`screenRadius` określa promień zaokrąglenia ekranu urządzenia. Wartość jest ustawiana raz na `AbyssTemplate` i automatycznie propagowana do zagnieżdżonych komponentów layoutu (w tym `AbyssNavigation`) — **nie trzeba jej osobno przekazywać do `AbyssNavigation`**.\n\n' +
           'Na urządzeniu z Capacitorem wartość pobieramy z własnego pluginu `ScreenRadius`, który na Androidzie wywołuje `Display.getRoundedCorner()` (API 31+):\n\n' +
           '```ts\n' +
           "import { ScreenRadius } from '@/plugins/ScreenRadius';\n" +
