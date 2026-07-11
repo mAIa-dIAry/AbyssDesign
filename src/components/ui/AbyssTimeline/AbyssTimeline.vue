@@ -137,11 +137,14 @@ defineExpose({ scheduleAutoHide });
 <style scoped lang="scss">
 .abyss-timeline {
   width: 100%;
+  min-width: 0;
 
   &--mobile {
+    box-sizing: border-box;
     overflow: hidden;
+    width: 100%;
+    max-width: 100%;
     padding-right: 8px;
-    width: calc(100% + 8px);
   }
 }
 </style>

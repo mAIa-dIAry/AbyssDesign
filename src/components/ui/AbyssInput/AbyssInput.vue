@@ -41,6 +41,7 @@
             'abyss-input--no-bottom': !hasBottomContent,
             'abyss-input--custom-picker': usesCustomPicker,
             'abyss-input--flat': flat,
+            'abyss-input--with-prepend': hasPrepend,
           },
           $props.class,
         ]"
@@ -270,6 +271,14 @@ const buttonSize = computed<'small' | 'medium'>(() =>
 );
 
 const slots = useSlots();
+
+const hasPrepend = computed(() => {
+  if (slots.prepend) {
+    return true;
+  }
+
+  return ['email', 'tel', 'url'].includes(props.type);
+});
 
 const hasAppendContent = computed(() => {
   // Jeśli rodzic przekazał slot append
@@ -531,6 +540,10 @@ function handleInputBlur() {
         width: 100%;
         align-items: center;
         transition: $transition-medium;
+      }
+
+      &.abyss-input--with-prepend .q-field__control-container {
+        padding-left: var(--gap);
       }
 
       .q-field__append {
