@@ -366,8 +366,14 @@ function useTopLoadingStoryDemo() {
     }
 
     const applyScroll = (): void => {
+      const startSpacer = Number.parseFloat(
+        getComputedStyle(viewport).getPropertyValue(
+          "--abyss-scroll-view-content-spacer-size",
+        ),
+      ) || 12;
+
       viewport.scrollTop = Math.min(
-        topLoader.offsetHeight,
+        startSpacer + topLoader.offsetHeight,
         viewport.scrollHeight - viewport.clientHeight,
       );
     };

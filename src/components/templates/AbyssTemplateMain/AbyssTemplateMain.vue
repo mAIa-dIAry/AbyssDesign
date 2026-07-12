@@ -49,6 +49,11 @@
         >
           <div class="abyss-scroll-view__content">
             <div
+              class="abyss-scroll-view__content-spacer abyss-scroll-view__content-spacer--start"
+              aria-hidden="true"
+            />
+
+            <div
               v-if="!disabledTop"
               ref="topLoaderEl"
               class="abyss-scroll-view__loader abyss-scroll-view__loader--top"
@@ -59,7 +64,8 @@
             </div>
 
             <div
-              class="abyss-scroll-view__content-spacer abyss-scroll-view__content-spacer--top-after-loader"
+              v-if="!disabledTop"
+              class="abyss-scroll-view__content-spacer abyss-scroll-view__content-spacer--after-top-loader"
               aria-hidden="true"
             />
 
@@ -72,7 +78,7 @@
 
             <div
               v-if="!disabledBottom"
-              class="abyss-scroll-view__content-spacer abyss-scroll-view__content-spacer--bottom-before-loader"
+              class="abyss-scroll-view__content-spacer abyss-scroll-view__content-spacer--before-bottom-loader"
               aria-hidden="true"
             />
 
@@ -90,7 +96,7 @@
             </div>
 
             <div
-              class="abyss-scroll-view__content-spacer abyss-scroll-view__content-spacer--bottom-after-loader"
+              class="abyss-scroll-view__content-spacer abyss-scroll-view__content-spacer--end"
               aria-hidden="true"
             />
           </div>
@@ -119,8 +125,8 @@ import AbyssTemplateMainIndicator from "@/components/templates/AbyssTemplateMain
 const DEFAULT_LOADER_HEIGHT = 56;
 const DEFAULT_LOADER_HEIGHT_LARGE = 64;
 const DEFAULT_ACTIVATION_THRESHOLD = 8;
-/** Odstęp między loaderem a treścią w scrollowalnej zawartości (debug — żółta ramka). */
-const SCROLL_CONTENT_SPACER_PX = 12;
+const MOBILE_SCROLL_CONTENT_SPACER_PX = 12;
+const DESKTOP_SCROLL_CONTENT_SPACER_PX = 24;
 /** Minimalny przyrost scrollTop (px) przy aktywacji — chroni przed fałszywym triggerem po programatycznym scrollu. */
 const REFRESH_SCROLL_DELTA = 12;
 
@@ -184,6 +190,12 @@ const hasTopBar = computed(() => Boolean(slots["top-bar"]));
 
 const safeAreaActive = computed(
   () => props.safeArea && props.device === "mobile",
+);
+
+const scrollContentSpacerPx = computed(() =>
+  props.device === "mobile"
+    ? MOBILE_SCROLL_CONTENT_SPACER_PX
+    : DESKTOP_SCROLL_CONTENT_SPACER_PX,
 );
 
 const showBottomSafeInset = computed(
@@ -420,13 +432,13 @@ function finishLoadingBottom(): void {
   onLoadingFinished();
 }
 
-/** Ukryta strefa nad treścią (loader) — bez żółtego spacera widocznego w viewport. */
+/** Ukryta strefa nad treścią (spacer start + loader + spacer za loaderem). */
 const topLoaderScrollInsetPx = computed(() => {
   if (props.disabledTop) {
     return 0;
   }
 
-  return topLoaderMeasuredPx.value;
+  return scrollContentSpacerPx.value + topLoaderMeasuredPx.value;
 });
 
 /** Ukryta strefa pod treścią (spacer przed loaderem + loader) — bez spacera po loaderze widocznego w viewport. */
@@ -435,11 +447,12 @@ const bottomLoaderScrollInsetPx = computed(() => {
     return 0;
   }
 
-  return bottomLoaderMeasuredPx.value + SCROLL_CONTENT_SPACER_PX;
+  return bottomLoaderMeasuredPx.value + scrollContentSpacerPx.value;
 });
 
 const rootStyle = computed(() => ({
   "--abyss-scroll-view-loader-height": `${loaderHeight.value}px`,
+  "--abyss-scroll-view-content-spacer-size": `${scrollContentSpacerPx.value}px`,
   "--abyss-scroll-view-top-inset": `${topLoaderScrollInsetPx.value}px`,
   "--abyss-scroll-view-bottom-inset": `${bottomLoaderScrollInsetPx.value}px`,
 }));
@@ -1274,6 +1287,7 @@ defineExpose({
   bottomLoaderEl,
   hideTopLoader,
   hideBottomLoader,
+  getContentMaxScrollTop,
   clampScrollToContentZone,
   isTopLoaderActivated,
   isBottomLoaderActivated,
@@ -1283,13 +1297,25 @@ defineExpose({
 
 <style scoped lang="scss">
 .abyss-scroll-view {
+  --abyss-scroll-view-content-spacer-size: 12px;
+  --abyss-scroll-view-top-bar-padding-top: 24px;
   --abyss-scroll-view-content-padding-top: 24px;
   --abyss-scroll-view-content-padding-inline: 24px;
   --abyss-scroll-view-content-padding-bottom: 24px;
   --abyss-scroll-view-indicator-padding-top: 0px;
   --abyss-scroll-view-indicator-padding-bottom: 0px;
 
+  &.device--desktop,
+  &.device--web {
+    --abyss-scroll-view-content-spacer-size: 24px;
+    --abyss-scroll-view-top-bar-padding-top: 24px;
+    --abyss-scroll-view-content-padding-top: 0px;
+    --abyss-scroll-view-content-padding-bottom: 0px;
+    --abyss-scroll-view-content-padding-inline: 24px;
+  }
+
   &.device--mobile {
+    --abyss-scroll-view-top-bar-padding-top: 12px;
     --abyss-scroll-view-content-padding-top: 8px;
     --abyss-scroll-view-content-padding-inline: 8px;
     --abyss-scroll-view-content-padding-bottom: 24px;
@@ -1319,13 +1345,8 @@ defineExpose({
     flex-direction: column;
     min-width: 0;
     box-sizing: border-box;
-    padding-top: var(--abyss-scroll-view-content-padding-top);
+    padding-top: var(--abyss-scroll-view-top-bar-padding-top);
     padding-inline: var(--abyss-scroll-view-content-padding-inline);
-    box-shadow: inset 0 0 0 1px rgb(255, 140, 0);
-  }
-
-  &--safe-area.device--mobile &__top-bar {
-    padding-top: 0;
   }
 
   &--has-top-bar &__body {
@@ -1334,7 +1355,6 @@ defineExpose({
 
   &__scroll-host {
     display: contents;
-    box-shadow: inset 0 0 0 1px red;
 
     &--with-top-bar {
       display: flex;
@@ -1376,7 +1396,6 @@ defineExpose({
       env(safe-area-inset-top, 0px) -
         var(--abyss-scroll-view-safe-area-mask-size, 12px)
     );
-    box-shadow: inset 0 0 0 1px rgb(0, 170, 255);
   }
 
   &--safe-area-in-template.device--mobile &__safe-top {
@@ -1387,14 +1406,12 @@ defineExpose({
     flex-shrink: 0;
     width: 100%;
     height: calc(72px + max(8px, env(safe-area-inset-bottom, 0px)));
-    box-shadow: inset 0 0 0 1px rgb(0, 170, 255);
   }
 
   &__safe-right {
     flex-shrink: 0;
     width: calc(80px + max(8px, env(safe-area-inset-right, 0px)));
     align-self: stretch;
-    box-shadow: inset 0 0 0 1px rgb(0, 170, 255);
   }
 
   &--safe-area.device--mobile {
@@ -1415,6 +1432,18 @@ defineExpose({
     }
   }
 
+  &.device--desktop.abyss-scroll-view--has-top-bar,
+  &.device--web.abyss-scroll-view--has-top-bar {
+    .abyss-scroll-view__viewport {
+      mask-image: linear-gradient(
+        to bottom,
+        transparent 0,
+        black var(--abyss-scroll-view-content-spacer-size, 24px),
+        black 100%
+      );
+    }
+  }
+
   &__viewport {
     flex: 1 1 auto;
     min-height: 0;
@@ -1423,7 +1452,6 @@ defineExpose({
     overscroll-behavior: contain;
     -webkit-overflow-scrolling: touch;
     @include scrollbar;
-    box-shadow: inset 0 0 0 1px rgb(21, 255, 0);
   }
 
   &__content {
@@ -1438,8 +1466,7 @@ defineExpose({
   &__body {
     flex: 1 1 auto;
     min-height: calc(
-      100% - var(--abyss-scroll-view-top-inset) -
-        var(--abyss-scroll-view-bottom-inset)
+      100% - 2 * var(--abyss-scroll-view-content-spacer-size, 12px)
     );
     display: flex;
     flex-direction: column;
@@ -1451,8 +1478,7 @@ defineExpose({
 
   &__content-spacer {
     flex-shrink: 0;
-    height: 12px;
-    box-shadow: inset 0 0 0 1px rgb(255, 255, 0);
+    height: var(--abyss-scroll-view-content-spacer-size, 12px);
   }
 
   &__loader {

@@ -100,8 +100,8 @@ Komponenty layoutu znajdują się w [`src/components/templates`](../../src/compo
 
 ### Presety paddingów `AbyssTemplateMain` (SCSS — bez propsów nadpisujących)
 
-- **desktop / web:** góra, boki i dół `24px`
-- **mobile:** góra i boki `8px`, dół `24px`
+- **desktop / web:** boki `24px`; góra i dół treści `0` — pionowy odstęp w spacerach viewportu (`24px`).
+- **mobile:** góra i boki `8px`, dół `24px`; spacery viewportu `12px`.
 - **`safeArea` (mobile):** góra i dół treści `0` — inset w spacerze; boki `8px` (lub `max` z safe-area gdy poza szablonem)
 - **Loadery odświeżania (mobile portrait, bez `safeArea`):** padding wskaźnika `24px` u góry/dołu
 
@@ -131,16 +131,15 @@ Komponenty layoutu znajdują się w [`src/components/templates`](../../src/compo
 ### Slot `top-bar` (`AbyssTemplateMain`)
 
 - Stały pasek u góry strony **poza** przewijalnym viewportem — wzorzec jak toolbar archiwum (`page-archive__toolbar`).
-- Odstęp 12px między loaderem a treścią jest w viewport (`__content-spacer`). W pozycji spoczynkowej scroll ukrywa tylko loader — spacer pozostaje widoczny u góry viewportu.
+- Górny inset safe-area rezerwuje `__safe-top`; `__top-bar` ma `padding-top` **12px** (mobile) / **24px** (desktop / web) oraz padding boczny per `device`.
+- Kolejność w scrollowalnej treści: **spacer** (zawsze) → **loader górny** (opcjonalnie) → **spacer** (gdy loader górny) → **treść** (`min-height`: `100% − 2×spacer`) → **spacer** (gdy loader dolny) → **loader dolny** (opcjonalnie) → **spacer** (zawsze). W pozycji spoczynkowej scroll ukrywa strefę loadera — widoczny jest spacer za loaderem (góra) i spacer końcowy (dół).
 - `AbyssNavHeader` w `top-bar`: `sticky={false}`, `backdrop={false}`.
+- **Desktop / web** z aktywnym slotem `top-bar`: górna maska gradientowa viewportu (`24px`, bez dolnego fade).
 
 ### Wzorzec strony ze scrollem
 
 ```vue
 <div class="page-example">
-  <div class="page-example__toolbar">
-    <!-- opcjonalny stały toolbar (np. wyszukiwarka); inset u góry: padding w SCSS strony jak Archiwum -->
-  </div>
   <div class="page-example__content">
     <AbyssTemplateMain
       :device="device"
@@ -149,7 +148,9 @@ Komponenty layoutu znajdują się w [`src/components/templates`](../../src/compo
       :orientation="simpleOrientation"
       class="page-example__scroll"
     >
-      <AbyssNavHeader title="..." icon="..." @back="..." />
+      <template #top-bar>
+        <!-- opcjonalny stały toolbar (np. wyszukiwarka archiwum) -->
+      </template>
       <!-- przewijalna treść -->
     </AbyssTemplateMain>
   </div>
