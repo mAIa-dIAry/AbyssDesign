@@ -36,15 +36,15 @@ function reloadStoryFrameStyle(height: number, width = 480): string {
 
 type AbyssScrollViewStoryArgs = {
   device?: "mobile" | "desktop" | "web";
-  padded?: boolean;
+  safeArea?: boolean;
+  safeAreaInTemplate?: boolean;
+  orientation?: "portrait" | "landscape";
   loadingTop?: boolean;
   loadingBottom?: boolean;
   disabledTop?: boolean;
   disabledBottom?: boolean;
   activationThreshold?: number;
   size?: "default" | "large";
-  indicatorPaddingTop?: number;
-  indicatorPaddingBottom?: number;
   minLoadingTime?: number;
 };
 
@@ -87,8 +87,8 @@ const meta: Meta<AbyssScrollViewStoryArgs> = {
     docs: {
       description: {
         component:
-          "Przewijany kontener strony z domyślnymi paddingami bocznymi i dolnymi (zależnymi od `device`). " +
-          "Górny inset nie jest częścią komponentu — zapewnia go strona (toolbar, `AbyssNavHeader` lub stały nagłówek). " +
+          "Przewijany kontener strony ze standardowymi paddingami treści per `device` (SCSS). " +
+          "Prop `safeArea` (mobile) dodaje zewnętrzną ramkę ze spacerami inset — wzorzec Start / Analiza. " +
           "Opcjonalnie obsługuje odświeżanie od góry i od dołu — domyślnie wyłączone (`disabledTop` / `disabledBottom`). " +
           "Loadery są stałymi elementami listy; aktywacja przy progu `activationThreshold` (8 px).",
       },
@@ -126,18 +126,6 @@ const meta: Meta<AbyssScrollViewStoryArgs> = {
       options: ["default", "large"],
       description: "Rozmiar wskaźnika odświeżania",
       table: { defaultValue: { summary: "default" } },
-    },
-    indicatorPaddingTop: {
-      control: { type: "number", min: 0, max: 64, step: 4 },
-      description:
-        "Padding (px) wrappera górnego wskaźnika od zewnętrznej krawędzi listy",
-      table: { defaultValue: { summary: "0" } },
-    },
-    indicatorPaddingBottom: {
-      control: { type: "number", min: 0, max: 64, step: 4 },
-      description:
-        "Padding (px) wrappera dolnego wskaźnika od zewnętrznej krawędzi listy",
-      table: { defaultValue: { summary: "0" } },
     },
     minLoadingTime: {
       control: { type: "number", min: 0, max: 5000, step: 100 },
@@ -255,8 +243,6 @@ export const Default: Story = {
           :disabled-bottom="args.disabledBottom"
           :activation-threshold="args.activationThreshold ?? 8"
           :size="args.size"
-          :indicator-padding-top="args.indicatorPaddingTop ?? 0"
-          :indicator-padding-bottom="args.indicatorPaddingBottom ?? 0"
           :min-loading-time="args.minLoadingTime ?? 0"
           @refresh-top="handleRefreshTop"
           @refresh-bottom="handleRefreshBottom"
@@ -312,7 +298,7 @@ export const EmptyList: Story = {
     template: `
       <div :style="'${reloadStoryFrameStyle(360, 420)}'">
         <p :style="'${RELOAD_STORY_HINT_STYLE}'">
-          Treść ma min-height równy viewportowi plus wysokość aktywnych loaderów — bez dodatkowego rozciągania body.
+          Treść ma min-height równy viewportowi plus wysokość aktywnych loaderów — body wypełnia obszar między loaderami, więc pusty stan może być wyśrodkowany pionowo.
         </p>
         <div :style="scrollViewStoryChromeStyle('desktop')">
           Stały toolbar / nagłówek strony (padding u góry poza AbyssScrollView)
@@ -695,6 +681,58 @@ export const OnlyTop: Story = {
   @refresh-top="handleRefreshTop"
 >
   <!-- zawartość -->
+</AbyssScrollView>`,
+      },
+    },
+  },
+};
+
+export const SafeAreaInTemplate: Story = {
+  name: "Safe area — w szablonie",
+  args: {
+    device: "mobile",
+    safeArea: true,
+    safeAreaInTemplate: true,
+    orientation: "portrait",
+  },
+  render: (args) => ({
+    components: { AbyssScrollView },
+    setup: () => ({
+      args,
+      demoItems,
+      frameStyle: reloadStoryFrameStyle(360, 390),
+      itemStyle:
+        "padding: 14px; margin-bottom: 8px; border-radius: 8px; background: rgba(255,255,255,0.04);",
+    }),
+    template: `
+      <div :style="frameStyle">
+        <AbyssScrollView v-bind="args" style="flex: 1 1 auto; min-height: 0;">
+          <div
+            v-for="item in demoItems"
+            :key="item.id"
+            :style="itemStyle"
+          >
+            {{ item.label }}
+          </div>
+        </AbyssScrollView>
+      </div>
+    `,
+  }),
+  parameters: {
+    docs: {
+      description: {
+        story:
+          "Wzorzec Start / Analiza — górny spacer safe-area + maski fade; bez offsetu nawigacji.",
+      },
+      source: {
+        code: `
+<AbyssScrollView
+  device="mobile"
+  safe-area
+  safe-area-in-template
+  :orientation="simpleOrientation"
+>
+  <!-- przewijalna treść -->
 </AbyssScrollView>`,
       },
     },

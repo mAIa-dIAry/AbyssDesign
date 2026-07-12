@@ -74,9 +74,7 @@
     max-height: 100%;
     padding: 8px 0;
 
-    @media (hover: hover) and (pointer: fine) {
-      @include mixin.scrollbar;
-    }
+    @include mixin.scrollbar;
   }
 
   .q-item {
@@ -176,9 +174,7 @@
     max-height: 100%;
     padding: 8px;
 
-    @media (hover: hover) and (pointer: fine) {
-      @include mixin.scrollbar;
-    }
+    @include mixin.scrollbar;
 
     .abyss-button.full-width {
       justify-content: flex-start;

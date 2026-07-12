@@ -298,11 +298,9 @@ function back() {
     height: 100%;
     overflow: hidden;
 
-    &:not(.abyss-sidebar-nav--device-mobile) {
-      .abyss-sidebar-nav__sidebar,
-      .abyss-sidebar-nav__content {
-        @include scrollbar;
-      }
+    .abyss-sidebar-nav__sidebar,
+    .abyss-sidebar-nav__content {
+      @include scrollbar;
     }
 
     .abyss-sidebar-nav__sidebar {

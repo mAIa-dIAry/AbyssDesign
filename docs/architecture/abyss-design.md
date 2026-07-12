@@ -80,8 +80,8 @@ Przykład niedozwolonego użycia: karta „Konto” w ustawieniach z `class="set
 | `AbyssCode`        | kolorowany kod (JSON)          | `value`, `language` (`json` \| `abyss-json`), `colorTheme` (domyślnie `one-dark`)       |
 | `AbyssDebug`       | karta debugowania danych       | `data` — cienki wrapper nad `AbyssCode language="abyss-json"`                           |
 | `AbyssTemplate`    | szkielet aplikacji (nav, content) | `device`, `orientation`, `screenRadius`; slot `content` bez scrollu i paddingu        |
-| `AbyssScrollView`  | przewijany obszar strony       | `device`, `padded`, opcjonalny reload; padding boczny i dolny per `device` (góra: strona) |
-| `AbyssSidebarNav`  | układ sidebar + detail (nawigacja zakładek) | własny scroll paneli z mixin scrollbara na `desktop`/`web`; nie wymaga `AbyssScrollView` na poziomie strony |
+| `AbyssScrollView`  | przewijany obszar strony       | `device`, `safeArea`, opcjonalny reload; padding treści w SCSS per `device` |
+| `AbyssSidebarNav`  | układ sidebar + detail (nawigacja zakładek) | własny scroll paneli z mixin scrollbara na urządzeniach z myszką; nie wymaga `AbyssScrollView` na poziomie strony |
 
 ---
 
@@ -92,16 +92,70 @@ Podział odpowiedzialności między komponentami layoutu:
 | Komponent | Scroll | Padding treści |
 | --------- | ------ | -------------- |
 | `AbyssTemplate` → slot `content` | **Nie** — `overflow: hidden` | **Nie** |
-| `AbyssScrollView` | **Tak** — viewport przewija treść | **Tak** — góra, boki i dół per `device`; góra = boki |
-| `AbyssSidebarNav` | **Tak** — wewnętrznie w sidebarze i panelu treści (`desktop`/`web`: mixin scrollbara) | Własne insety paneli |
+| `AbyssScrollView` | **Tak** — viewport przewija treść | **Tak** — góra, boki i dół per `device`; opcjonalnie `safeArea` (mobile) |
+| `AbyssSidebarNav` | **Tak** — wewnętrznie w sidebarze i panelu treści (mixin scrollbara na urządzeniach z myszką) | Własne insety paneli |
 | Edytor / full-bleed | Własny layout 100% wysokości | W komponencie domenowym |
 
-### Presety paddingów `AbyssScrollView`
+### Presety paddingów `AbyssScrollView` (SCSS — bez propsów nadpisujących)
 
-- **góra:** taki sam jak boczny — bez wyjątków, gdy `padded` jest włączone
 - **desktop / web:** góra, boki i dół `24px`
 - **mobile:** góra i boki `8px`, dół `24px`
-- Nadpisanie: propsy `paddingTop`, `paddingInline`, `paddingBottom` (px)
+- **`safeArea` (mobile):** góra i dół treści `0` — inset w spacerze; boki `8px` (lub `max` z safe-area gdy poza szablonem)
+- **Loadery odświeżania (mobile portrait, bez `safeArea`):** padding wskaźnika `24px` u góry/dołu
+
+### `safeArea` (mobile)
+
+- **`safeArea`:** włącza zewnętrzną ramkę `__frame` ze spacerami (`__safe-top`, opcjonalnie `__safe-bottom` / `__safe-right`); **viewport scrolla bez zmian**.
+- Górny spacer: **`max(0, env(safe-area-inset-top) − 12px)`** — 12px to wysokość maski gradientowej u góry viewportu.
+- **`padding-top` / `padding-bottom` treści w trybie `safeArea` wynoszą `0`** — inset jest w spacerze.
+- Maski gradientowe **12px** u góry i dołu viewportu (`mask-image`).
+- **`safeAreaInTemplate` (domyślnie `true`):** bez offsetu nawigacji — szablon rezerwuje miejsce przez grid.
+- **`safeAreaInTemplate={false}`:** portrait — dolny spacer `72px + safe-area-bottom`; landscape — prawy spacer `80px + safe-area-right`.
+- **`orientation`:** `'portrait' | 'landscape'` — wybór strony offsetu nawigacji gdy `safeAreaInTemplate` jest `false`.
+- Desktop / web: `safeArea` ignorowane — brak spacerów i masek.
+
+```vue
+<AbyssScrollView
+  :device="device"
+  safe-area
+  safe-area-in-template
+  :orientation="simpleOrientation"
+  class="page-example__scroll"
+>
+  <!-- przewijalna treść -->
+</AbyssScrollView>
+```
+
+### Wzorzec strony ze scrollem
+
+```vue
+<div class="page-example">
+  <div class="page-example__toolbar">
+    <!-- opcjonalny stały toolbar (np. wyszukiwarka); inset u góry: padding w SCSS strony jak Archiwum -->
+  </div>
+  <div class="page-example__content">
+    <AbyssScrollView
+      :device="device"
+      safe-area
+      safe-area-in-template
+      :orientation="simpleOrientation"
+      class="page-example__scroll"
+    >
+      <AbyssNavHeader title="..." icon="..." @back="..." />
+      <!-- przewijalna treść -->
+    </AbyssScrollView>
+  </div>
+</div>
+```
+
+Strona: `height: 100%`, `min-height: 0`, flex column. Kontener content i `AbyssScrollView`: `flex: 1`, `min-height: 0`.
+
+### Mixin `scrollbar` (`src/scss/helpers/mixins.scss`)
+
+- Stosuj `@include scrollbar` bez warunków na `device` ani `Platform.is.mobile`.
+- Widoczny scrollbar tylko na urządzeniach z myszką: `@media (hover: hover) and (pointer: fine)`.
+- Na pozostałych urządzeniach scrollbar jest ukryty, przewijanie dotykowe pozostaje bez zmian.
+- Mixin ustawia też `--scrollbar-width` (`0px` / `6px`) — używaj w maskach i layoutach zależnych od szerokości scrollbara.
 
 ### `AbyssNavHeader`
 
@@ -113,27 +167,8 @@ Podział odpowiedzialności między komponentami layoutu:
 
 - Domyślnie wyłączone: `disabledTop` i `disabledBottom` są `true`.
 - Włącz tylko tam, gdzie potrzebne (np. archiwum — dół listy, lista analiz — góra).
-- Odstępy loaderów: `indicatorPaddingTop`, `indicatorPaddingBottom`.
 - Przy włączonym odświeżaniu od góry startowy `scrollTop` ustawia się na wysokość górnego loadera — chroni to przed przypadkową aktywacją `refresh-top` przy wejściu na stronę.
-- Wysokość scrolla przy włączonym loaderze: `100%` viewportu + zmierzona wysokość sekcji loadera (góra i/lub dół). `__body` ma naturalną wysokość treści — nie rozciąga się flexem do viewportu.
-
-### Wzorzec strony ze scrollem
-
-```vue
-<div class="page-example">
-  <div class="page-example__toolbar">
-    <!-- opcjonalny stały toolbar (np. wyszukiwarka); inset u góry ekranu nadal może wymagać własnego safe-area -->
-  </div>
-  <div class="page-example__content">
-    <AbyssScrollView :device="device" class="page-example__scroll">
-      <AbyssNavHeader title="..." icon="..." @back="..." />
-      <!-- przewijalna treść -->
-    </AbyssScrollView>
-  </div>
-</div>
-```
-
-Strona: `height: 100%`, `min-height: 0`, flex column. Kontener content i `AbyssScrollView`: `flex: 1`, `min-height: 0`.
+- Wysokość scrolla przy włączonym loaderze: `100%` viewportu + zmierzona wysokość sekcji loadera (góra i/lub dół). `__body` wypełnia obszar między loaderami (`flex: 1 1 auto`, `min-height: calc(100% - inset góra - inset dół)`), dzięki czemu pusty stan może być wyśrodkowany pionowo, a dolny loader pozostaje poza widocznym obszarem treści do momentu przewinięcia.
 
 ---
 

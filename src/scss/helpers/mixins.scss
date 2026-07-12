@@ -84,35 +84,47 @@
 }
 
 @mixin scrollbar {
+  --scrollbar-width: 0px;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+
   &::-webkit-scrollbar {
-    width: 6px;
-    height: 6px;
+    width: 0;
+    height: 0;
+    display: none;
   }
 
-  &::-webkit-scrollbar-track {
-    background: transparent;
-  }
-
-  &::-webkit-scrollbar-thumb {
-    background: rgba(white, 0.15);
-    border-radius: 3px;
-    transition: background 0.2s ease;
-  }
-
-  &::-webkit-scrollbar-thumb:hover {
-    background: rgba(white, 0.3);
-  }
-
-  &::-webkit-scrollbar-thumb:active {
-    background: rgba(white, 0.45);
-  }
-
-  &::-webkit-scrollbar-corner {
-    background: transparent;
-  }
-
-  & {
+  @media (hover: hover) and (pointer: fine) {
+    --scrollbar-width: 6px;
     scrollbar-width: thin;
     scrollbar-color: rgba(white, 0.15) transparent;
+
+    &::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+      display: block;
+    }
+
+    &::-webkit-scrollbar-track {
+      background: transparent;
+    }
+
+    &::-webkit-scrollbar-thumb {
+      background: rgba(white, 0.15);
+      border-radius: 3px;
+      transition: background 0.2s ease;
+    }
+
+    &::-webkit-scrollbar-thumb:hover {
+      background: rgba(white, 0.3);
+    }
+
+    &::-webkit-scrollbar-thumb:active {
+      background: rgba(white, 0.45);
+    }
+
+    &::-webkit-scrollbar-corner {
+      background: transparent;
+    }
   }
 }

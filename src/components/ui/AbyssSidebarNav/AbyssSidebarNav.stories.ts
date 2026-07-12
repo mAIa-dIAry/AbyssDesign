@@ -440,7 +440,7 @@ const meta: Meta<typeof AbyssSidebarNav> = {
     docs: {
       description: {
         component:
-          'Komponent nawigacji bocznej z zakładkami renderujący listę sekcji i zawartość aktywnej zakładki. Przy szerokim viewportcie pokazuje sidebar oraz panel treści obok siebie, a przy wąskim przełącza się między listą sekcji i widokiem szczegółów. Na `device="desktop"` i `device="web"` sidebar oraz panel treści używają mixin scrollbara. Treść poszczególnych sekcji przekazywana jest przez sloty nazwane tak samo jak `id` elementów z `tabs`, na przykład `appearance` albo `security`. Dodatkowe elementy wewnątrz sidebara można wstawić przez sloty `sidebar-prepend` i `sidebar-append` renderowane odpowiednio przed i po liście zakładek.',
+          'Komponent nawigacji bocznej z zakładkami renderujący listę sekcji i zawartość aktywnej zakładki. Przy szerokim viewportcie pokazuje sidebar oraz panel treści obok siebie, a przy wąskim przełącza się między listą sekcji i widokiem szczegółów. Sidebar oraz panel treści używają mixin scrollbara (widoczny tylko na urządzeniach z myszką). Treść poszczególnych sekcji przekazywana jest przez sloty nazwane tak samo jak `id` elementów z `tabs`, na przykład `appearance` albo `security`. Dodatkowe elementy wewnątrz sidebara można wstawić przez sloty `sidebar-prepend` i `sidebar-append` renderowane odpowiednio przed i po liście zakładek.',
       },
     },
   },
@@ -696,7 +696,7 @@ export const Web: Story = {
     docs: {
       description: {
         story:
-          'Wariant webowy shellu z `device="web"`. Sidebar i panel treści korzystają z mixin scrollbara w układzie desktopowym.',
+          'Wariant webowy shellu z `device="web"`. Sidebar i panel treści korzystają z mixin scrollbara w układzie desktopowym (widoczny tylko na urządzeniach z myszką).',
       },
       source: {
         code: SETTINGS_SOURCE_CODE,
