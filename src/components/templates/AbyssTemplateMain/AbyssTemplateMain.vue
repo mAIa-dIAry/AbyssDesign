@@ -1322,6 +1322,15 @@ defineExpose({
     --abyss-scroll-view-content-padding-bottom: 24px;
   }
 
+  &.device--mobile &__content-spacer--end {
+    overflow: hidden;
+    transition: height $transition-fast;
+  }
+
+  &.device--mobile:focus-within &__content-spacer--end {
+    height: 0;
+  }
+
   &.device--mobile.orientation--portrait:not(.abyss-scroll-view--safe-area) {
     --abyss-scroll-view-indicator-padding-top: 24px;
     --abyss-scroll-view-indicator-padding-bottom: 24px;
