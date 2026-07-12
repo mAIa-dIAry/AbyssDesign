@@ -381,7 +381,6 @@ function back() {
         overflow: auto;
         box-sizing: border-box;
         padding-top: calc(env(safe-area-inset-top, 0px) + 12px);
-        padding-inline: 8px;
         padding-bottom: 24px;
       }
 

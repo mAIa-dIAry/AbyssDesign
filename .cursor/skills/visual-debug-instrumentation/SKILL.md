@@ -33,20 +33,15 @@ Kolory przypisuj **kolejno** do kolejnych debugowanych elementów (1. element �
 
 Nie zamieniaj kolorów z palety na inne — zestaw jest stały i maksymalnie rozróżnialny wizualnie.
 
-## Głębokość zagnieżdżenia i offset
+## Offset
 
-`outline-offset` maleje o **2 px** na każdy poziom zagnieżdżenia w drzewie DOM (względem najbliższego przodka z instrumentacją lub względem korzenia debugowanego poddrzewa):
+Zawsze używaj stałego offsetu:
 
-| Głębokość | Offset |
-|-----------|--------|
-| 1 | `-2px` |
-| 2 | `-4px` |
-| 3 | `-6px` |
-| 4 | `-8px` |
-| 5 | `-10px` |
-| … | `-{głębokość × 2}px` |
+```scss
+outline-offset: -1px !important; // VISUAL DEBUG
+```
 
-Wzór: `outline-offset: -{depth * 2}px`
+Nie zmieniaj offsetu w zależności od głębokości zagnieżdżenia — każdy element ma `-1px`.
 
 ## Dodawanie instrumentacji
 
@@ -54,21 +49,14 @@ W bloku stylów danego selektora dodaj **dwie kolejne linie** (zachowaj wcięcie
 
 ```scss
 outline: 1px solid rgb(0, 255, 255) !important; // VISUAL DEBUG
-outline-offset: -2px !important; // VISUAL DEBUG
-```
-
-Dla głębokości > 1 dopisz głębokość w komentarzu offsetu:
-
-```scss
-outline: 1px solid rgb(0, 255, 255) !important; // VISUAL DEBUG
-outline-offset: -4px !important; // VISUAL DEBUG — depth 2
+outline-offset: -1px !important; // VISUAL DEBUG
 ```
 
 ### Zasady
 
-1. Zawsze `outline: 1px solid … !important` i `outline-offset: … !important`.
+1. Zawsze `outline: 1px solid … !important` i `outline-offset: -1px !important`.
 2. Kolor z palety (tabela powyżej), format `rgb(r, g, b)` — bez skrótów nazw kolorów (`red`, `cyan` itd.).
-3. Komentarz `// VISUAL DEBUG` na obu liniach; przy offset ≠ -2px dodaj `— depth N` w drugiej linii.
+3. Komentarz `// VISUAL DEBUG` na obu liniach.
 4. Nie dodawaj `border` — tylko `outline`.
 5. Nie zmieniaj innych właściwości stylu poza tymi dwiema liniami.
 
@@ -80,17 +68,17 @@ outline-offset: -4px !important; // VISUAL DEBUG — depth 2
   width: 100%;
   height: max(0px, env(safe-area-inset-top, 0px) - var(--abyss-scroll-view-safe-area-mask-size, 12px));
   outline: 1px solid rgb(0, 255, 255) !important; // VISUAL DEBUG
-  outline-offset: -2px !important; // VISUAL DEBUG
+  outline-offset: -1px !important; // VISUAL DEBUG
 }
 ```
 
-Zagnieżdżony element (depth 3):
+Zagnieżdżony element:
 
 ```scss
 &__safe-right {
   flex-shrink: 0;
-  outline: 1px solid rgb(0, 255, 255) !important; // VISUAL DEBUG
-  outline-offset: -6px !important; // VISUAL DEBUG — depth 3
+  outline: 1px solid rgb(0, 255, 0) !important; // VISUAL DEBUG
+  outline-offset: -1px !important; // VISUAL DEBUG
 }
 ```
 
@@ -106,10 +94,9 @@ Zagnieżdżony element (depth 3):
 ### Dodawanie
 
 1. Ustal plik(i) i selektory do oznaczenia.
-2. Oceń głębokość zagnieżdżenia każdego elementu w drzewie DOM.
-3. Przypisz kolory z palety (kolejno, bez duplikatów wizualnych na sąsiednich niezwiązanych elementach).
-4. Wstaw dwie linie outline na końcu bloku stylów selektora (przed zamknięciem `}`).
-5. Podsumuj: które elementy, kolory, głębokości.
+2. Przypisz kolory z palety (kolejno, bez duplikatów wizualnych na sąsiednich niezwiązanych elementach).
+3. Wstaw dwie linie outline na końcu bloku stylów selektora (przed zamknięciem `}`).
+4. Podsumuj: które elementy i kolory.
 
 ### Usuwanie
 
