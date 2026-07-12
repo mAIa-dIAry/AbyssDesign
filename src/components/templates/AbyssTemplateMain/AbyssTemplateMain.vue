@@ -9,6 +9,7 @@
         'abyss-scroll-view--has-top-bar': hasTopBar,
         'orientation--landscape': safeAreaActive && orientation === 'landscape',
         'orientation--portrait': safeAreaActive && orientation === 'portrait',
+        'abyss-scroll-view--hide-end-spacer': hideEndContentSpacer,
       },
       $props.class,
     ]"
@@ -96,6 +97,7 @@
             </div>
 
             <div
+              v-if="showEndContentSpacer"
               class="abyss-scroll-view__content-spacer abyss-scroll-view__content-spacer--end"
               aria-hidden="true"
             />
@@ -121,6 +123,7 @@
 <script setup lang="ts">
 import { computed, nextTick, onMounted, onUnmounted, ref, useSlots, watch } from "vue";
 import AbyssTemplateMainIndicator from "@/components/templates/AbyssTemplateMain/AbyssTemplateMainIndicator.vue";
+import { useKeyboardState } from "@/composables/useKeyboardState";
 
 const DEFAULT_LOADER_HEIGHT = 56;
 const DEFAULT_LOADER_HEIGHT_LARGE = 64;
@@ -185,8 +188,15 @@ const props = withDefaults(defineProps<AbyssTemplateMainProps>(), {
 });
 
 const slots = useSlots();
+const { isKeyboardVisible } = useKeyboardState();
 
 const hasTopBar = computed(() => Boolean(slots["top-bar"]));
+
+const hideEndContentSpacer = computed(
+  () => props.device !== "mobile" || isKeyboardVisible.value,
+);
+
+const showEndContentSpacer = computed(() => !hideEndContentSpacer.value);
 
 const safeAreaActive = computed(
   () => props.safeArea && props.device === "mobile",
@@ -1322,15 +1332,6 @@ defineExpose({
     --abyss-scroll-view-content-padding-bottom: 24px;
   }
 
-  &.device--mobile &__content-spacer--end {
-    overflow: hidden;
-    transition: height $transition-fast;
-  }
-
-  &.device--mobile:focus-within &__content-spacer--end {
-    height: 0;
-  }
-
   &.device--mobile.orientation--portrait:not(.abyss-scroll-view--safe-area) {
     --abyss-scroll-view-indicator-padding-top: 24px;
     --abyss-scroll-view-indicator-padding-bottom: 24px;
@@ -1484,6 +1485,12 @@ defineExpose({
     padding-top: var(--abyss-scroll-view-content-padding-top);
     padding-inline: var(--abyss-scroll-view-content-padding-inline);
     padding-bottom: var(--abyss-scroll-view-content-padding-bottom);
+  }
+
+  &.abyss-scroll-view--hide-end-spacer &__body {
+    min-height: calc(
+      100% - var(--abyss-scroll-view-content-spacer-size, 12px)
+    );
   }
 
   &__content-spacer {
