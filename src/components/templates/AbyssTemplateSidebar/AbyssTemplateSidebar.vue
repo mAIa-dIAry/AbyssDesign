@@ -13,9 +13,14 @@
         isMobile
           ? 'abyss-sidebar-nav__pane abyss-sidebar-nav__pane--list'
           : 'abyss-sidebar-nav__sidebar',
+        {
+          'abyss-sidebar-nav__pane--has-sidebar-end': isMobile && hasSidebarAppend,
+        },
       ]"
     >
-      <div class="abyss-sidebar-nav__sidebar-content">
+      <div
+        class="abyss-sidebar-nav__sidebar-content"
+      >
         <slot name="sidebar-prepend" />
 
         <AbyssSeparator v-if="hasSidebarPrepend" />
@@ -40,7 +45,12 @@
 
         <AbyssSeparator v-if="hasSidebarAppend" />
 
-        <slot name="sidebar-append" />
+        <div
+          v-if="hasSidebarAppend"
+          class="abyss-sidebar-nav__sidebar-append"
+        >
+          <slot name="sidebar-append" />
+        </div>
       </div>
     </aside>
 
@@ -279,6 +289,11 @@ function back() {
     }
   }
 
+  .abyss-sidebar-nav__sidebar-append {
+    flex-shrink: 0;
+    padding: 12px 16px 8px;
+  }
+
   .abyss-sidebar-nav__sidebar {
     overflow: auto;
     min-height: 0;
@@ -347,6 +362,10 @@ function back() {
         padding: 8px 6px;
       }
 
+      .abyss-sidebar-nav__sidebar-append {
+        padding: 12px 6px 8px;
+      }
+
       .abyss-sidebar-nav__content {
         background: linear-gradient(
           to right,
@@ -382,6 +401,10 @@ function back() {
         box-sizing: border-box;
         padding-top: calc(env(safe-area-inset-top, 0px) + 12px);
         padding-bottom: 24px;
+
+        &.abyss-sidebar-nav__pane--has-sidebar-end {
+          padding-bottom: 0;
+        }
       }
 
       &--detail {
@@ -421,6 +444,10 @@ function back() {
           }
         }
       }
+    }
+
+    .abyss-sidebar-nav__sidebar-append {
+      padding: 12px 8px 24px;
     }
 
     &.abyss-sidebar-nav--device-desktop {

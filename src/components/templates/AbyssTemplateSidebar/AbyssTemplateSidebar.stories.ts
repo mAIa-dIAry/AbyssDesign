@@ -526,15 +526,6 @@ const Wrapper = defineComponent({
   setup(props) {
     const active = ref(props.modelValue || props.tabs[0]?.id || '');
     const isDetailOpen = ref(props.detailOpen);
-    const sidebarAppendPadding = computed(() => {
-      if (props.shellDevice !== 'mobile') {
-        return '12px 16px 16px';
-      }
-
-      return props.shellOrientation === 'landscape'
-        ? '12px 8px 12px 8px'
-        : '12px 8px 24px 8px';
-    });
 
     watch(
       () => props.modelValue,
@@ -575,7 +566,6 @@ const Wrapper = defineComponent({
       handleOpen,
       isDetailOpen,
       logoUrl,
-      sidebarAppendPadding,
     };
   },
   template: `
@@ -630,10 +620,7 @@ const Wrapper = defineComponent({
             </template>
 
             <template #sidebar-append>
-              <div
-                v-if="shellDevice === 'mobile'"
-                :style="{ padding: sidebarAppendPadding }"
-              >
+              <div v-if="shellDevice === 'mobile'">
                 <AbyssButton label="Zablokuj" icon="sym_r_lock" full-width />
               </div>
             </template>
