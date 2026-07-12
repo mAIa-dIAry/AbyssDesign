@@ -48,6 +48,12 @@
         >
           <slot name="sidebar-append" />
         </div>
+
+        <div
+          v-else-if="isMobile"
+          class="abyss-sidebar-nav__sidebar-end-spacer"
+          aria-hidden="true"
+        />
       </div>
     </aside>
 
@@ -284,6 +290,11 @@ function back() {
         text-align: left;
       }
     }
+  }
+
+  .abyss-sidebar-nav__sidebar-end-spacer {
+    flex-shrink: 0;
+    height: 12px;
   }
 
   .abyss-sidebar-nav__sidebar-append {
