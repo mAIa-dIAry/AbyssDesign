@@ -13,9 +13,6 @@
         isMobile
           ? 'abyss-sidebar-nav__pane abyss-sidebar-nav__pane--list'
           : 'abyss-sidebar-nav__sidebar',
-        {
-          'abyss-sidebar-nav__pane--has-sidebar-end': isMobile && hasSidebarAppend,
-        },
       ]"
     >
       <div
@@ -391,6 +388,10 @@ function back() {
       }
     }
 
+    .abyss-sidebar-nav__sidebar-content {
+      padding-top: env(safe-area-inset-top, 0px);
+    }
+
     .abyss-sidebar-nav__pane {
       height: 100%;
       min-height: 0;
@@ -399,12 +400,8 @@ function back() {
         height: 100%;
         overflow: auto;
         box-sizing: border-box;
-        padding-top: calc(env(safe-area-inset-top, 0px) + 12px);
-        padding-bottom: 24px;
 
-        &.abyss-sidebar-nav__pane--has-sidebar-end {
-          padding-bottom: 0;
-        }
+        @include scrollbar;
       }
 
       &--detail {
@@ -438,6 +435,8 @@ function back() {
 
           flex: 1;
           overflow: auto;
+
+          @include scrollbar;
 
           &-inner {
             padding: 12px 8px 24px 8px;
