@@ -134,7 +134,7 @@ Komponenty layoutu znajdują się w [`src/components/templates`](../../src/compo
 - Górny inset safe-area rezerwuje `__safe-top`; `__top-bar` ma `padding-top` **12px** (mobile) / **24px** (desktop / web) oraz padding boczny per `device`.
 - Kolejność w scrollowalnej treści: **spacer** (zawsze) → **loader górny** (opcjonalnie) → **spacer** (gdy loader górny) → **treść** (`min-height`: `100% − 2×spacer`) → **spacer** (gdy loader dolny) → **loader dolny** (opcjonalnie) → **spacer** (zawsze). W pozycji spoczynkowej scroll ukrywa strefę loadera — widoczny jest spacer za loaderem (góra) i spacer końcowy (dół).
 - `AbyssNavHeader` w `top-bar`: `sticky={false}`, `backdrop={false}`.
-- **Desktop / web** z aktywnym slotem `top-bar`: górna maska gradientowa viewportu (`24px`, bez dolnego fade).
+- **Desktop / web** z aktywnym slotem `top-bar`: górna maska gradientowa viewportu (`12px`, bez dolnego fade); spacery viewportu pozostają `24px`.
 
 ### Wzorzec strony ze scrollem
 

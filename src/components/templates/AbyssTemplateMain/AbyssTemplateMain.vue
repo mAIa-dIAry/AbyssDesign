@@ -1308,6 +1308,7 @@ defineExpose({
   &.device--desktop,
   &.device--web {
     --abyss-scroll-view-content-spacer-size: 24px;
+    --abyss-scroll-view-top-bar-mask-size: 12px;
     --abyss-scroll-view-top-bar-padding-top: 24px;
     --abyss-scroll-view-content-padding-top: 0px;
     --abyss-scroll-view-content-padding-bottom: 0px;
@@ -1438,7 +1439,7 @@ defineExpose({
       mask-image: linear-gradient(
         to bottom,
         transparent 0,
-        black var(--abyss-scroll-view-content-spacer-size, 24px),
+        black var(--abyss-scroll-view-top-bar-mask-size, 12px),
         black 100%
       );
     }
