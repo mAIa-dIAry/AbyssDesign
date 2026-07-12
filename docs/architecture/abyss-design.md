@@ -22,7 +22,7 @@ Ten dokument jest kanonicznym standardem **używania** Abyss Design w projekcie 
 
 Najważniejsze zasady interpretacji:
 
-- interfejs budujesz z komponentów `src/components/ui` i ich udokumentowanych propsów, slotów oraz zdarzeń,
+- interfejs budujesz z komponentów `src/components/ui` (prymitywy) i `src/components/templates` (layout) oraz ich udokumentowanych propsów, slotów oraz zdarzeń,
 - Storybook dokumentuje API każdego komponentu — ten plik opisuje reguły łączenia komponentów w ekrany,
 - **zakres tego dokumentu to głównie formularze, standardowe karty i dialogi** — tam obowiązują restrykcyjne reguły bez custom styli,
 - komponenty wyższego rzędu w aplikacji (np. edytor notatek) mogą używać `class` i `style` na prymitywach Abyss — patrz sekcja [Formularze i karty vs komponenty złożone](#formularze-i-karty-vs-komponenty-złożone),
@@ -74,14 +74,14 @@ Przykład niedozwolonego użycia: karta „Konto” w ustawieniach z `class="set
 | `AbyssGrid`        | responsywna siatka             | `column-size`, `max-columns`, `column-gap`, `row-gap`, `align`, `content-rows`          |
 | `AbyssForm`        | wrapper formularza             | `v-model`, `sync`, `@update-form`, `@submit-form`                                       |
 | `AbyssPanel`       | panel z opcjonalnym nagłówkiem | `title`, `flush`, slot `title`                                                          |
-| `AbyssNavHeader`   | sticky nagłówek nawigacyjny    | `title`, `icon`, `backDisabled`, `backIcon`, `backLabel`, `sticky`, `stickyTop`, slot `actions` (`AbyssButton` `size="medium"` `flat` `embedded`); bez marginesów — inset u góry z `AbyssScrollView`; przycisk wstecz zawsze widoczny |
+| `AbyssNavHeader`   | sticky nagłówek nawigacyjny    | `title`, `icon`, `backDisabled`, `backIcon`, `backLabel`, `sticky`, `backdrop`, `stickyTop`, slot `actions` (`AbyssButton` `size="medium"` `flat` `embedded`); bez marginesów — inset u góry z `AbyssTemplateMain`; przycisk wstecz zawsze widoczny |
 | `AbyssContent`     | typografia gotowego HTML       | `html`, `mode` (`html-note` \| `html-changelog`), `size`, `tone`                        |
 | `AbyssMarkdown`    | podgląd Markdown + kod źródłowy | `source`, `v-model` (`preview` \| `code`), `content-mode`, `embedded`                  |
 | `AbyssCode`        | kolorowany kod (JSON)          | `value`, `language` (`json` \| `abyss-json`), `colorTheme` (domyślnie `one-dark`)       |
 | `AbyssDebug`       | karta debugowania danych       | `data` — cienki wrapper nad `AbyssCode language="abyss-json"`                           |
-| `AbyssTemplate`    | szkielet aplikacji (nav, content) | `device`, `orientation`, `screenRadius`; slot `content` bez scrollu i paddingu        |
-| `AbyssScrollView`  | przewijany obszar strony       | `device`, `safeArea`, opcjonalny reload; padding treści w SCSS per `device` |
-| `AbyssSidebarNav`  | układ sidebar + detail (nawigacja zakładek) | własny scroll paneli z mixin scrollbara na urządzeniach z myszką; nie wymaga `AbyssScrollView` na poziomie strony |
+| `AbyssTemplateRoot`    | szkielet aplikacji (nav, content) | `device`, `orientation`, `screenRadius`; slot `content` bez scrollu i paddingu        |
+| `AbyssTemplateMain`  | przewijany obszar strony       | `device`, `safeArea`, opcjonalny reload; slot `top-bar` (poza scrollowym viewportem); padding treści w SCSS per `device` |
+| `AbyssTemplateSidebar`  | układ sidebar + detail (nawigacja zakładek) | własny scroll paneli z mixin scrollbara na urządzeniach z myszką; nie wymaga `AbyssTemplateMain` na poziomie strony |
 
 ---
 
@@ -89,14 +89,16 @@ Przykład niedozwolonego użycia: karta „Konto” w ustawieniach z `class="set
 
 Podział odpowiedzialności między komponentami layoutu:
 
+Komponenty layoutu znajdują się w [`src/components/templates`](../../src/components/templates). Stare nazwy (`AbyssTemplate`, `AbyssScrollView`, `AbyssSidebarNav`) pozostają jako shadow-wrappery w `src/components/ui` — importuj kanoniczne nazwy z `templates/`.
+
 | Komponent | Scroll | Padding treści |
 | --------- | ------ | -------------- |
-| `AbyssTemplate` → slot `content` | **Nie** — `overflow: hidden` | **Nie** |
-| `AbyssScrollView` | **Tak** — viewport przewija treść | **Tak** — góra, boki i dół per `device`; opcjonalnie `safeArea` (mobile) |
-| `AbyssSidebarNav` | **Tak** — wewnętrznie w sidebarze i panelu treści (mixin scrollbara na urządzeniach z myszką) | Własne insety paneli |
+| `AbyssTemplateRoot` → slot `content` | **Nie** — `overflow: hidden` | **Nie** |
+| `AbyssTemplateMain` | **Tak** — viewport przewija treść | **Tak** — góra, boki i dół per `device`; opcjonalnie `safeArea` (mobile) |
+| `AbyssTemplateSidebar` | **Tak** — wewnętrznie w sidebarze i panelu treści (mixin scrollbara na urządzeniach z myszką) | Własne insety paneli |
 | Edytor / full-bleed | Własny layout 100% wysokości | W komponencie domenowym |
 
-### Presety paddingów `AbyssScrollView` (SCSS — bez propsów nadpisujących)
+### Presety paddingów `AbyssTemplateMain` (SCSS — bez propsów nadpisujących)
 
 - **desktop / web:** góra, boki i dół `24px`
 - **mobile:** góra i boki `8px`, dół `24px`
@@ -105,8 +107,8 @@ Podział odpowiedzialności między komponentami layoutu:
 
 ### `safeArea` (mobile)
 
-- **`safeArea`:** włącza zewnętrzną ramkę `__frame` ze spacerami (`__safe-top`, opcjonalnie `__safe-bottom` / `__safe-right`); **viewport scrolla bez zmian**.
-- Górny spacer: **`max(0, env(safe-area-inset-top) − 12px)`** — 12px to wysokość maski gradientowej u góry viewportu.
+- **`safeArea`:** włącza zewnętrzną ramkę `__frame` ze spacerami (`__safe-top`, opcjonalnie `__safe-bottom` / `__safe-right`); **viewport scrolla bez zmian**. `__safe-top` jest zawsze nad slotem `top-bar` (gdy `safeArea` na mobile).
+- Górny spacer: **`max(0, env(safe-area-inset-top) − 12px)`** — 12px to wysokość maski gradientowej u góry viewportu; przy **`safeAreaInTemplate`** pełny **`env(safe-area-inset-top)`** (bez odejmowania 12px).
 - **`padding-top` / `padding-bottom` treści w trybie `safeArea` wynoszą `0`** — inset jest w spacerze.
 - Maski gradientowe **12px** u góry i dołu viewportu (`mask-image`).
 - **`safeAreaInTemplate` (domyślnie `true`):** bez offsetu nawigacji — szablon rezerwuje miejsce przez grid.
@@ -115,7 +117,7 @@ Podział odpowiedzialności między komponentami layoutu:
 - Desktop / web: `safeArea` ignorowane — brak spacerów i masek.
 
 ```vue
-<AbyssScrollView
+<AbyssTemplateMain
   :device="device"
   safe-area
   safe-area-in-template
@@ -123,8 +125,14 @@ Podział odpowiedzialności między komponentami layoutu:
   class="page-example__scroll"
 >
   <!-- przewijalna treść -->
-</AbyssScrollView>
+</AbyssTemplateMain>
 ```
+
+### Slot `top-bar` (`AbyssTemplateMain`)
+
+- Stały pasek u góry strony **poza** przewijalnym viewportem — wzorzec jak toolbar archiwum (`page-archive__toolbar`).
+- Odstęp 12px między loaderem a treścią jest w viewport (`__content-spacer`). W pozycji spoczynkowej scroll ukrywa tylko loader — spacer pozostaje widoczny u góry viewportu.
+- `AbyssNavHeader` w `top-bar`: `sticky={false}`, `backdrop={false}`.
 
 ### Wzorzec strony ze scrollem
 
@@ -134,7 +142,7 @@ Podział odpowiedzialności między komponentami layoutu:
     <!-- opcjonalny stały toolbar (np. wyszukiwarka); inset u góry: padding w SCSS strony jak Archiwum -->
   </div>
   <div class="page-example__content">
-    <AbyssScrollView
+    <AbyssTemplateMain
       :device="device"
       safe-area
       safe-area-in-template
@@ -143,12 +151,12 @@ Podział odpowiedzialności między komponentami layoutu:
     >
       <AbyssNavHeader title="..." icon="..." @back="..." />
       <!-- przewijalna treść -->
-    </AbyssScrollView>
+    </AbyssTemplateMain>
   </div>
 </div>
 ```
 
-Strona: `height: 100%`, `min-height: 0`, flex column. Kontener content i `AbyssScrollView`: `flex: 1`, `min-height: 0`.
+Strona: `height: 100%`, `min-height: 0`, flex column. Kontener content i `AbyssTemplateMain`: `flex: 1`, `min-height: 0`.
 
 ### Mixin `scrollbar` (`src/scss/helpers/mixins.scss`)
 
@@ -159,9 +167,9 @@ Strona: `height: 100%`, `min-height: 0`, flex column. Kontener content i `AbyssS
 
 ### `AbyssNavHeader`
 
-- **Bez marginesów** — odstęp od górnej krawędzi zapewnia `AbyssScrollView` (padding treści).
+- **Bez marginesów** — odstęp od górnej krawędzi zapewnia `AbyssTemplateMain` (padding treści).
 - Tekst tytułu: **18 px**; ikona obok tytułu: **24 px**.
-- `stickyTop` ustawia `top` w trybie sticky. Domyślnie `var(--abyss-scroll-view-content-padding-top, 0)` — po przewinięciu nagłówek zachowuje odstęp od górnej krawędzi równy górnemu paddingowi `AbyssScrollView`.
+- `stickyTop` ustawia `top` w trybie sticky. Domyślnie `var(--abyss-scroll-view-content-padding-top, 0)` — po przewinięciu nagłówek zachowuje odstęp od górnej krawędzi równy górnemu paddingowi `AbyssTemplateMain`.
 
 ### Odświeżanie list (reload)
 
@@ -526,8 +534,8 @@ Prop `expandable` lub obecność slotu `row-expand` aktywuje kolumnę +/- i wier
 - Używaj `AbyssInput` z `type="copy"` dla wartości tylko do odczytu z kopiowaniem do schowka — pole jest `readonly`, przycisk jest wbudowany w `#append`, klik/focus zaznacza całą treść, a feedback po kopiowaniu realizuje wbudowany Quasar Notify.
 - Ustawiaj i zmieniaj hasło wyłącznie w dedykowanym `AbyssDialog`.
 - Używaj `AbyssMarkdown` dla generycznego podglądu Markdown; logikę changelogu trzymaj w komponencie aplikacji (`ChangeLog`).
-- Używaj `AbyssScrollView` dla przewijanych widoków strony — nie polegaj na scrollu slotu `content` w `AbyssTemplate`.
-- Ustawiaj `device` na `AbyssScrollView` zgodnie z kontekstem aplikacji (`mobile` / `desktop` / `web`).
+- Używaj `AbyssTemplateMain` dla przewijanych widoków strony — nie polegaj na scrollu slotu `content` w `AbyssTemplateRoot`.
+- Ustawiaj `device` na `AbyssTemplateMain` zgodnie z kontekstem aplikacji (`mobile` / `desktop` / `web`).
 
 ### Don't
 
@@ -545,7 +553,7 @@ Prop `expandable` lub obecność slotu `row-expand` aktywuje kolumnę +/- i wier
 - Nie używaj natywnych selektorów daty/czasu systemowych.
 - Nie używaj `AbyssInfo` z `v-if` / `v-show` do pokazywania sukcesu lub błędu po akcji użytkownika — użyj Quasar Notify.
 - Nie dodawaj zagnieżdżonych pionowych scrollbarów w treści `AbyssDialog` — przewijaj wyłącznie body dialogu.
-- Nie dodawaj paddingu ani `overflow: auto` na wrapperze contentu `AbyssTemplate` — to odpowiedzialność `AbyssScrollView` lub `AbyssSidebarNav`.
+- Nie dodawaj paddingu ani `overflow: auto` na wrapperze contentu `AbyssTemplateRoot` — to odpowiedzialność `AbyssTemplateMain` lub `AbyssTemplateSidebar`.
 - Nie uzależniaj scrollu strony od ujemnych marginesów kompensujących padding szablonu.
 
 ---
@@ -560,7 +568,7 @@ Prop `expandable` lub obecność slotu `row-expand` aktywuje kolumnę +/- i wier
 - `AbyssTable` — [`src/components/ui/AbyssTable/AbyssTable.stories.ts`](../../src/components/ui/AbyssTable/AbyssTable.stories.ts)
 - `AbyssMarkdown` — [`src/components/ui/AbyssMarkdown/AbyssMarkdown.stories.ts`](../../src/components/ui/AbyssMarkdown/AbyssMarkdown.stories.ts)
 - `AbyssCode` — [`src/components/ui/AbyssCode/AbyssCode.stories.ts`](../../src/components/ui/AbyssCode/AbyssCode.stories.ts)
-- `AbyssScrollView` — [`src/components/ui/AbyssScrollView/AbyssScrollView.stories.ts`](../../src/components/ui/AbyssScrollView/AbyssScrollView.stories.ts)
+- `AbyssTemplateMain` — [`src/components/templates/AbyssTemplateMain/AbyssTemplateMain.stories.ts`](../../src/components/templates/AbyssTemplateMain/AbyssTemplateMain.stories.ts)
 - `AbyssDebug` — [`src/components/ui/AbyssDebug/AbyssDebug.stories.ts`](../../src/components/ui/AbyssDebug/AbyssDebug.stories.ts)
 
 Przykłady użycia w ekranach aplikacji Maia znajdują się w repozytorium `maia-app`.

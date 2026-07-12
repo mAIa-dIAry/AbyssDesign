@@ -41,8 +41,17 @@ import { Meta } from '@storybook/addon-docs/blocks';
     <div className="abyss-features abyss-grid--6-6">
       <section className="abyss-feature-item">
         <h3>Powierzchnie i layout</h3>
-        <p>AbyssTemplate, AbyssCard, AbyssDialog, AbyssBackground, AbyssSeparator, AbyssTitle</p>
+        <p>AbyssCard, AbyssDialog, AbyssBackground, AbyssSeparator, AbyssTitle</p>
       </section>
+
+      <section className="abyss-feature-item">
+        <h3>Szablony layoutu</h3>
+        <p>AbyssTemplateRoot, AbyssTemplateMain, AbyssTemplateSidebar</p>
+        <p>
+          {'Komponenty w '}
+          <span className="abyss-inline-code">src/components/templates</span>
+          {'. `AbyssTemplateRoot` to szkielet aplikacji; `AbyssTemplateMain` — przewijane widoki (start, archiwum, analiza); `AbyssTemplateSidebar` — ustawienia z nawigacją zakładek.'}
+        </p>
 
       <section className="abyss-feature-item">
         <h3>Akcje i nawigacja</h3>
@@ -71,7 +80,7 @@ import { Meta } from '@storybook/addon-docs/blocks';
 
       <section className="abyss-feature-item">
         <h3>Informacja i status</h3>
-        <p>AbyssInfo, AbyssProgress, AbyssGradientBadge, AbyssGradientBox, AbyssTimeline, AbyssTimelineItem, AbyssKeybind, AbyssSidebarNav</p>
+        <p>AbyssInfo, AbyssProgress, AbyssGradientBadge, AbyssGradientBox, AbyssTimeline, AbyssTimelineItem, AbyssKeybind</p>
         <p>
           <span className="abyss-inline-code">AbyssInfo</span>
           {' służy do statycznych komunikatów kontekstowych (pusty stan, ostrzeżenie przed akcją). Powodzenie lub niepowodzenie operacji użytkownika komunikuj przez Quasar Notify — nie przez dynamiczny '}

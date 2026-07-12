@@ -2,8 +2,8 @@ import type { Meta, StoryObj } from '@storybook/vue3';
 import type { PropType } from 'vue';
 import { computed, defineComponent, ref, watch } from 'vue';
 import { expect } from 'storybook/test';
-import AbyssSidebarNav from '@/components/ui/AbyssSidebarNav/AbyssSidebarNav.vue';
-import AbyssTemplate from '@/components/ui/AbyssTemplate/AbyssTemplate.vue';
+import AbyssTemplateSidebar from '@/components/templates/AbyssTemplateSidebar/AbyssTemplateSidebar.vue';
+import AbyssTemplateRoot from '@/components/templates/AbyssTemplateRoot/AbyssTemplateRoot.vue';
 import AbyssNavigation from '@/components/ui/AbyssNavigation/AbyssNavigation.vue';
 import AbyssBackground from '@/components/ui/AbyssBackground/AbyssBackground.vue';
 import AbyssButton from '@/components/ui/AbyssButton/AbyssButton.vue';
@@ -142,7 +142,7 @@ const tabs = [
 ];
 </script>
 
-<AbyssSidebarNav :tabs="tabs" model-value="appearance">
+<AbyssTemplateSidebar :tabs="tabs" model-value="appearance">
   <template #appearance>
     <AbyssCard title="Gradient tła">...</AbyssCard>
   </template>
@@ -160,10 +160,10 @@ const tabs = [
     <AbyssCard title="Skala interfejsu">...</AbyssCard>
     <AbyssCard title="Uruchamianie aplikacji">...</AbyssCard>
   </template>
-</AbyssSidebarNav>`;
+</AbyssTemplateSidebar>`;
 
 const AppearanceTabPreview = defineComponent({
-  name: 'AbyssSidebarNavStoryAppearanceTabPreview',
+  name: 'AbyssTemplateSidebarStoryAppearanceTabPreview',
   components: {
     AbyssCard,
   },
@@ -211,7 +211,7 @@ const AppearanceTabPreview = defineComponent({
 });
 
 const SecurityTabPreview = defineComponent({
-  name: 'AbyssSidebarNavStorySecurityTabPreview',
+  name: 'AbyssTemplateSidebarStorySecurityTabPreview',
   components: {
     AbyssCard,
     AbyssToggle,
@@ -246,7 +246,7 @@ const SecurityTabPreview = defineComponent({
 });
 
 const DataTabPreview = defineComponent({
-  name: 'AbyssSidebarNavStoryDataTabPreview',
+  name: 'AbyssTemplateSidebarStoryDataTabPreview',
   components: {
     AbyssButton,
     AbyssCard,
@@ -330,7 +330,7 @@ const DataTabPreview = defineComponent({
 });
 
 const AccessibilityTabPreview = defineComponent({
-  name: 'AbyssSidebarNavStoryAccessibilityTabPreview',
+  name: 'AbyssTemplateSidebarStoryAccessibilityTabPreview',
   components: {
     AbyssCard,
     AbyssInfo,
@@ -431,9 +431,9 @@ const AccessibilityTabPreview = defineComponent({
   `,
 });
 
-const meta: Meta<typeof AbyssSidebarNav> = {
-  title: 'UI/AbyssSidebarNav',
-  component: AbyssSidebarNav,
+const meta: Meta<typeof AbyssTemplateSidebar> = {
+  title: 'Templates/AbyssTemplateSidebar',
+  component: AbyssTemplateSidebar,
   tags: ['autodocs'],
   parameters: {
     layout: 'fullscreen',
@@ -450,7 +450,7 @@ const meta: Meta<typeof AbyssSidebarNav> = {
       description:
         'Lista sekcji nawigacji. Każdy obiekt definiuje `id`, etykietę oraz opcjonalną ikonę. Wartość `id` musi odpowiadać nazwie slotu z treścią danej sekcji.',
       table: {
-        type: { summary: 'AbyssSidebarNavTab[]' },
+        type: { summary: 'AbyssTemplateSidebarTab[]' },
       },
     },
     modelValue: {
@@ -486,15 +486,15 @@ const meta: Meta<typeof AbyssSidebarNav> = {
 };
 export default meta;
 
-type Story = StoryObj<typeof AbyssSidebarNav>;
+type Story = StoryObj<typeof AbyssTemplateSidebar>;
 
 const Wrapper = defineComponent({
-  name: 'AbyssSidebarNavStoryWrapper',
+  name: 'AbyssTemplateSidebarStoryWrapper',
   components: {
-    AbyssTemplate,
+    AbyssTemplateRoot,
     AbyssNavigation,
     AbyssBackground,
-    AbyssSidebarNav,
+    AbyssTemplateSidebar,
     AbyssButton,
     AppearanceTabPreview,
     SecurityTabPreview,
@@ -582,7 +582,7 @@ const Wrapper = defineComponent({
     <div style="width:100%;height:100%;">
       <component :is="'style'">{{ demoStyles }}</component>
 
-      <AbyssTemplate
+      <AbyssTemplateRoot
         :device="shellDevice"
         :orientation="shellOrientation"
         style="width:100%;height:100%;"
@@ -609,7 +609,7 @@ const Wrapper = defineComponent({
         </template>
 
         <template #content>
-          <AbyssSidebarNav
+          <AbyssTemplateSidebar
             :device="shellDevice"
             :detail-open="isDetailOpen"
             :tabs="tabs"
@@ -653,9 +653,9 @@ const Wrapper = defineComponent({
             <template #accessibility>
               <AccessibilityTabPreview />
             </template>
-          </AbyssSidebarNav>
+          </AbyssTemplateSidebar>
         </template>
-      </AbyssTemplate>
+      </AbyssTemplateRoot>
     </div>
   `,
 });

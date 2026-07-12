@@ -20,12 +20,15 @@
 <script setup lang="ts">
 import { computed } from "vue";
 
-export interface AbyssScrollViewIndicatorProps {
+export interface AbyssTemplateMainIndicatorProps {
   loading?: boolean;
   size?: "default" | "large";
 }
 
-const props = withDefaults(defineProps<AbyssScrollViewIndicatorProps>(), {
+/** @deprecated Use AbyssTemplateMainIndicatorProps */
+export type AbyssScrollViewIndicatorProps = AbyssTemplateMainIndicatorProps;
+
+const props = withDefaults(defineProps<AbyssTemplateMainIndicatorProps>(), {
   loading: false,
   size: "default",
 });

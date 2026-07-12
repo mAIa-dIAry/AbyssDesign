@@ -25,6 +25,7 @@
     "./scss": "./src/scss/app.scss",
     "./scss/*": "./src/scss/*",
     "./components/*": "./src/components/ui/*/*.vue",
+    "./templates/*": "./src/components/templates/*/*.vue",
     "./vite/inject-gradient-presets": {
       "types": "./dist/vite/inject-gradient-presets.d.ts",
       "import": "./dist/vite/inject-gradient-presets.js"

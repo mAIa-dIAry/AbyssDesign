@@ -56,13 +56,16 @@
 import { computed, useSlots } from 'vue';
 import { useKeyboardState } from '@/composables/useKeyboardState';
 
-export interface AbyssTemplateProps {
+export interface AbyssTemplateRootProps {
   device: 'desktop' | 'mobile' | 'web';
   orientation?: 'portrait' | 'landscape';
   screenRadius?: string;
 }
 
-const props = withDefaults(defineProps<AbyssTemplateProps>(), {
+/** @deprecated Use AbyssTemplateRootProps */
+export type AbyssTemplateProps = AbyssTemplateRootProps;
+
+const props = withDefaults(defineProps<AbyssTemplateRootProps>(), {
   orientation: 'portrait',
   screenRadius: '',
 });

@@ -94,28 +94,34 @@ import { useI18n } from 'vue-i18n';
 import AbyssButton from '@/components/ui/AbyssButton/AbyssButton.vue';
 import AbyssSeparator from '@/components/ui/AbyssSeparator/AbyssSeparator.vue';
 import AbyssTitle from '@/components/ui/AbyssTitle/AbyssTitle.vue';
-import { ABYSS_SIDEBAR_NAV_MOBILE_MAX_WIDTH } from './AbyssSidebarNav.constants';
+import { ABYSS_TEMPLATE_SIDEBAR_MOBILE_MAX_WIDTH } from './AbyssTemplateSidebar.constants';
 
-export interface AbyssSidebarNavTab {
+export interface AbyssTemplateSidebarTab {
   id: string;
   label: string;
   icon?: string;
 }
 
-export interface AbyssSidebarNavProps {
+export interface AbyssTemplateSidebarProps {
   device?: 'desktop' | 'mobile' | 'web';
-  tabs: AbyssSidebarNavTab[];
+  tabs: AbyssTemplateSidebarTab[];
   modelValue?: string;
   detailOpen?: boolean;
 }
 
-/** @deprecated Use AbyssSidebarNavTab */
-export type AbyssSettingsTab = AbyssSidebarNavTab;
+/** @deprecated Use AbyssTemplateSidebarTab */
+export type AbyssSidebarNavTab = AbyssTemplateSidebarTab;
 
-/** @deprecated Use AbyssSidebarNavProps */
-export type AbyssSettingsProps = AbyssSidebarNavProps;
+/** @deprecated Use AbyssTemplateSidebarProps */
+export type AbyssSidebarNavProps = AbyssTemplateSidebarProps;
 
-const props = withDefaults(defineProps<AbyssSidebarNavProps>(), {
+/** @deprecated Use AbyssTemplateSidebarTab */
+export type AbyssSettingsTab = AbyssTemplateSidebarTab;
+
+/** @deprecated Use AbyssTemplateSidebarProps */
+export type AbyssSettingsProps = AbyssTemplateSidebarProps;
+
+const props = withDefaults(defineProps<AbyssTemplateSidebarProps>(), {
   device: 'desktop',
   modelValue: '',
   detailOpen: false,
@@ -135,7 +141,7 @@ const emit = defineEmits<{
 const internalId = ref<string>(props.modelValue || props.tabs[0]?.id || '');
 
 const isMobile = computed(
-  () => containerWidth.value <= ABYSS_SIDEBAR_NAV_MOBILE_MAX_WIDTH,
+  () => containerWidth.value <= ABYSS_TEMPLATE_SIDEBAR_MOBILE_MAX_WIDTH,
 );
 const isSinglePageMode = computed(
   () => hasMeasuredLayout.value && !isMobile.value,
@@ -236,7 +242,7 @@ function handleTabClick(id: string) {
   emit('open', id);
 }
 
-function getTabButtonProps(tab: AbyssSidebarNavTab) {
+function getTabButtonProps(tab: AbyssTemplateSidebarTab) {
   return {
     ...(tab.icon ? { icon: tab.icon } : {}),
     iconRight: 'sym_r_chevron_right',

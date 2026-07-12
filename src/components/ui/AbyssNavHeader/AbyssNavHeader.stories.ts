@@ -17,7 +17,7 @@ const meta: Meta<typeof AbyssNavHeader> = {
         component:
           'Sticky nagłówek nawigacyjny w jednej linii: przycisk wstecz (40 px, zawsze widoczny), pionowy separator (4×16 px), ikona tytułu (24 px) i tekst tytułu (18 px). ' +
           'Panel ma padding 8 px, `border-radius: 12px` oraz cienie `$shadow-card` i `$shadow-frame-medium` jak `AbyssCard`. ' +
-          'Bez marginesów — odstęp od górnej krawędzi zapewnia `AbyssScrollView`. ' +
+          'Bez marginesów — odstęp od górnej krawędzi zapewnia `AbyssTemplateMain`. ' +
           'Przyciski w slocie `actions` używaj `AbyssButton` z `size="medium"`, `flat`, `embedded` — ten sam styl co wstecz.',
       },
     },
@@ -54,10 +54,16 @@ const meta: Meta<typeof AbyssNavHeader> = {
       description: 'Włącza `position: sticky` i efekt szkła na tle.',
       table: { defaultValue: { summary: 'true' } },
     },
+    backdrop: {
+      control: 'boolean',
+      description:
+        'Efekt `backdrop-filter` na panelu nagłówka. Wyłącz (`false`) w slocie `top-bar` komponentu `AbyssTemplateMain`.',
+      table: { defaultValue: { summary: 'true' } },
+    },
     stickyTop: {
       control: 'text',
       description:
-        'Wartość CSS `top` w trybie sticky. Domyślnie równa górnemu paddingowi `AbyssScrollView`, żeby nagłówek zachował ten sam odstęp po przewinięciu.',
+        'Wartość CSS `top` w trybie sticky. Domyślnie równa górnemu paddingowi `AbyssTemplateMain`, żeby nagłówek zachował ten sam odstęp po przewinięciu.',
       table: {
         defaultValue: {
           summary: 'var(--abyss-scroll-view-content-padding-top, 0)',

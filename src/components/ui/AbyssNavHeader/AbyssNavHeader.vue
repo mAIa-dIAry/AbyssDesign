@@ -5,6 +5,7 @@
       $props.class,
       {
         'abyss-nav-header--sticky': sticky,
+        'abyss-nav-header--backdrop': backdrop,
       },
     ]"
     :style="[headerStyle, style]"
@@ -62,6 +63,8 @@ export interface AbyssNavHeaderProps {
   backLabel?: string;
   /** Przykleja nagłówek do góry kontenera przewijania. */
   sticky?: boolean;
+  /** Efekt rozmycia tła (backdrop-filter). Wyłącz w slocie `top-bar` `AbyssTemplateMain`. */
+  backdrop?: boolean;
   /** Wartość CSS `top` dla trybu sticky. */
   stickyTop?: string;
   style?: string | Record<string, string>;
@@ -78,6 +81,7 @@ const props = withDefaults(defineProps<AbyssNavHeaderProps>(), {
   backIcon: 'sym_r_arrow_back',
   backLabel: 'Wstecz',
   sticky: true,
+  backdrop: true,
   stickyTop: 'var(--abyss-scroll-view-content-padding-top, 0)',
   style: '',
   class: '',
@@ -129,8 +133,11 @@ function handleBackClick(): void {
   background-color: rgba(black, 0.2);
   box-shadow: $shadow-card, $shadow-frame-medium;
   border-bottom: 1px solid rgba(black, 0.2);
-  -webkit-backdrop-filter: blur(20px);
-  backdrop-filter: blur(20px);
+
+  &--backdrop {
+    -webkit-backdrop-filter: blur(20px);
+    backdrop-filter: blur(20px);
+  }
 
   &--sticky {
     position: sticky;

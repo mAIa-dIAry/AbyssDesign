@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from "@storybook/vue3";
 import { nextTick, onMounted, onUnmounted, ref } from "vue";
 import AbyssInfo from "@/components/ui/AbyssInfo/AbyssInfo.vue";
-import AbyssScrollView from "@/components/ui/AbyssScrollView/AbyssScrollView.vue";
+import AbyssTemplateMain from "@/components/templates/AbyssTemplateMain/AbyssTemplateMain.vue";
 import { withAbyssBackground } from "@/stories/AbyssBackgroundDecorator";
 
 const RELOAD_SIMULATION_MS = 1500;
@@ -34,7 +34,7 @@ function reloadStoryFrameStyle(height: number, width = 480): string {
   ].join("; ");
 }
 
-type AbyssScrollViewStoryArgs = {
+type AbyssTemplateMainStoryArgs = {
   device?: "mobile" | "desktop" | "web";
   safeArea?: boolean;
   safeAreaInTemplate?: boolean;
@@ -78,9 +78,9 @@ function useReloadHandlers() {
   };
 }
 
-const meta: Meta<AbyssScrollViewStoryArgs> = {
-  title: "UI/AbyssScrollView",
-  component: AbyssScrollView,
+const meta: Meta<AbyssTemplateMainStoryArgs> = {
+  title: "Templates/AbyssTemplateMain",
+  component: AbyssTemplateMain,
   tags: ["autodocs"],
   decorators: [withAbyssBackground],
   parameters: {
@@ -137,7 +137,7 @@ const meta: Meta<AbyssScrollViewStoryArgs> = {
 };
 
 export default meta;
-type Story = StoryObj<AbyssScrollViewStoryArgs>;
+type Story = StoryObj<AbyssTemplateMainStoryArgs>;
 
 export const Default: Story = {
   name: "Domyślny",
@@ -147,10 +147,10 @@ export const Default: Story = {
     disabledBottom: false,
   },
   render: (args) => ({
-    components: { AbyssScrollView },
+    components: { AbyssTemplateMain },
     setup() {
       const handlers = useReloadHandlers();
-      const reloadRef = ref<InstanceType<typeof AbyssScrollView> | null>(null);
+      const reloadRef = ref<InstanceType<typeof AbyssTemplateMain> | null>(null);
       const scrollFromBottom = ref<number | null>(null);
       const bottomActivated = ref(false);
 
@@ -231,9 +231,9 @@ export const Default: Story = {
           <span v-if="bottomActivated">— loader aktywny</span>
         </p>
         <div :style="scrollViewStoryChromeStyle(args.device ?? 'desktop')">
-          Stały toolbar / nagłówek strony (padding u góry poza AbyssScrollView)
+          Stały toolbar / nagłówek strony (padding u góry poza AbyssTemplateMain)
         </div>
-        <AbyssScrollView
+        <AbyssTemplateMain
           ref="reloadRef"
           device="desktop"
           :style="'${RELOAD_STORY_RELOAD_STYLE}'"
@@ -254,7 +254,7 @@ export const Default: Story = {
           >
             {{ item.label }}
           </div>
-        </AbyssScrollView>
+        </AbyssTemplateMain>
       </div>
     `,
   }),
@@ -270,7 +270,7 @@ export const Default: Story = {
         code: `
 <div class="page-list">
   <header class="page-list__toolbar"><!-- padding u góry strony --></header>
-  <AbyssScrollView
+  <AbyssTemplateMain
     device="desktop"
     :disabled-top="false"
     :disabled-bottom="false"
@@ -280,7 +280,7 @@ export const Default: Story = {
     @refresh-bottom="handleRefreshBottom"
   >
     <!-- przewijalna zawartość -->
-  </AbyssScrollView>
+  </AbyssTemplateMain>
 </div>`,
       },
     },
@@ -290,7 +290,7 @@ export const Default: Story = {
 export const EmptyList: Story = {
   name: "Pusta lista",
   render: () => ({
-    components: { AbyssScrollView },
+    components: { AbyssTemplateMain },
     setup: () => ({
       ...useReloadHandlers(),
       scrollViewStoryChromeStyle,
@@ -301,9 +301,9 @@ export const EmptyList: Story = {
           Treść ma min-height równy viewportowi plus wysokość aktywnych loaderów — body wypełnia obszar między loaderami, więc pusty stan może być wyśrodkowany pionowo.
         </p>
         <div :style="scrollViewStoryChromeStyle('desktop')">
-          Stały toolbar / nagłówek strony (padding u góry poza AbyssScrollView)
+          Stały toolbar / nagłówek strony (padding u góry poza AbyssTemplateMain)
         </div>
-        <AbyssScrollView
+        <AbyssTemplateMain
           device="desktop"
           :style="'${RELOAD_STORY_RELOAD_STYLE}'"
           :loading-top="loadingTop"
@@ -316,7 +316,7 @@ export const EmptyList: Story = {
           <p style="margin: auto; text-align: center; opacity: 0.45;">
             Brak elementów
           </p>
-        </AbyssScrollView>
+        </AbyssTemplateMain>
       </div>
     `,
   }),
@@ -329,21 +329,21 @@ export const EmptyList: Story = {
       },
       source: {
         code: `
-<AbyssScrollView
+<AbyssTemplateMain
   :loading-top="loadingTop"
   :loading-bottom="loadingBottom"
   @refresh-top="handleRefreshTop"
   @refresh-bottom="handleRefreshBottom"
 >
   <p>Brak elementów</p>
-</AbyssScrollView>`,
+</AbyssTemplateMain>`,
       },
     },
   },
 };
 
 function useTopLoadingStoryDemo() {
-  const topReloadRef = ref<InstanceType<typeof AbyssScrollView> | null>(null);
+  const topReloadRef = ref<InstanceType<typeof AbyssTemplateMain> | null>(null);
   const loadingTop = ref(false);
 
   async function simulateTopLoading(): Promise<void> {
@@ -395,7 +395,7 @@ function useTopLoadingStoryDemo() {
 }
 
 function useBottomLoadingStoryDemo() {
-  const bottomReloadRef = ref<InstanceType<typeof AbyssScrollView> | null>(null);
+  const bottomReloadRef = ref<InstanceType<typeof AbyssTemplateMain> | null>(null);
   const loadingBottom = ref(false);
 
   async function simulateBottomLoading(): Promise<void> {
@@ -447,7 +447,7 @@ function useBottomLoadingStoryDemo() {
 export const LoadingStates: Story = {
   name: "Stany ładowania",
   render: () => ({
-    components: { AbyssScrollView },
+    components: { AbyssTemplateMain },
     setup() {
       const items = demoItems.slice(0, 8);
       const topDemo = useTopLoadingStoryDemo();
@@ -470,7 +470,7 @@ export const LoadingStates: Story = {
           <div :style="scrollViewStoryChromeStyle('desktop')">
             Stały toolbar / nagłówek strony
           </div>
-          <AbyssScrollView
+          <AbyssTemplateMain
             ref="topReloadRef"
             device="desktop"
             data-testid="abyss-scroll-view-loading-top"
@@ -488,7 +488,7 @@ export const LoadingStates: Story = {
             >
               {{ item.label }}
             </div>
-          </AbyssScrollView>
+          </AbyssTemplateMain>
         </div>
 
         <div :style="'${reloadStoryFrameStyle(320, 280)}'">
@@ -498,7 +498,7 @@ export const LoadingStates: Story = {
           <div :style="scrollViewStoryChromeStyle('desktop')">
             Stały toolbar / nagłówek strony
           </div>
-          <AbyssScrollView
+          <AbyssTemplateMain
             ref="bottomReloadRef"
             device="desktop"
             data-testid="abyss-scroll-view-loading-bottom"
@@ -516,7 +516,7 @@ export const LoadingStates: Story = {
             >
               {{ item.label }}
             </div>
-          </AbyssScrollView>
+          </AbyssTemplateMain>
         </div>
       </div>
     `,
@@ -530,9 +530,9 @@ export const LoadingStates: Story = {
       },
       source: {
         code: `
-<AbyssScrollView loading-top>
+<AbyssTemplateMain loading-top>
   <!-- zawartość -->
-</AbyssScrollView>`,
+</AbyssTemplateMain>`,
       },
     },
   },
@@ -541,7 +541,7 @@ export const LoadingStates: Story = {
 export const LoadingStatesEmptyList: Story = {
   name: "Stany ładowania — pusta lista",
   render: () => ({
-    components: { AbyssScrollView, AbyssInfo },
+    components: { AbyssTemplateMain, AbyssInfo },
     setup() {
       const topDemo = useTopLoadingStoryDemo();
       const bottomDemo = useBottomLoadingStoryDemo();
@@ -563,7 +563,7 @@ export const LoadingStatesEmptyList: Story = {
           <div :style="scrollViewStoryChromeStyle('desktop')">
             Stały toolbar / nagłówek strony
           </div>
-          <AbyssScrollView
+          <AbyssTemplateMain
             ref="topReloadRef"
             device="desktop"
             data-testid="abyss-scroll-view-loading-top-empty"
@@ -579,7 +579,7 @@ export const LoadingStatesEmptyList: Story = {
                 Brak wpisów w archiwum
               </AbyssInfo>
             </div>
-          </AbyssScrollView>
+          </AbyssTemplateMain>
         </div>
 
         <div :style="'${reloadStoryFrameStyle(320, 280)}'">
@@ -589,7 +589,7 @@ export const LoadingStatesEmptyList: Story = {
           <div :style="scrollViewStoryChromeStyle('desktop')">
             Stały toolbar / nagłówek strony
           </div>
-          <AbyssScrollView
+          <AbyssTemplateMain
             ref="bottomReloadRef"
             device="desktop"
             data-testid="abyss-scroll-view-loading-bottom-empty"
@@ -605,7 +605,7 @@ export const LoadingStatesEmptyList: Story = {
                 Brak wpisów w archiwum
               </AbyssInfo>
             </div>
-          </AbyssScrollView>
+          </AbyssTemplateMain>
         </div>
       </div>
     `,
@@ -619,11 +619,11 @@ export const LoadingStatesEmptyList: Story = {
       },
       source: {
         code: `
-<AbyssScrollView :loading-bottom="loadingBottom" @refresh-bottom="handleRefreshBottom">
+<AbyssTemplateMain :loading-bottom="loadingBottom" @refresh-bottom="handleRefreshBottom">
   <div class="empty-state">
     <AbyssInfo type="hint" icon="inbox">Brak wpisów w archiwum</AbyssInfo>
   </div>
-</AbyssScrollView>`,
+</AbyssTemplateMain>`,
       },
     },
   },
@@ -637,7 +637,7 @@ export const OnlyTop: Story = {
     disabledTop: false,
   },
   render: (args) => ({
-    components: { AbyssScrollView },
+    components: { AbyssTemplateMain },
     setup() {
       const handlers = useReloadHandlers();
       return { args, demoItems, scrollViewStoryChromeStyle, ...handlers };
@@ -645,9 +645,9 @@ export const OnlyTop: Story = {
     template: `
       <div :style="'${reloadStoryFrameStyle(360, 420)}'">
         <div :style="scrollViewStoryChromeStyle('desktop')">
-          Stały toolbar / nagłówek strony (padding u góry poza AbyssScrollView)
+          Stały toolbar / nagłówek strony (padding u góry poza AbyssTemplateMain)
         </div>
-        <AbyssScrollView
+        <AbyssTemplateMain
           device="desktop"
           :style="'${RELOAD_STORY_RELOAD_STYLE}'"
           :loading-top="loadingTop"
@@ -662,7 +662,7 @@ export const OnlyTop: Story = {
           >
             {{ item.label }}
           </div>
-        </AbyssScrollView>
+        </AbyssTemplateMain>
       </div>
     `,
   }),
@@ -673,7 +673,7 @@ export const OnlyTop: Story = {
       },
       source: {
         code: `
-<AbyssScrollView
+<AbyssTemplateMain
   device="desktop"
   :disabled-top="false"
   :loading-top="loadingTop"
@@ -681,7 +681,7 @@ export const OnlyTop: Story = {
   @refresh-top="handleRefreshTop"
 >
   <!-- zawartość -->
-</AbyssScrollView>`,
+</AbyssTemplateMain>`,
       },
     },
   },
@@ -696,7 +696,7 @@ export const SafeAreaInTemplate: Story = {
     orientation: "portrait",
   },
   render: (args) => ({
-    components: { AbyssScrollView },
+    components: { AbyssTemplateMain },
     setup: () => ({
       args,
       demoItems,
@@ -706,7 +706,7 @@ export const SafeAreaInTemplate: Story = {
     }),
     template: `
       <div :style="frameStyle">
-        <AbyssScrollView v-bind="args" style="flex: 1 1 auto; min-height: 0;">
+        <AbyssTemplateMain v-bind="args" style="flex: 1 1 auto; min-height: 0;">
           <div
             v-for="item in demoItems"
             :key="item.id"
@@ -714,7 +714,7 @@ export const SafeAreaInTemplate: Story = {
           >
             {{ item.label }}
           </div>
-        </AbyssScrollView>
+        </AbyssTemplateMain>
       </div>
     `,
   }),
@@ -726,14 +726,14 @@ export const SafeAreaInTemplate: Story = {
       },
       source: {
         code: `
-<AbyssScrollView
+<AbyssTemplateMain
   device="mobile"
   safe-area
   safe-area-in-template
   :orientation="simpleOrientation"
 >
   <!-- przewijalna treść -->
-</AbyssScrollView>`,
+</AbyssTemplateMain>`,
       },
     },
   },

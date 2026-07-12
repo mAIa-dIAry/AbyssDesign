@@ -47,7 +47,8 @@ Storybook dokumentuje API komponentów (propsy, sloty, zdarzenia); reguły formu
 
 Konsumenci używają helpera `tools/abyss-design.mjs` (wzór w `maia-app` / `admin-web`):
 
-- `@/components/ui/*` → pakiet
+- `@/components/ui/*` → prymitywy UI
+- `@/components/templates/*` → szablony layoutu (Root, Main, Sidebar)
 - `@/composables/useGradient`, `@/types/*`, `@/utils/*`, `@/defines/*` → pakiet
 - `@/composables/useKeyboardState` → pakiet (web stub) lub lokalna implementacja Capacitor w `app`
 
@@ -147,7 +148,8 @@ npm publish --access public
 
 ```
 src/
-├── components/ui/     # 33 komponenty Abyss
+├── components/ui/        # prymitywy Abyss
+├── components/templates/ # szablony layoutu (Root, Main, Sidebar)
 ├── composables/       # useGradient, useKeyboardState
 ├── scss/              # helpers, setup, app.scss
 ├── i18n/              # minimalne komunikaty DS

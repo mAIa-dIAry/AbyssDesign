@@ -6,6 +6,7 @@
       {
         'abyss-scroll-view--safe-area': safeAreaActive,
         'abyss-scroll-view--safe-area-in-template': safeAreaActive && safeAreaInTemplate,
+        'abyss-scroll-view--has-top-bar': hasTopBar,
         'orientation--landscape': safeAreaActive && orientation === 'landscape',
         'orientation--portrait': safeAreaActive && orientation === 'portrait',
       },
@@ -23,9 +24,16 @@
         aria-hidden="true"
       />
 
+      <div v-if="hasTopBar" class="abyss-scroll-view__top-bar">
+        <slot name="top-bar" />
+      </div>
+
       <div
         class="abyss-scroll-view__scroll-host"
-        :class="{ 'abyss-scroll-view__scroll-host--safe-area': safeAreaActive }"
+        :class="{
+          'abyss-scroll-view__scroll-host--safe-area': safeAreaActive,
+          'abyss-scroll-view__scroll-host--with-top-bar': hasTopBar,
+        }"
       >
         <div
           ref="viewportEl"
@@ -47,8 +55,13 @@
               :class="{ 'abyss-scroll-view__loader--large': size === 'large' }"
               aria-hidden="true"
             >
-              <AbyssScrollViewIndicator :loading="effectiveLoadingTop" :size="size" />
+              <AbyssTemplateMainIndicator :loading="effectiveLoadingTop" :size="size" />
             </div>
+
+            <div
+              class="abyss-scroll-view__content-spacer abyss-scroll-view__content-spacer--top-after-loader"
+              aria-hidden="true"
+            />
 
             <div
               class="abyss-scroll-view__body"
@@ -59,16 +72,27 @@
 
             <div
               v-if="!disabledBottom"
+              class="abyss-scroll-view__content-spacer abyss-scroll-view__content-spacer--bottom-before-loader"
+              aria-hidden="true"
+            />
+
+            <div
+              v-if="!disabledBottom"
               ref="bottomLoaderEl"
               class="abyss-scroll-view__loader abyss-scroll-view__loader--bottom"
               :class="{ 'abyss-scroll-view__loader--large': size === 'large' }"
               aria-hidden="true"
             >
-              <AbyssScrollViewIndicator
+              <AbyssTemplateMainIndicator
                 :loading="effectiveLoadingBottom"
                 :size="size"
               />
             </div>
+
+            <div
+              class="abyss-scroll-view__content-spacer abyss-scroll-view__content-spacer--bottom-after-loader"
+              aria-hidden="true"
+            />
           </div>
         </div>
 
@@ -89,16 +113,18 @@
 </template>
 
 <script setup lang="ts">
-import { computed, nextTick, onMounted, onUnmounted, ref, watch } from "vue";
-import AbyssScrollViewIndicator from "@/components/ui/AbyssScrollView/AbyssScrollViewIndicator.vue";
+import { computed, nextTick, onMounted, onUnmounted, ref, useSlots, watch } from "vue";
+import AbyssTemplateMainIndicator from "@/components/templates/AbyssTemplateMain/AbyssTemplateMainIndicator.vue";
 
 const DEFAULT_LOADER_HEIGHT = 56;
 const DEFAULT_LOADER_HEIGHT_LARGE = 64;
 const DEFAULT_ACTIVATION_THRESHOLD = 8;
+/** Odstęp między loaderem a treścią w scrollowalnej zawartości (debug — żółta ramka). */
+const SCROLL_CONTENT_SPACER_PX = 12;
 /** Minimalny przyrost scrollTop (px) przy aktywacji — chroni przed fałszywym triggerem po programatycznym scrollu. */
 const REFRESH_SCROLL_DELTA = 12;
 
-export interface AbyssScrollViewProps {
+export interface AbyssTemplateMainProps {
   /** Urządzenie — determinuje preset paddingów treści (SCSS). */
   device: "mobile" | "desktop" | "web";
   /** Stan ładowania wskaźnika u góry (fade ikony → spinner). */
@@ -134,7 +160,10 @@ export interface AbyssScrollViewProps {
   style?: string | Record<string, string>;
 }
 
-const props = withDefaults(defineProps<AbyssScrollViewProps>(), {
+/** @deprecated Use AbyssTemplateMainProps */
+export type AbyssScrollViewProps = AbyssTemplateMainProps;
+
+const props = withDefaults(defineProps<AbyssTemplateMainProps>(), {
   loadingTop: false,
   loadingBottom: false,
   disabledTop: true,
@@ -148,6 +177,10 @@ const props = withDefaults(defineProps<AbyssScrollViewProps>(), {
   class: "",
   style: "",
 });
+
+const slots = useSlots();
+
+const hasTopBar = computed(() => Boolean(slots["top-bar"]));
 
 const safeAreaActive = computed(
   () => props.safeArea && props.device === "mobile",
@@ -387,7 +420,8 @@ function finishLoadingBottom(): void {
   onLoadingFinished();
 }
 
-const topSectionInsetPx = computed(() => {
+/** Ukryta strefa nad treścią (loader) — bez żółtego spacera widocznego w viewport. */
+const topLoaderScrollInsetPx = computed(() => {
   if (props.disabledTop) {
     return 0;
   }
@@ -395,18 +429,19 @@ const topSectionInsetPx = computed(() => {
   return topLoaderMeasuredPx.value;
 });
 
-const bottomSectionInsetPx = computed(() => {
+/** Ukryta strefa pod treścią (spacer przed loaderem + loader) — bez spacera po loaderze widocznego w viewport. */
+const bottomLoaderScrollInsetPx = computed(() => {
   if (props.disabledBottom) {
     return 0;
   }
 
-  return bottomLoaderMeasuredPx.value;
+  return bottomLoaderMeasuredPx.value + SCROLL_CONTENT_SPACER_PX;
 });
 
 const rootStyle = computed(() => ({
   "--abyss-scroll-view-loader-height": `${loaderHeight.value}px`,
-  "--abyss-scroll-view-top-inset": `${topSectionInsetPx.value}px`,
-  "--abyss-scroll-view-bottom-inset": `${bottomSectionInsetPx.value}px`,
+  "--abyss-scroll-view-top-inset": `${topLoaderScrollInsetPx.value}px`,
+  "--abyss-scroll-view-bottom-inset": `${bottomLoaderScrollInsetPx.value}px`,
 }));
 
 function getMaxScrollTop(container: HTMLElement): number {
@@ -418,7 +453,7 @@ function getContentMinScrollTop(): number {
     return 0;
   }
 
-  return topLoaderEl.value?.offsetHeight ?? 0;
+  return topLoaderScrollInsetPx.value;
 }
 
 function markInitialTopScrollPositionReady(): void {
@@ -475,13 +510,12 @@ function applyInitialContentScrollPosition(): void {
 
 function getContentMaxScrollTop(container: HTMLElement): number {
   const absoluteMax = getMaxScrollTop(container);
-  const bottomLoader = bottomLoaderEl.value;
 
-  if (props.disabledBottom || !bottomLoader) {
+  if (props.disabledBottom) {
     return Math.max(0, absoluteMax);
   }
 
-  return Math.max(0, absoluteMax - bottomLoader.offsetHeight);
+  return Math.max(0, absoluteMax - bottomLoaderScrollInsetPx.value);
 }
 
 function shouldDeferContentClamp(): boolean {
@@ -541,7 +575,7 @@ function isTopScrollPartial(
     return false;
   }
 
-  const hideScrollTop = loader.offsetHeight;
+  const hideScrollTop = topLoaderScrollInsetPx.value;
 
   return scrollTop > activationThresholdPx.value && scrollTop < hideScrollTop;
 }
@@ -557,7 +591,7 @@ function isBottomScrollPartial(
   }
 
   const maxScrollTop = getMaxScrollTop(container);
-  const hideScrollTop = Math.max(0, maxScrollTop - loader.offsetHeight);
+  const hideScrollTop = Math.max(0, maxScrollTop - bottomLoaderScrollInsetPx.value);
 
   return (
     scrollTop > hideScrollTop &&
@@ -880,9 +914,9 @@ function hideTopLoader(): void {
     return;
   }
 
-  startProgrammaticScroll(loader.offsetHeight);
+  startProgrammaticScroll(topLoaderScrollInsetPx.value);
   container.scrollTo({
-    top: loader.offsetHeight,
+    top: topLoaderScrollInsetPx.value,
     behavior: "smooth",
   });
 }
@@ -1279,9 +1313,36 @@ defineExpose({
     height: 100%;
   }
 
+  &__top-bar {
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    box-sizing: border-box;
+    padding-top: var(--abyss-scroll-view-content-padding-top);
+    padding-inline: var(--abyss-scroll-view-content-padding-inline);
+    box-shadow: inset 0 0 0 1px rgb(255, 140, 0);
+  }
+
+  &--safe-area.device--mobile &__top-bar {
+    padding-top: 0;
+  }
+
+  &--has-top-bar &__body {
+    padding-top: 0;
+  }
+
   &__scroll-host {
     display: contents;
     box-shadow: inset 0 0 0 1px red;
+
+    &--with-top-bar {
+      display: flex;
+      flex: 1 1 auto;
+      flex-direction: column;
+      min-height: 0;
+      min-width: 0;
+    }
 
     &--safe-area {
       display: flex;
@@ -1316,6 +1377,10 @@ defineExpose({
         var(--abyss-scroll-view-safe-area-mask-size, 12px)
     );
     box-shadow: inset 0 0 0 1px rgb(0, 170, 255);
+  }
+
+  &--safe-area-in-template.device--mobile &__safe-top {
+    height: env(safe-area-inset-top, 0px);
   }
 
   &__safe-bottom {
@@ -1382,6 +1447,12 @@ defineExpose({
     padding-top: var(--abyss-scroll-view-content-padding-top);
     padding-inline: var(--abyss-scroll-view-content-padding-inline);
     padding-bottom: var(--abyss-scroll-view-content-padding-bottom);
+  }
+
+  &__content-spacer {
+    flex-shrink: 0;
+    height: 12px;
+    box-shadow: inset 0 0 0 1px rgb(255, 255, 0);
   }
 
   &__loader {
