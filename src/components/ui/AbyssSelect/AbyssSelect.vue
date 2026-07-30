@@ -71,7 +71,7 @@
         :popup-content-class="
           [
             'abyss-select-menu',
-            isPopupOpen ? 'abyss-select-menu--open' : '',
+            'abyss-select-menu--open',
             isPopupAbove ? 'abyss-select-menu--above' : '',
           ]
             .filter(Boolean)
@@ -132,7 +132,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, nextTick, ref, useAttrs } from 'vue';
+import { computed, nextTick, ref, useAttrs, watch } from 'vue';
 import AbyssGrid from '@/components/ui/AbyssGrid/AbyssGrid.vue';
 import {
   ABYSS_INPUT_ROW_GAP,
@@ -232,6 +232,11 @@ const resolvedHideSelected = computed(
   () => props.hideSelected || (props.useInput && hasSelection.value),
 );
 
+function resetPopupOpenState(): void {
+  isPopupOpen.value = false;
+  isPopupAbove.value = false;
+}
+
 function handlePopupShow(): void {
   isPopupOpen.value = true;
 
@@ -246,9 +251,35 @@ function handlePopupShow(): void {
 }
 
 function handlePopupHide(): void {
-  isPopupOpen.value = false;
-  isPopupAbove.value = false;
+  resetPopupOpenState();
 }
+
+// Quasar may unmount the menu without `popupHide` when disable/readonly flips while open.
+watch(
+  () => props.disable || props.readonly,
+  (blocked) => {
+    if (blocked) {
+      resetPopupOpenState();
+    }
+  },
+);
+
+watch(
+  () => props.modelValue,
+  () => {
+    if (props.multiple || !isPopupOpen.value) {
+      return;
+    }
+
+    void nextTick(() => {
+      window.setTimeout(() => {
+        if (isPopupOpen.value && resolvePopupMenuElement() === null) {
+          resetPopupOpenState();
+        }
+      }, 0);
+    });
+  },
+);
 
 function ensurePopupContentWrapper(): void {
   if (typeof document === 'undefined') {
