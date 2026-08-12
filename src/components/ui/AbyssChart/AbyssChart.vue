@@ -310,9 +310,7 @@ const chartOptions = computed<ApexOptions>(() => ({
     background: 'transparent',
     parentHeightOffset: 0,
     animations: {
-      enabled: true,
-      easing: 'easeinout',
-      speed: 500,
+      enabled: false,
     },
   },
   colors: ['#ffffff'],
