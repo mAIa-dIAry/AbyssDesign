@@ -6,7 +6,7 @@
 - [Zasady nadrzędne](#zasady-nadrzędne)
 - [Formularze i karty vs komponenty złożone](#formularze-i-karty-vs-komponenty-złożone)
 - [Powierzchnie i warstwy](#powierzchnie-i-warstwy)
-- [Layout strony](#layout-strony)
+- [Layout strony](#layout-strony) (w tym [Tytuły stron i zakładek](#tytuły-stron-i-zakładek))
 - [Feedback po akcjach użytkownika](#feedback-po-akcjach-użytkownika)
 - [Matryca AbyssButton](#matryca-abyssbutton)
 - [Wzorce kompozycji](#wzorce-kompozycji)
@@ -42,6 +42,7 @@ Najważniejsze zasady interpretacji:
 8. **Formularze:** pola (`AbyssInput`, `AbyssSelect`, `AbyssToggle` itd.) mają wewnętrzny układ — nie owijaj ich dodatkowym `AbyssGrid`. Przyciski akcji pod polami układaj w `AbyssGrid` ze stałymi `INPUT_COLUMN_SIZE` i `INPUT_GRID_MAX_COLUMNS` (patrz `AbyssForm` w Storybooku).
 9. **Daty i czas:** wyłącznie `AbyssDate`, `AbyssTime` albo `AbyssInput` z `type="date"`, `type="time"`, `type="datetime-local"`.
 10. **Feedback po akcjach:** powodzenie lub niepowodzenie operacji (zapis, usunięcie, ponowienie itd.) komunikuj **Quasar Notify** (`$q.notify` / `Notify.create`), nie `AbyssInfo`. `AbyssInfo` służy wyłącznie do **statycznych** komunikatów kontekstowych osadzonych w układzie strony.
+11. **Główne podstrony bez tytułu strony.** Nie powielaj etykiety aktywnej zakładki nawigacji (`AbyssNavigation`) nagłówkiem w treści (np. Dashboard → zakaz `AbyssTitle` „Dashboard”). Tytuły (`AbyssTitle` / `title` karty) wolno stosować **tylko na kartach** i w powierzchniach modalnych — patrz [Tytuły stron i zakładek](#tytuły-stron-i-zakładek).
 
 ---
 
@@ -159,6 +160,35 @@ Komponenty layoutu znajdują się w [`src/components/templates`](../../src/compo
 
 Strona: `height: 100%`, `min-height: 0`, flex column. Kontener content i `AbyssTemplateMain`: `flex: 1`, `min-height: 0`.
 
+### Tytuły stron i zakładek
+
+Kontekst aktywnego widoku niesie **nawigacja** (`AbyssNavigation` + `AbyssButton` z `route` / `current`), a w ustawieniach — zakładki `AbyssTemplateSidebar`. Treść głównej podstrony **nie powtarza** tej etykiety.
+
+**Zakaz**
+
+- `AbyssTitle` (ani inny nagłówek) na poziomie głównej podstrony powielający nazwę zakładki / pozycji menu, np. „Dashboard”, „Archiwum”, „Ustawienia”, „Analiza”.
+- Hero / page heading / `h1` otwierający treść głównej trasy nawigacyjnej.
+
+**Dozwolone**
+
+- Tytuły **wyłącznie na kartach** — `AbyssCard` z `title` (i ikoną w `header-prepend`) albo `AbyssTitle` **wewnątrz** karty / dialogu / panelu.
+- `AbyssNavHeader` w `#top-bar` tylko gdy jest to toolbar kontekstowy (np. detal z wstecz), a nie duplikat etykiety głównej zakładki.
+- Pełnoekranowe strony **informacyjne poza nawigacją główną** (polityka prywatności, regulamin, pomoc) — tam `AbyssTitle` jako tytuł dokumentu jest dozwolony.
+
+```vue
+<!-- DON'T — główna podstrona z tytułem zakładki -->
+<AbyssTemplateMain :device="device" safe-area safe-area-in-template>
+  <AbyssTitle type="h1" label="Dashboard" />
+  <AbyssCard title="Aktywny plan">…</AbyssCard>
+</AbyssTemplateMain>
+
+<!-- DO — treść od razu w kartach; kontekst = nawigacja -->
+<AbyssTemplateMain :device="device" safe-area safe-area-in-template>
+  <AbyssCard title="Aktywny plan">…</AbyssCard>
+  <AbyssCard title="Podsumowanie planów">…</AbyssCard>
+</AbyssTemplateMain>
+```
+
 ### Mixin `scrollbar` (`src/scss/helpers/mixins.scss`)
 
 - Stosuj `@include scrollbar` bez warunków na `device` ani `Platform.is.mobile`.
@@ -183,17 +213,19 @@ Strona: `height: 100%`, `min-height: 0`, flex column. Kontener content i `AbyssT
 
 ### Hierarchia `AbyssTitle`
 
+Na **głównych podstronach** (trasy z `AbyssNavigation` / zakładki sidebara) nie umieszczaj samodzielnego `AbyssTitle` nad treścią — patrz [Tytuły stron i zakładek](#tytuły-stron-i-zakładek). Poniższa hierarchia dotyczy kart, dialogów i stron informacyjnych poza nawigacją główną.
+
 | `level` | Rola                       | Typowe miejsce                              |
 | ------- | -------------------------- | ------------------------------------------- |
-| `h1`    | tytuł strony informacyjnej | polityka prywatności, regulamin, pomoc      |
+| `h1`    | tytuł dokumentu informacyjnego | polityka prywatności, regulamin, pomoc (poza głównymi zakładkami) |
 | `h2`    | tytuł powierzchni          | karta, dialog                               |
 | `h3`    | podtytuł pierwszego poziomu| sekcja w karcie lub dialogu                 |
 | `h4`–`h6` | nagłówki pomocnicze      | wyodrębnienie podsekcji                     |
 
 | `size` | Rola                         |
 | ------ | ---------------------------- |
-| `lg`   | tytuł strony lub hero-sekcji |
-| `md`   | standardowy tytuł sekcji     |
+| `lg`   | tytuł dokumentu informacyjnego / rzadki hero poza nawigacją |
+| `md`   | standardowy tytuł sekcji (karta, dialog) |
 | `sm`   | podsekcja, mikro-nagłówek    |
 
 ### Reguły `AbyssCard`
@@ -537,6 +569,7 @@ Prop `expandable` lub obecność slotu `row-expand` aktywuje kolumnę +/- i wier
 - Używaj `AbyssMarkdown` dla generycznego podglądu Markdown; logikę changelogu trzymaj w komponencie aplikacji (`ChangeLog`).
 - Używaj `AbyssTemplateMain` dla przewijanych widoków strony — nie polegaj na scrollu slotu `content` w `AbyssTemplateRoot`.
 - Ustawiaj `device` na `AbyssTemplateMain` zgodnie z kontekstem aplikacji (`mobile` / `desktop` / `web`).
+- Na głównych podstronach zaczynaj treść od kart / paneli; tytuły dawaj tylko kartom (`AbyssCard` `title` lub `AbyssTitle` wewnątrz karty).
 
 ### Don't
 
@@ -556,6 +589,7 @@ Prop `expandable` lub obecność slotu `row-expand` aktywuje kolumnę +/- i wier
 - Nie dodawaj zagnieżdżonych pionowych scrollbarów w treści `AbyssDialog` — przewijaj wyłącznie body dialogu.
 - Nie dodawaj paddingu ani `overflow: auto` na wrapperze contentu `AbyssTemplateRoot` — to odpowiedzialność `AbyssTemplateMain` lub `AbyssTemplateSidebar`.
 - Nie uzależniaj scrollu strony od ujemnych marginesów kompensujących padding szablonu.
+- Nie umieszczaj na głównej podstronie `AbyssTitle` (ani innego nagłówka) powielającego etykietę aktywnej zakładki nawigacji — kontekst niesie nawigacja; tytuły mają wyłącznie karty / dialogi.
 
 ---
 

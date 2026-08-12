@@ -12,9 +12,12 @@
 
     <div class="abyss-info__panel">
       <div class="abyss-info__panel-overlay" aria-hidden="true" />
-      <div class="abyss-info__panel-content">
+      <div
+        class="abyss-info__panel-content"
+        :class="{ 'abyss-info__panel-content--title-only': isTitleOnly }"
+      >
         <div v-if="title" class="abyss-info__title">{{ title }}</div>
-        <div class="abyss-info__content">
+        <div v-if="hasContent" class="abyss-info__content">
           <slot />
         </div>
       </div>
@@ -67,6 +70,11 @@ function slotHasContent(nodes: VNode[] | undefined): boolean {
     return true;
   });
 }
+
+const hasContent = computed(() => slotHasContent(slots.default?.()));
+const isTitleOnly = computed(
+  () => Boolean(props.title?.trim()) && !hasContent.value,
+);
 
 if (import.meta.env.DEV) {
   watch(
@@ -175,8 +183,17 @@ if (import.meta.env.DEV) {
     z-index: 1;
     display: flex;
     flex-direction: column;
+    justify-content: center;
     gap: 4px;
+    box-sizing: border-box;
+    min-height: var(--info-icon-column-width);
     padding: 12px 14px;
+
+    &--title-only {
+      // Single-line title: keep optical vertical center with the icon column.
+      padding-top: 0;
+      padding-bottom: 0;
+    }
   }
 
   &__title {

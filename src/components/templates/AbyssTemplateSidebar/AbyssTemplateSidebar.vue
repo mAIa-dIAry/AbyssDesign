@@ -59,7 +59,7 @@
 
     <section
       v-if="showDetailPane"
-      :key="detailPaneKey"
+      :key="layoutMode"
       :class="[
         isMobile
           ? 'abyss-sidebar-nav__pane abyss-sidebar-nav__pane--detail'
@@ -81,11 +81,27 @@
         </header>
         <div class="abyss-sidebar-nav__detail-content">
           <div class="abyss-sidebar-nav__detail-content-inner">
-            <slot v-if="activeId" :name="activeId" :active-id="activeId" />
+            <div
+              v-for="tab in tabs"
+              v-show="tab.id === activeId"
+              :key="tab.id"
+              class="abyss-sidebar-nav__tab-panel"
+            >
+              <slot :name="tab.id" :active-id="activeId" />
+            </div>
           </div>
         </div>
       </template>
-      <slot v-else-if="activeId" :name="activeId" :active-id="activeId" />
+      <template v-else>
+        <div
+          v-for="tab in tabs"
+          v-show="tab.id === activeId"
+          :key="tab.id"
+          class="abyss-sidebar-nav__tab-panel"
+        >
+          <slot :name="tab.id" :active-id="activeId" />
+        </div>
+      </template>
     </section>
   </div>
 </template>
@@ -221,7 +237,6 @@ function hasRenderableNode(node: VNode): boolean {
 const hasSidebarPrepend = computed(() => slotHasContent('sidebar-prepend'));
 const hasSidebarAppend = computed(() => slotHasContent('sidebar-append'));
 const activeId = computed(() => internalId.value);
-const detailPaneKey = computed(() => `${layoutMode.value}-${activeId.value}`);
 const activeTab = computed(() =>
   props.tabs.find((tab) => tab.id === activeId.value),
 );
@@ -344,6 +359,10 @@ function back() {
       padding: 24px;
       flex: 2;
       overflow: auto;
+      min-height: 0;
+    }
+
+    .abyss-sidebar-nav__tab-panel {
       min-height: 0;
     }
 
