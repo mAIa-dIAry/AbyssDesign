@@ -1,10 +1,25 @@
 {
-  "name": "@maia/abyss-design",
+  "name": "@maiadiary/abyss-design",
   "version": "0.1.0",
   "description": "Abyss Design System — komponenty UI dla Quasar / Vue 3",
   "author": "Marcin Kalinowski <marcin36k@outlook.com>",
-  "license": "UNLICENSED",
+  "license": "MIT",
   "type": "module",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mAIa-dIAry/AbyssDesign.git"
+  },
+  "homepage": "https://github.com/mAIa-dIAry/AbyssDesign#readme",
+  "bugs": {
+    "url": "https://github.com/mAIa-dIAry/AbyssDesign/issues"
+  },
+  "keywords": [
+    "abyss",
+    "design-system",
+    "quasar",
+    "vue",
+    "ui"
+  ],
   "files": [
     "dist",
     "src/components",
@@ -42,6 +57,7 @@
     "./storybook/vitest-setup": "./src/storybook/vitest-setup.ts"
   },
   "scripts": {
+    "prepublishOnly": "yarn build",
     "build": "vite build && vue-tsc --emitDeclarationOnly -p tsconfig.build.json",
     "lint": "eslint \"./src/**/*.ts\" \".storybook/*.ts\"",
     "typecheck": "vue-tsc --noEmit --skipLibCheck -p tsconfig.json",
@@ -99,7 +115,8 @@
     "vue3-apexcharts": "^1.11.1"
   },
   "publishConfig": {
-    "access": "public"
+    "access": "public",
+    "provenance": true
   },
   "engines": {
     "node": "^28 || ^26 || ^24 || ^22",

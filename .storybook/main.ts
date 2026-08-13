@@ -4,7 +4,7 @@ import { fileURLToPath } from 'node:url';
 import {
   createStorybookMainConfig,
   STORYBOOK_ADDONS_WITH_VITEST,
-} from '@maia/abyss-design/storybook/create-main-config';
+} from '@maiadiary/abyss-design/storybook/create-main-config';
 
 const storybookDir = path.dirname(fileURLToPath(import.meta.url));
 const appSrc = path.resolve(storybookDir, '../src');

@@ -1,4 +1,4 @@
-# @maia/abyss-design
+# @maiadiary/abyss-design
 
 Abyss Design System — komponenty UI, style SCSS i narzędzia Vite dla aplikacji Quasar / Vue 3 w ekosystemie Maia.
 
@@ -16,7 +16,7 @@ W repozytorium konsumenta (`app`, `admin-web`):
 ```json
 {
   "dependencies": {
-    "@maia/abyss-design": "link:../AbyssDesign"
+    "@maiadiary/abyss-design": "link:../AbyssDesign"
   }
 }
 ```
@@ -66,7 +66,7 @@ extendViteConf(viteConf) {
 ### 3. Plugin gradientów (preloader)
 
 ```ts
-import { injectGradientPresetsPlugin } from '@maia/abyss-design/vite/inject-gradient-presets';
+import { injectGradientPresetsPlugin } from '@maiadiary/abyss-design/vite/inject-gradient-presets';
 
 viteConf.plugins.push(injectGradientPresetsPlugin());
 ```
@@ -77,13 +77,13 @@ W `index.html` konsumenta wymagane placeholdery: `__PRELOADER_DEFAULT_GRADIENT__
 
 ```ts
 // src/boot/fonts.ts
-import '@maia/abyss-design/styles/fonts';
+import '@maiadiary/abyss-design/styles/fonts';
 ```
 
 ### 5. i18n
 
 ```ts
-import { abyssI18nMessages } from '@maia/abyss-design';
+import { abyssI18nMessages } from '@maiadiary/abyss-design';
 
 // Scal z messages aplikacji (pl-PL):
 // { ...appMessages['pl-PL'], ...abyssI18nMessages['pl-PL'] }
@@ -96,7 +96,7 @@ Klucze wymagane przez komponenty: `ui.datePicker.*`, `common.navigation.back`.
 Domyślnie pakiet dostarcza web stub (`useKeyboardState`). W aplikacji mobilnej nadpisz alias Vite na lokalną implementację Capacitor lub użyj:
 
 ```ts
-import { installKeyboardState } from '@maia/abyss-design';
+import { installKeyboardState } from '@maiadiary/abyss-design';
 
 installKeyboardState(app, capacitorKeyboardState);
 ```
@@ -112,9 +112,9 @@ import {
   injectGradientPresetsPlugin,
   abyssI18nMessages,
   PIN_LENGTH,
-} from '@maia/abyss-design';
+} from '@maiadiary/abyss-design';
 
-import AbyssButton from '@maia/abyss-design/components/AbyssButton/AbyssButton.vue';
+import AbyssButton from '@maiadiary/abyss-design/components/AbyssButton/AbyssButton.vue';
 ```
 
 ## Skrypty
@@ -131,13 +131,30 @@ import AbyssButton from '@maia/abyss-design/components/AbyssButton/AbyssButton.v
 
 - **`ci.yml`** — lint, typecheck, build, build-storybook (PR + push do `main`)
 - **`deploy-storybook.yml`** — publikacja Storybook na GitHub Pages
-- **`release.yml.template`** — szablon publikacji npm (do aktywacji po skonfigurowaniu `NPM_TOKEN`)
+- **`release.yml`** — publikacja npm przy GitHub Release (OIDC / trusted publisher, bez `NPM_TOKEN`)
 
-## Publikacja npm (przyszłość)
+## Publikacja npm
 
-Pakiet jest przygotowany pod publikację (`publishConfig.access: public`). Obecnie konsumenci używają `link:../AbyssDesign`.
+Pakiet: [`@maiadiary/abyss-design`](https://www.npmjs.com/package/@maiadiary/abyss-design).
 
-Po publikacji:
+Lokalny development nadal może używać `link:../AbyssDesign`. Po publikacji konsumenci instalują z npm:
+
+```bash
+yarn add @maiadiary/abyss-design
+```
+
+### Autopublish (GitHub Release)
+
+1. Na [npm → Trusted Publisher](https://www.npmjs.com/package/@maiadiary/abyss-design/access) dodaj GitHub Actions:
+   - Organization or user: `mAIa-dIAry`
+   - Repository: `AbyssDesign`
+   - Workflow filename: `release.yml`
+   - Environment: puste
+   - Allowed actions: `npm publish`
+2. Wypchnij `release.yml` na `main`.
+3. Kolejne wersje: podnieś `version` w `package.json`, zacommituj, utwórz GitHub Release z tagiem `vX.Y.Z` (musi być identyczny jak `version`).
+
+Ręcznie (awaryjnie):
 
 ```bash
 yarn build
@@ -159,4 +176,4 @@ src/
 
 ## Licencja
 
-UNLICENSED — prywatny pakiet projektu Maia.
+MIT — zobacz [LICENSE](LICENSE).

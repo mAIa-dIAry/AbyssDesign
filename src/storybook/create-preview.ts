@@ -1,8 +1,8 @@
 import type { Preview } from '@storybook/vue3-vite';
 
 import 'quasar/dist/quasar.css';
-import '@maia/abyss-design/styles/fonts';
-import '@maia/abyss-design/styles/icons';
+import '@maiadiary/abyss-design/styles/fonts';
+import '@maiadiary/abyss-design/styles/icons';
 
 import { setup } from '@storybook/vue3-vite';
 import { createPinia } from 'pinia';
