@@ -59,6 +59,10 @@
   "scripts": {
     "prepublishOnly": "yarn build",
     "build": "vite build && vue-tsc --emitDeclarationOnly -p tsconfig.build.json",
+    "release": "node tools/release.mjs",
+    "release:dry-run": "node tools/release.mjs --dry-run --allow-dirty",
+    "changelog:preview": "node tools/changelog.mjs --version-from-package",
+    "release:check-github": "node tools/release.mjs --check-github-auth --allow-dirty",
     "lint": "eslint \"./src/**/*.ts\" \".storybook/*.ts\"",
     "typecheck": "vue-tsc --noEmit --skipLibCheck -p tsconfig.json",
     "storybook": "storybook dev -p 6006 --no-open",

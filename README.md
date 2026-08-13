@@ -126,6 +126,10 @@ import AbyssButton from '@maiadiary/abyss-design/components/AbyssButton/AbyssBut
 | `yarn lint` | ESLint |
 | `yarn storybook` | Dev Storybook |
 | `yarn build-storybook` | Build statyczny Storybook |
+| `yarn changelog:preview` | Podgląd notatek z `CHANGELOG.md` |
+| `yarn release:check-github` | Test tokenu GitHub |
+| `yarn release` | Tag `vX.Y.Z` + GitHub Release (npm publikuje Actions) |
+| `yarn release:dry-run` | Podgląd release bez API GitHub |
 
 ## CI / CD
 
@@ -143,16 +147,26 @@ Lokalny development nadal może używać `link:../AbyssDesign`. Po publikacji ko
 yarn add @maiadiary/abyss-design
 ```
 
-### Autopublish (GitHub Release)
+### Autopublish (jak MaiaApp)
 
-1. Na [npm → Trusted Publisher](https://www.npmjs.com/package/@maiadiary/abyss-design/access) dodaj GitHub Actions:
-   - Organization or user: `mAIa-dIAry`
-   - Repository: `AbyssDesign`
-   - Workflow filename: `release.yml`
-   - Environment: puste
-   - Allowed actions: `npm publish`
-2. Wypchnij `release.yml` na `main`.
-3. Kolejne wersje: podnieś `version` w `package.json`, zacommituj, utwórz GitHub Release z tagiem `vX.Y.Z` (musi być identyczny jak `version`).
+Lokalnie `yarn release` tworzy tag i GitHub Release. Workflow `release.yml` publikuje pakiet na npm.
+
+Jednorazowo na [npm → Trusted Publisher](https://www.npmjs.com/package/@maiadiary/abyss-design/access) dodaj GitHub Actions:
+
+- Organization or user: `mAIa-dIAry`
+- Repository: `AbyssDesign`
+- Workflow filename: `release.yml`
+- Environment: puste
+- Allowed actions: `npm publish`
+
+Token GitHub (`GITHUB_TOKEN`) w `.env.local` — ten sam wzorzec co w MaiaApp. Fine-grained PAT: Contents Read and write na `mAIa-dIAry/AbyssDesign`.
+
+Kolejna wersja:
+
+1. Podnieś `version` w `package.json`.
+2. Dodaj sekcję `## [X.Y.Z] - RRRR-MM-DD` na górze `CHANGELOG.md`.
+3. Zacommituj (working tree musi być czyste).
+4. `yarn release`
 
 Ręcznie (awaryjnie):
 
