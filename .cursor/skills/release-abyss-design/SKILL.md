@@ -20,7 +20,7 @@ Katalog roboczy: root AbyssDesign. Package manager: **yarn**.
 
 - Node zgodny z `engines` w `package.json`.
 - Dla kroku 8: `GITHUB_TOKEN` lub `GH_TOKEN` w `.env` / `.env.local` (priorytet pliku nad shellem). Fine-grained PAT: Contents Read and write na `mAIa-dIAry/AbyssDesign`.
-- Na npmjs skonfigurowany Trusted Publisher dla `@maiadiary/abyss-design` (workflow `release.yml`).
+- Secret GitHub Actions `NPM_TOKEN` (granular token npm z prawem publish w org `maiadiary`).
 
 Szczegóły changelogu, npm i troubleshooting: [reference.md](reference.md).
 

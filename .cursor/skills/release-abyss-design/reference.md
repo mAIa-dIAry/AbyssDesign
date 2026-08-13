@@ -48,20 +48,18 @@ Nie publikuj ręcznie (`npm publish`) w ramach tej procedury. Ścieżka:
 
 1. `yarn release` → tag + GitHub Release.
 2. `on: release: types: [published]` → `.github/workflows/release.yml`.
-3. OIDC (Trusted Publisher) → `npm publish --access public`.
+3. `NODE_AUTH_TOKEN` ze secreta `NPM_TOKEN` → `npm publish --access public`.
 
-Jednorazowa konfiguracja npmjs: package settings → Trusted Publisher → GitHub Actions:
+Jednorazowo:
 
-- Organization or user: `mAIa-dIAry`
-- Repository: `AbyssDesign`
-- Workflow filename: `release.yml`
-- Environment: puste
-- Allowed actions: `npm publish`
+1. npmjs → Access Tokens → granular, Read and write, org `maiadiary` (bypass 2FA / Automation).
+2. GitHub repo Settings → Secrets and variables → Actions → `NPM_TOKEN`.
 
 ## Zmienne środowiskowe
 
-- `GITHUB_TOKEN` / `GH_TOKEN` — tworzenie GitHub Release i push tagu.
-- `.env` / `.env.local` — ładowane przez `tools/release.mjs` (priorytet pliku nad shellem dla tych kluczy).
+- `GITHUB_TOKEN` / `GH_TOKEN` — tworzenie GitHub Release i push tagu (lokalnie, `.env`).
+- `NPM_TOKEN` — secret w GitHub Actions, publikacja na npm.
+- `.env` / `.env.local` — ładowane przez `tools/release.mjs` (priorytet pliku nad shellem dla `GITHUB_TOKEN` / `GH_TOKEN`).
 - Fine-grained PAT: Contents Read and write na `mAIa-dIAry/AbyssDesign`.
 - Przy SSO org: Authorize token dla `mAIa-dIAry`.
 
@@ -75,7 +73,7 @@ Szablon: `.env.example`.
 | `Missing changelog section` | Dodaj `## [X.Y.Z]` zgodne z `package.json` |
 | Brak uprawnień GitHub | `yarn release:check-github`; PAT musi obejmować AbyssDesign |
 | Tag `vX.Y.Z` ≠ `package.json` | Workflow npm się wywali — wyrównaj wersję i tag |
-| `npm publish` 403 / ENEEDAUTH | Trusted Publisher: org `mAIa-dIAry`, plik `release.yml` |
+| `npm publish` 403 / ENEEDAUTH | Secret `NPM_TOKEN` w repo + `registry-url` w `release.yml` |
 | Wersja już na npm | Nie odpalaj `yarn release` dla tej samej `version` |
 
 ## Skróty (poza pełną procedurą)

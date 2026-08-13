@@ -135,7 +135,7 @@ import AbyssButton from '@maiadiary/abyss-design/components/AbyssButton/AbyssBut
 
 - **`ci.yml`** — lint, typecheck, build, build-storybook (PR + push do `main`)
 - **`deploy-storybook.yml`** — publikacja Storybook na GitHub Pages
-- **`release.yml`** — publikacja npm przy GitHub Release (OIDC / trusted publisher, bez `NPM_TOKEN`)
+- **`release.yml`** — publikacja npm przy GitHub Release (secret `NPM_TOKEN`)
 
 ## Publikacja npm
 
@@ -149,17 +149,19 @@ yarn add @maiadiary/abyss-design
 
 ### Autopublish (jak MaiaApp)
 
-Lokalnie `yarn release` tworzy tag i GitHub Release. Workflow `release.yml` publikuje pakiet na npm.
+Lokalnie `yarn release` tworzy tag i GitHub Release. Workflow `release.yml` publikuje pakiet na npm (secret `NPM_TOKEN`).
 
-Jednorazowo na [npm → Trusted Publisher](https://www.npmjs.com/package/@maiadiary/abyss-design/access) dodaj GitHub Actions:
+Jednorazowo:
 
-- Organization or user: `mAIa-dIAry`
-- Repository: `AbyssDesign`
-- Workflow filename: `release.yml`
-- Environment: puste
-- Allowed actions: `npm publish`
+1. [npm → Access Tokens](https://www.npmjs.com/settings/~/tokens) → Generate new token (granular):
+   - Permission: **Read and write**
+   - Packages / org: `maiadiary` albo `@maiadiary/abyss-design`
+   - Bypass 2FA / Automation (żeby CI nie pytało o OTP)
+2. GitHub → [AbyssDesign → Settings → Secrets → Actions](https://github.com/mAIa-dIAry/AbyssDesign/settings/secrets/actions) → New repository secret:
+   - Name: `NPM_TOKEN`
+   - Value: token z npm
 
-Token GitHub (`GITHUB_TOKEN`) w `.env.local` — ten sam wzorzec co w MaiaApp. Fine-grained PAT: Contents Read and write na `mAIa-dIAry/AbyssDesign`.
+Token GitHub (`GITHUB_TOKEN`) w `.env` / `.env.local` — lokalny `yarn release`. Fine-grained PAT: Contents Read and write na `mAIa-dIAry/AbyssDesign`.
 
 Kolejna wersja:
 
