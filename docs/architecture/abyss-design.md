@@ -5,7 +5,7 @@
 - [Status i zakres](#status-i-zakres)
 - [Zasady nadrzędne](#zasady-nadrzędne)
 - [Formularze i karty vs komponenty złożone](#formularze-i-karty-vs-komponenty-złożone)
-- [Powierzchnie i warstwy](#powierzchnie-i-warstwy)
+- [Powierzchnie i warstwy](#powierzchnie-i-warstwy) (w tym [Warstwy nachodzące na treść](#warstwy-nachodzące-na-treść))
 - [Layout strony](#layout-strony) (w tym [Tytuły stron i zakładek](#tytuły-stron-i-zakładek))
 - [Feedback po akcjach użytkownika](#feedback-po-akcjach-użytkownika)
 - [Matryca AbyssButton](#matryca-abyssbutton)
@@ -43,6 +43,7 @@ Najważniejsze zasady interpretacji:
 9. **Daty i czas:** wyłącznie `AbyssDate`, `AbyssTime` albo `AbyssInput` z `type="date"`, `type="time"`, `type="datetime-local"`.
 10. **Feedback po akcjach:** powodzenie lub niepowodzenie operacji (zapis, usunięcie, ponowienie itd.) komunikuj **Quasar Notify** (`$q.notify` / `Notify.create`), nie `AbyssInfo`. `AbyssInfo` służy wyłącznie do **statycznych** komunikatów kontekstowych osadzonych w układzie strony.
 11. **Główne podstrony bez tytułu strony.** Nie powielaj etykiety aktywnej zakładki nawigacji (`AbyssNavigation`) nagłówkiem w treści (np. Dashboard → zakaz `AbyssTitle` „Dashboard”). Tytuły (`AbyssTitle` / `title` karty) wolno stosować **tylko na kartach** i w powierzchniach modalnych — patrz [Tytuły stron i zakładek](#tytuły-stron-i-zakładek).
+12. **Warstwa nachodząca na treść z przezroczystym tłem ma `backdrop-filter`.** Każdy element, który może wizualnie nakładać się na inną treść i nie jest powierzchnią gradientową (`AbyssBackground`, `AbyssGradientBox`, `AbyssButton` z `gradient`), musi mieć `-webkit-backdrop-filter` i `backdrop-filter` — kanon to `blur(20px)`. Dotyczy dialogów, pickerów daty/czasu, menu, sticky nagłówków i własnych overlayów w komponentach złożonych (np. przycisk dyktowania nad polem edytora). Szczegóły: [Warstwy nachodzące na treść](#warstwy-nachodzące-na-treść).
 
 ---
 
@@ -83,6 +84,22 @@ Przykład niedozwolonego użycia: karta „Konto” w ustawieniach z `class="set
 | `AbyssTemplateRoot`    | szkielet aplikacji (nav, content) | `device`, `orientation`, `screenRadius`; slot `content` bez scrollu i paddingu        |
 | `AbyssTemplateMain`  | przewijany obszar strony       | `device`, `safeArea`, opcjonalny reload; slot `top-bar` (poza scrollowym viewportem); padding treści w SCSS per `device` |
 | `AbyssTemplateSidebar`  | układ sidebar + detail (nawigacja zakładek) | własny scroll paneli z mixin scrollbara na urządzeniach z myszką; nie wymaga `AbyssTemplateMain` na poziomie strony |
+
+### Warstwy nachodzące na treść
+
+Element, który swoją warstwą może nachodzić na inną treść (modal, picker, menu, sticky pasek, pływający przycisk nad polem), a jego tło jest przezroczyste lub półprzezroczyste, **musi** mieć rozmycie tła:
+
+```scss
+-webkit-backdrop-filter: blur(20px);
+backdrop-filter: blur(20px);
+```
+
+| Powierzchnia | `backdrop-filter` |
+| ------------ | ----------------- |
+| `AbyssDialog`, `AbyssDate`, `AbyssTime`, menu (`abyss-menu-shell`), sticky `AbyssNavHeader` z `backdrop`, sticky nagłówek `AbyssTable`, własne overlaye w komponentach złożonych | **Wymagany** — `blur(20px)` |
+| `AbyssBackground`, `AbyssGradientBox`, `AbyssButton` z `gradient` | **Nie** — to nieprzezroczysta powierzchnia gradientowa |
+
+Nie stosuj tej reguły do kart i paneli w normalnym przepływie dokumentu, które nic nie przesłaniają. Wyjątek: `AbyssNavHeader` w slocie `top-bar` `AbyssTemplateMain` ma `backdrop={false}`, bo nie unosi się nad treścią.
 
 ---
 
@@ -570,6 +587,7 @@ Prop `expandable` lub obecność slotu `row-expand` aktywuje kolumnę +/- i wier
 - Używaj `AbyssTemplateMain` dla przewijanych widoków strony — nie polegaj na scrollu slotu `content` w `AbyssTemplateRoot`.
 - Ustawiaj `device` na `AbyssTemplateMain` zgodnie z kontekstem aplikacji (`mobile` / `desktop` / `web`).
 - Na głównych podstronach zaczynaj treść od kart / paneli; tytuły dawaj tylko kartom (`AbyssCard` `title` lub `AbyssTitle` wewnątrz karty).
+- Na warstwie nachodzącej na treść z przezroczystym tłem ustawiaj `-webkit-backdrop-filter` i `backdrop-filter: blur(20px)` — dialog, picker daty/czasu, menu, sticky nagłówek, pływający przycisk.
 
 ### Don't
 
@@ -590,6 +608,7 @@ Prop `expandable` lub obecność slotu `row-expand` aktywuje kolumnę +/- i wier
 - Nie dodawaj paddingu ani `overflow: auto` na wrapperze contentu `AbyssTemplateRoot` — to odpowiedzialność `AbyssTemplateMain` lub `AbyssTemplateSidebar`.
 - Nie uzależniaj scrollu strony od ujemnych marginesów kompensujących padding szablonu.
 - Nie umieszczaj na głównej podstronie `AbyssTitle` (ani innego nagłówka) powielającego etykietę aktywnej zakładki nawigacji — kontekst niesie nawigacja; tytuły mają wyłącznie karty / dialogi.
+- Nie buduj przezroczystego overlayu (dialog, picker, menu, pływający przycisk nad treścią) bez `backdrop-filter: blur(20px)` — wyjątek: powierzchnie gradientowe (`AbyssBackground`, `AbyssGradientBox`, `AbyssButton` z `gradient`).
 
 ---
 

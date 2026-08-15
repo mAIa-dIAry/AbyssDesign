@@ -109,7 +109,7 @@ import { Meta } from '@storybook/addon-docs/blocks';
 
   <div className="abyss-section">
     <h2>Najważniejsze zasady</h2>
-    <div className="abyss-rules abyss-grid--4-4-4">
+    <div className="abyss-rules abyss-grid--6-6">
       <div className="abyss-rule">
         <strong>Używaj Abyss przed Quasarem</strong>
         <p>Jeśli istnieje komponent w katalogu UI, on jest punktem startowym dla nowego interfejsu.</p>
@@ -124,6 +124,21 @@ import { Meta } from '@storybook/addon-docs/blocks';
         <strong>Kolory semantyczne przycisków</strong>
         <p>
           {'`theme` dla globalnych funkcji aplikacji; `success`, `info`, `warning`, `danger` i `hint` jako kontekstowa akcja operacyjna. `flat` tylko w nagłówku/stopce karty i dialogu.'}
+        </p>
+      </div>
+
+      <div className="abyss-rule">
+        <strong>Overlay z przezroczystym tłem</strong>
+        <p>
+          {'Element nachodzący na treść (dialog, picker, menu, pływający przycisk) z tłem innym niż gradient Abyss ma '}
+          <span className="abyss-inline-code">backdrop-filter: blur(20px)</span>
+          {'. Powierzchnie '}
+          <span className="abyss-inline-code">AbyssBackground</span>
+          {' / '}
+          <span className="abyss-inline-code">AbyssGradientBox</span>
+          {' / przycisk z '}
+          <span className="abyss-inline-code">gradient</span>
+          {' są wyjątkiem.'}
         </p>
       </div>
     </div>

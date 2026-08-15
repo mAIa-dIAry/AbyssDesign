@@ -8,6 +8,7 @@
   isolation: isolate;
   overflow: visible;
   box-shadow: var.$shadow-base;
+  -webkit-backdrop-filter: blur(20px);
   backdrop-filter: blur(20px);
   background-color: rgba(black, 0.125);
   border: 1px solid rgba(white, 0.15);
