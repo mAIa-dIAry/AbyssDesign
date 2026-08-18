@@ -1,5 +1,28 @@
 # Changelog
 
+## [0.1.2] - 2026-08-19
+
+Kolejka `AbyssNotify` w overlayu szablonu: akordeon, auto-close, licznik powtórzeń i `overflow: auto` dopiero gdy toasty przekraczają wysokość obszaru treści.
+
+### Nowości
+
+- Overlay `AbyssTemplateRoot` (`#abyss-template-overlay`) jako kotwica kolejki toastów w prawym górnym rogu obszaru treści
+- `AbyssNotify`: opcjonalny `description` (akordeon 0,2 s), `count` (≥ 2) i `autoClose` z circular progress wokół X
+
+### Zmiany
+
+- Wejście toasta z góry i zejście w dół (0,2 s); ostatni toast w kolejce przy zejściu nie zwija wysokości slotu
+- `overflow: auto` na hoście kolejki to przełącznik po ciszy 0,2 s — bez zdejmowania `auto` przy każdym nowym toaście; próg to `max-height` rodzica (`100%` wrappera treści)
+
+### Poprawki
+
+- Publikacja npm w CI przez secret `NPM_TOKEN`
+
+### Techniczne
+
+- `.env.example` z instrukcją tokenów GitHub i npm
+- Typecheck: callback `ref` toasta i type guard hosta kolejki
+
 ## [0.1.1] - 2026-08-13
 
 Publiczny release z automatyczną publikacją na npm przez GitHub Release.
