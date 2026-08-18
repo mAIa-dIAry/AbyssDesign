@@ -1,12 +1,17 @@
 import type { Meta, StoryObj } from '@storybook/vue3';
 import { defineComponent, ref } from 'vue';
+import { expect, waitFor } from 'storybook/test';
+import { ABYSS_TEMPLATE_OVERLAY_ID } from '@/components/templates/AbyssTemplateRoot/AbyssTemplateRoot.constants';
 import AbyssTemplateRoot from '@/components/templates/AbyssTemplateRoot/AbyssTemplateRoot.vue';
 import AbyssNavigation from '@/components/ui/AbyssNavigation/AbyssNavigation.vue';
 import AbyssButton from '@/components/ui/AbyssButton/AbyssButton.vue';
+import AbyssButtonGroup from '@/components/ui/AbyssButtonGroup/AbyssButtonGroup.vue';
 import AbyssBackground from '@/components/ui/AbyssBackground/AbyssBackground.vue';
 import AbyssCard from '@/components/ui/AbyssCard/AbyssCard.vue';
 import AbyssTitle from '@/components/ui/AbyssTitle/AbyssTitle.vue';
 import AbyssInput from '@/components/ui/AbyssInput/AbyssInput.vue';
+import AbyssNotify from '@/components/ui/AbyssNotify/AbyssNotify.vue';
+import { createNotifyDemoQueue } from '@/components/ui/AbyssNotify/AbyssNotify.demo';
 
 const TestContent = defineComponent({
   name: 'TestContent',
@@ -132,7 +137,8 @@ const meta: Meta<typeof AbyssTemplateRoot> = {
     docs: {
       description: {
         component:
-          'Główny komponent aplikacji definiujący strukturę layoutu. Obsługuje warianty: `desktop` (Electron z paskiem tytułu), `web` (panel webowy bez paska tytułu) oraz `mobile` z poziomą nawigacją na dole ekranu.',
+          'Główny komponent aplikacji definiujący strukturę layoutu. Obsługuje warianty: `desktop` (Electron z paskiem tytułu), `web` (panel webowy bez paska tytułu) oraz `mobile` z poziomą nawigacją na dole ekranu. ' +
+          '`AbyssNotify` teleportuj do hosta overlay w `overflow-wrapper` (`#abyss-template-overlay` albo `overlay-id`) — toast kotwiczy się w prawym górnym rogu obszaru treści. Host ma `gap: 0` (odstęp 8px z `::after` toasta), `padding: 12px 8px` i `max-height: 100%`. `overflow: auto` tylko gdy zmierzona wysokość kolejki przekracza limit (debounce 0,2 s = animacja wejścia, zejścia i akordeonu).',
       },
     },
   },
@@ -204,9 +210,26 @@ const meta: Meta<typeof AbyssTemplateRoot> = {
         type: { summary: 'slot' },
       },
     },
+    overlayId: {
+      control: 'text',
+      description:
+        'Identyfikator hosta overlay. `Teleport to="#abyss-template-overlay"` trafia tutaj. W Storybooku Docs podawaj unikalną wartość, bo na stronie jest wiele instancji szablonu',
+      table: {
+        type: { summary: 'string' },
+        defaultValue: { summary: `'${ABYSS_TEMPLATE_OVERLAY_ID}'` },
+      },
+    },
     content: {
       description:
         'Główny obszar treści aplikacji. Przewijalny, zajmuje pozostałą przestrzeń po odjęciu paska aplikacji i nawigacji. Dostępny na **obu platformach** (desktop i mobile).',
+      table: {
+        category: 'slots',
+        type: { summary: 'slot' },
+      },
+    },
+    overlay: {
+      description:
+        'Warstwa nad obszarem treści (`overflow-wrapper`), kotwica w prawym górnym rogu. `AbyssNotify` wstawiaj tu slotem albo `Teleport`em do `#abyss-template-overlay`. Host ma `gap: 0` (odstęp kolejki z `::after` toasta), `padding: 12px 8px` i `max-height: 100%`; `overflow: auto` tylko gdy zmierzona wysokość przekracza limit (debounce 0,2 s = animacja wejścia, zejścia i akordeonu). Dostępny na **obu platformach**.',
       table: {
         category: 'slots',
         type: { summary: 'slot' },
@@ -532,6 +555,7 @@ export const EmptyDesktop: Story = {
         <template #navigation-start>[navigation-start]</template>
         <template #navigation-end>[navigation-end]</template>
         <template #content>[content]</template>
+        <template #overlay>[overlay]</template>
       </AbyssTemplateRoot>
     `,
   }),
@@ -561,6 +585,7 @@ export const EmptyMobile: Story = {
         <template #background>[background]</template>
         <template #navigation-start>[navigation-start]</template>
         <template #content>[content]</template>
+        <template #overlay>[overlay]</template>
       </AbyssTemplateRoot>
     `,
   }),
@@ -650,4 +675,302 @@ export const MobileNoNavigation: Story = {
       },
     },
   },
+};
+
+const notifySaveMessage = 'Notatka została zapisana.';
+
+const notifyStorySource = `<script setup>
+import { ref } from 'vue';
+
+const queue = ref([]);
+
+function enqueue(template) {
+  const newest = queue.value[0];
+  if (newest?.id === template.id) {
+    newest.count += 1;
+    newest.visible = true;
+    return;
+  }
+  queue.value.unshift({ ...template, instanceId: Date.now(), count: 1, visible: true });
+}
+
+function remove(instanceId) {
+  queue.value = queue.value.filter((item) => item.instanceId !== instanceId);
+}
+</script>
+
+<template>
+  <AbyssTemplateRoot device="desktop">
+    <template #background>
+      <AbyssBackground />
+    </template>
+    <template #navigation-start>
+      <AbyssNavigation device="desktop" current-route="index">
+        <AbyssButton label="Start" icon="sym_r_home" route="index" />
+      </AbyssNavigation>
+    </template>
+    <template #content>
+      <AbyssButtonGroup vertical>
+        <AbyssButton
+          v-for="template in templates"
+          :key="template.id"
+          :label="template.label"
+          @click="enqueue(template)"
+        />
+      </AbyssButtonGroup>
+      <Teleport defer to="#${ABYSS_TEMPLATE_OVERLAY_ID}">
+        <AbyssNotify
+          v-for="item in queue"
+          :key="item.instanceId"
+          v-model="item.visible"
+          :type="item.type"
+          :message="item.message"
+          :description="item.description"
+          :count="item.count"
+          @after-leave="remove(item.instanceId)"
+        />
+      </Teleport>
+    </template>
+  </AbyssTemplateRoot>
+</template>`;
+
+const notifyStoryPlay: Story['play'] = async ({ canvas, userEvent }) => {
+  await userEvent.click(canvas.getByRole('button', { name: 'Zapis' }));
+  await waitFor(() => {
+    expect(canvas.getByText(notifySaveMessage)).toBeVisible();
+  });
+  await userEvent.click(canvas.getByRole('button', { name: 'Zamknij' }));
+  await waitFor(() => {
+    expect(canvas.queryByText(notifySaveMessage)).toBeNull();
+  });
+  await userEvent.click(canvas.getByRole('button', { name: 'Zapis' }));
+  await waitFor(() => {
+    expect(canvas.getByText(notifySaveMessage)).toBeVisible();
+  });
+};
+
+const notifyQueueContent = `
+          <div style="padding: 24px; max-width: 180px;">
+            <AbyssButtonGroup vertical>
+              <AbyssButton
+                v-for="template in templates"
+                :key="template.id"
+                :label="template.label"
+                @click="enqueue(template)"
+              />
+            </AbyssButtonGroup>
+          </div>
+          <Teleport defer :to="'#' + overlayId">
+            <AbyssNotify
+              v-for="item in queue"
+              :key="item.instanceId"
+              v-model="item.visible"
+              :type="item.type"
+              :message="item.message"
+              :description="item.description"
+              :count="item.count"
+              @after-leave="remove(item.instanceId)"
+            />
+          </Teleport>
+`;
+
+export const NotifyDesktop: Story = {
+  name: 'Notify – Desktop',
+  args: {
+    device: 'desktop',
+  },
+  render: (args) => ({
+    components: {
+      AbyssTemplateRoot,
+      AbyssNavigation,
+      AbyssButton,
+      AbyssButtonGroup,
+      AbyssBackground,
+      AbyssNotify,
+    },
+    setup() {
+      const currentRoute = ref('index');
+      const overlayId = `abyss-template-overlay-${Math.random().toString(36).slice(2, 10)}`;
+      return { args, navItems, currentRoute, overlayId, ...createNotifyDemoQueue() };
+    },
+    template: `
+      <AbyssTemplateRoot v-bind="args" :overlay-id="overlayId" style="height: 100vh;">
+        <template #background>
+          <AbyssBackground style="position: absolute; inset: 0;" />
+        </template>
+        <template #app-bar-start>
+          <span style="font-weight: bold; padding: 0 16px;">Maia</span>
+        </template>
+        <template #navigation-start>
+          <AbyssNavigation device="desktop" :current-route="currentRoute">
+            <AbyssButton
+              v-for="item in navItems"
+              :key="item.route"
+              :label="item.label"
+              :icon="item.icon"
+              :route="item.route"
+              embedded
+              @click="currentRoute = item.route"
+            />
+          </AbyssNavigation>
+        </template>
+        <template #content>
+          ${notifyQueueContent}
+        </template>
+      </AbyssTemplateRoot>
+    `,
+  }),
+  parameters: {
+    layout: 'fullscreen',
+    docs: {
+      description: {
+        story:
+          'Zestaw przycisków dokładających `AbyssNotify` do kolejki w hoście overlay (`#abyss-template-overlay`) w prawym górnym rogu obszaru treści. Host ma `padding: 12px 8px`; `overflow: auto` tylko gdy zmierzona wysokość przekracza limit (debounce 0,2 s = animacja wejścia, zejścia i akordeonu). Ten sam szablon pod rząd podbija `count`.',
+      },
+      source: {
+        code: notifyStorySource,
+      },
+    },
+  },
+  play: notifyStoryPlay,
+};
+
+export const NotifyWeb: Story = {
+  name: 'Notify – Web',
+  args: {
+    device: 'web',
+  },
+  render: (args) => ({
+    components: {
+      AbyssTemplateRoot,
+      AbyssNavigation,
+      AbyssButton,
+      AbyssButtonGroup,
+      AbyssBackground,
+      AbyssNotify,
+    },
+    setup() {
+      const currentRoute = ref('index');
+      const overlayId = `abyss-template-overlay-${Math.random().toString(36).slice(2, 10)}`;
+      return { args, navItems, currentRoute, overlayId, ...createNotifyDemoQueue() };
+    },
+    template: `
+      <AbyssTemplateRoot v-bind="args" :overlay-id="overlayId" style="height: 100vh;">
+        <template #background>
+          <AbyssBackground style="position: absolute; inset: 0;" />
+        </template>
+        <template #navigation-start>
+          <AbyssNavigation device="desktop" :current-route="currentRoute">
+            <AbyssButton
+              v-for="item in navItems"
+              :key="item.route"
+              :label="item.label"
+              :icon="item.icon"
+              :route="item.route"
+              embedded
+              @click="currentRoute = item.route"
+            />
+          </AbyssNavigation>
+        </template>
+        <template #content>
+          ${notifyQueueContent}
+        </template>
+      </AbyssTemplateRoot>
+    `,
+  }),
+  parameters: {
+    layout: 'fullscreen',
+    docs: {
+      description: {
+        story:
+          'Ten sam zestaw przycisków i kolejka toastów na web — overlay w prawym górnym rogu `overflow-wrapper`, bez paska tytułu.',
+      },
+      source: {
+        code: notifyStorySource.replace('device="desktop"', 'device="web"'),
+      },
+    },
+  },
+  play: notifyStoryPlay,
+};
+
+export const NotifyMobile: Story = {
+  name: 'Notify – Mobile',
+  args: {
+    device: 'mobile',
+    orientation: 'portrait',
+    screenRadius: '30px',
+  },
+  render: (args) => ({
+    components: {
+      AbyssTemplateRoot,
+      AbyssNavigation,
+      AbyssButton,
+      AbyssButtonGroup,
+      AbyssBackground,
+      AbyssNotify,
+    },
+    setup() {
+      const currentRoute = ref('index');
+      const overlayId = `abyss-template-overlay-${Math.random().toString(36).slice(2, 10)}`;
+      return { args, navItems, currentRoute, overlayId, ...createNotifyDemoQueue() };
+    },
+    template: `
+      <AbyssTemplateRoot v-bind="args" :overlay-id="overlayId" style="height: 100vh;">
+        <template #background>
+          <AbyssBackground style="position: absolute; inset: 0;" />
+        </template>
+        <template #content>
+          <div style="padding: 16px; max-width: 180px;">
+            <AbyssButtonGroup vertical>
+              <AbyssButton
+                v-for="template in templates"
+                :key="template.id"
+                :label="template.label"
+                @click="enqueue(template)"
+              />
+            </AbyssButtonGroup>
+          </div>
+          <Teleport defer :to="'#' + overlayId">
+            <AbyssNotify
+              v-for="item in queue"
+              :key="item.instanceId"
+              v-model="item.visible"
+              :type="item.type"
+              :message="item.message"
+              :description="item.description"
+              :count="item.count"
+              @after-leave="remove(item.instanceId)"
+            />
+          </Teleport>
+        </template>
+        <template #navigation-start>
+          <AbyssNavigation device="mobile" :current-route="currentRoute">
+            <AbyssButton
+              v-for="item in navItems"
+              :key="item.route"
+              :label="item.label"
+              :icon="item.icon"
+              :route="item.route"
+              embedded
+              @click="currentRoute = item.route"
+            />
+          </AbyssNavigation>
+        </template>
+      </AbyssTemplateRoot>
+    `,
+  }),
+  parameters: {
+    layout: 'fullscreen',
+    viewport: { defaultViewport: 'mobile1' },
+    docs: {
+      description: {
+        story:
+          'Ten sam zestaw przycisków i kolejka toastów na mobile — overlay w prawym górnym rogu obszaru treści, nad dolną nawigacją.',
+      },
+      source: {
+        code: notifyStorySource.replace('device="desktop"', 'device="mobile"'),
+      },
+    },
+  },
+  play: notifyStoryPlay,
 };

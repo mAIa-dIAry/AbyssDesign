@@ -31,3 +31,13 @@ body.native-mobile {
     top: env(safe-area-inset-top, 0px);
   }
 }
+
+.q-notification {
+  transition-duration: 0.2s;
+}
+
+.q-notification__actions,
+.q-notification__actions .q-btn,
+.q-notification__actions .q-icon {
+  color: inherit;
+}

@@ -47,6 +47,9 @@
         :class="[`device--${props.device}`]"
       >
         <slot name="content" />
+        <div :id="overlayId" class="abyss-template__overlay">
+          <slot name="overlay" />
+        </div>
       </div>
     </main>
   </div>
@@ -55,11 +58,13 @@
 <script setup lang="ts">
 import { computed, useSlots } from 'vue';
 import { useKeyboardState } from '@/composables/useKeyboardState';
+import { ABYSS_TEMPLATE_OVERLAY_ID } from '@/components/templates/AbyssTemplateRoot/AbyssTemplateRoot.constants';
 
 export interface AbyssTemplateRootProps {
   device: 'desktop' | 'mobile' | 'web';
   orientation?: 'portrait' | 'landscape';
   screenRadius?: string;
+  overlayId?: string;
 }
 
 /** @deprecated Use AbyssTemplateRootProps */
@@ -68,6 +73,7 @@ export type AbyssTemplateProps = AbyssTemplateRootProps;
 const props = withDefaults(defineProps<AbyssTemplateRootProps>(), {
   orientation: 'portrait',
   screenRadius: '',
+  overlayId: ABYSS_TEMPLATE_OVERLAY_ID,
 });
 
 const slots = useSlots();
@@ -211,9 +217,7 @@ const hasNavigation = computed(
 
     &.device--web {
       width: calc(100% + 8px);
-      height: calc(100% + 8px);
-      margin-top: -8px;
-      padding-bottom: 8px;
+      height: 100%;
       padding-right: 8px;
       border-top-left-radius: 0;
       box-shadow: inset 0 0 8px 0 rgba(black, 0.5);
@@ -287,6 +291,35 @@ const hasNavigation = computed(
     overflow: hidden;
     position: relative;
     min-height: 0;
+  }
+
+  &__overlay {
+    position: absolute;
+    top: 0;
+    right: 0;
+    z-index: 20;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 0;
+    box-sizing: border-box;
+    max-width: 100%;
+    width: min(100%, calc(420px + 16px));
+    max-height: 100%;
+    min-width: 0;
+    padding: 12px 8px;
+    overflow: visible;
+    overscroll-behavior: contain;
+    -webkit-overflow-scrolling: touch;
+    @include scrollbar;
+
+    :deep(.abyss-notify-shell),
+    :deep(.abyss-notify) {
+      flex-shrink: 0;
+      width: 100%;
+      max-width: 100%;
+      min-width: 0;
+    }
   }
 
   // Mobile landscape overrides — navigation moves to the right side

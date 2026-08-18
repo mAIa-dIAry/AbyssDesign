@@ -21,7 +21,7 @@ const meta: Meta<typeof AbyssInfo> = {
           'Posiada **wymaganą** ikonę, **wymaganą** treść w domyślnym slocie oraz opcjonalny tytuł. ' +
           'Tło używa semantycznego gradientu (`info`, `warning`, `danger`, `success`, `hint`); ' +
           'lewa kolumna z ikoną pokazuje gradient bez overlay, prawy panel ma półprzezroczysty overlay z białym tytułem i treścią.\n\n' +
-          '> **Feedback po akcjach użytkownika** (sukces zapisu, błąd API, usunięcie rekordu) realizuj przez **Quasar Notify** (`$q.notify`), ' +
+          '> **Feedback po akcjach użytkownika** (sukces zapisu, błąd API, usunięcie rekordu) realizuj przez **AbyssNotify**, ' +
           'nie przez `AbyssInfo`. Nie przełączaj widoczności `AbyssInfo` reaktywnie po operacji — to antywzorzec. ' +
           'Szczegóły: [`docs/architecture/abyss-design.md`](../../../docs/architecture/abyss-design.md#feedback-po-akcjach-użytkownika).\n\n' +
           '> Użycie bez ikony lub bez treści w slocie jest niedozwolone. ' +

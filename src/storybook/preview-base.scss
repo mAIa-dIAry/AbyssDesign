@@ -69,6 +69,7 @@ html {
     padding: 48px;
     min-height: 100vh;
     box-sizing: border-box;
+    overflow: hidden;
 
     > * {
       width: 100%;
@@ -311,6 +312,7 @@ body.sb-show-main:not(:has(.docs-story)) {
 
   .docs-story {
     padding: 0 !important;
+    overflow: hidden !important;
 
     > div {
       padding: 0;
@@ -396,7 +398,7 @@ body.sb-show-main:not(:has(.docs-story)) {
   .docs-story:has(.abyss-bg-decorator--dialog-scope) {
     height: auto !important;
     min-height: 0 !important;
-    overflow: visible;
+    overflow: visible !important;
 
     > div {
       background: transparent;
