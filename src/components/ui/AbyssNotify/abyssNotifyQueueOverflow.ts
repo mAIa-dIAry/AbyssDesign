@@ -30,7 +30,9 @@ function unbindWindowResize(): void {
   }
 }
 
-export function isNotifyQueueHost(el: HTMLElement | null): el is HTMLElement {
+export function isNotifyQueueHost(
+  el: HTMLElement | null | undefined,
+): el is HTMLElement {
   return (
     !!el &&
     (el.classList.contains('abyss-notify-queue') ||

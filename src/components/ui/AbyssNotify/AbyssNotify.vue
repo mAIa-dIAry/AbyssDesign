@@ -142,7 +142,13 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onUnmounted, ref, watch } from 'vue';
+import {
+  computed,
+  onUnmounted,
+  ref,
+  watch,
+  type ComponentPublicInstance,
+} from 'vue';
 import {
   attachNotifyQueueOverflow,
   isNotifyQueueHost,
@@ -367,7 +373,9 @@ function onAfterLeave(): void {
 let detachQueueOverflow: (() => void) | undefined;
 const shellEl = ref<HTMLElement | null>(null);
 
-function onShellRef(el: Element | null): void {
+function onShellRef(
+  el: Element | ComponentPublicInstance | null,
+): void {
   const next = el instanceof HTMLElement ? el : null;
 
   if (next === shellEl.value) {
