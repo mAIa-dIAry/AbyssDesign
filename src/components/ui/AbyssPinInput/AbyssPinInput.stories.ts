@@ -13,7 +13,7 @@ const meta = {
     docs: {
       description: {
         component:
-          'Wizualizacja postępu wprowadzania kodu PIN jako wypełnianych kropek.',
+          'Wizualizacja postępu wprowadzania kodu PIN jako wypełnianych kropek. Rząd kropek jest wyśrodkowany ze stałym `gap` — bez `space-between`.',
       },
     },
   },

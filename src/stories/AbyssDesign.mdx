@@ -48,11 +48,11 @@ import './AbyssDesign.scss';
 
       <section className="abyss-feature-item">
         <h3>Szablony layoutu</h3>
-        <p>AbyssTemplateRoot, AbyssTemplateMain, AbyssTemplateSidebar</p>
+        <p>AbyssTemplateRoot, AbyssTemplateMain, AbyssTemplateSidebar, AbyssTemplateLogin</p>
         <p>
           {'Komponenty w '}
           <span className="abyss-inline-code">src/components/templates</span>
-          {'. `AbyssTemplateRoot` to szkielet aplikacji; `AbyssTemplateMain` — przewijane widoki (start, archiwum, analiza); `AbyssTemplateSidebar` — ustawienia z nawigacją zakładek.'}
+          {'. `AbyssTemplateRoot` to szkielet aplikacji; `AbyssTemplateMain` — przewijane widoki (start, archiwum, analiza); `AbyssTemplateSidebar` — ustawienia z nawigacją zakładek; `AbyssTemplateLogin` — logowanie z wyśrodkowanym kontenerem o stałej szerokości (wymaga `AbyssCard`; przykładowa treść: formularz logowania). Slot `content` w Root przyjmuje wyłącznie inny szablon (`AbyssTemplateMain` domyślnie, `AbyssTemplateSidebar` albo `AbyssTemplateLogin`) — nie content strony bezpośrednio.'}
         </p>
         <p>
           Główne podstrony nie mają tytułu strony powielającego etykietę zakładki
@@ -70,7 +70,7 @@ import './AbyssDesign.scss';
 
       <section className="abyss-feature-item">
         <h3>Formularze i wybór</h3>
-        <p>AbyssForm, AbyssInput, AbyssSelect, AbyssDate, AbyssTime, AbyssSlider, AbyssRange</p>
+        <p>AbyssForm, AbyssInput, AbyssSelect, AbyssDate, AbyssTime, AbyssSlider, AbyssRange, AbyssAppLock</p>
         <p>
           Dla daty i czasu zawsze używaj <span className="abyss-inline-code">AbyssDate</span>
           {' / '}

@@ -10,6 +10,7 @@
     />
 
     <AbyssNumericKeypad
+      class="abyss-app-lock__keypad"
       :disable="disable"
       :can-backspace="enteredLength > 0"
       :chaos="chaos"
@@ -125,10 +126,9 @@ function handleBackspace(): void {
 .abyss-app-lock {
   display: flex;
   flex-direction: column;
-  align-items: center;
+  align-items: stretch;
   gap: 16px;
   width: 100%;
-  max-width: 280px;
 
   &__message {
     margin: 0;
@@ -137,9 +137,12 @@ function handleBackspace(): void {
     opacity: 0.8;
   }
 
+  &__keypad {
+    width: 100%;
+  }
+
   &__biometric {
     width: 100%;
-    max-width: 280px;
   }
 }
 </style>

@@ -321,7 +321,11 @@ body.sb-show-main:not(:has(.docs-story)) {
     }
 
     .innerZoomElementWrapper {
-      &:has([id^='story--ui-abysstemplate']) {
+      // AbyssTemplateRoot ma position:absolute; inset:0 — bez stałej wysokości
+      // preview w Docs się zwija. Selektujemy klasę root, nie story ID
+      // (kiedyś UI/AbyssTemplate → story--ui-abysstemplate).
+      &:has(.abyss-template) {
+        position: relative;
         height: 500px;
 
         .abyss-template {

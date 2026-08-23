@@ -76,15 +76,17 @@ Przykład niedozwolonego użycia: karta „Konto” w ustawieniach z `class="set
 | `AbyssButtonGroup` | zestaw równorzędnych akcji     | `vertical` (lista pionowa, domyślnie 100% szerokości); dzieci: wyłącznie `AbyssButton` |
 | `AbyssGrid`        | responsywna siatka             | `column-size`, `max-columns`, `column-gap`, `row-gap`, `align`, `content-rows`          |
 | `AbyssForm`        | wrapper formularza             | `v-model`, `sync`, `@update-form`, `@submit-form`                                       |
+| `AbyssAppLock`     | panel PIN odblokowania         | `message`, `errorMessage`, klawiatura, opcjonalna biometria; pełny ekran w `AbyssCard` wewnątrz `AbyssTemplateLogin`; klawiatura na pełną szerokość treści karty; kropki PIN wyśrodkowane ze stałym `gap` (bez `space-between`); ustawianie PIN w `AbyssDialog` `abyss-dialog--compact` |
 | `AbyssPanel`       | panel z opcjonalnym nagłówkiem | `title`, `flush`, slot `title`                                                          |
 | `AbyssNavHeader`   | sticky nagłówek nawigacyjny    | `title`, `icon`, `backDisabled`, `backIcon`, `backLabel`, `sticky`, `backdrop`, `stickyTop`, slot `actions` (`AbyssButton` `size="medium"` `flat` `embedded`); bez marginesów — inset u góry z `AbyssTemplateMain`; przycisk wstecz zawsze widoczny |
 | `AbyssContent`     | typografia gotowego HTML       | `html`, `mode` (`html-note` \| `html-changelog`), `size`, `tone`                        |
 | `AbyssMarkdown`    | podgląd Markdown + kod źródłowy | `source`, `v-model` (`preview` \| `code`), `content-mode`, `embedded`                  |
 | `AbyssCode`        | kolorowany kod (JSON)          | `value`, `language` (`json` \| `abyss-json`), `colorTheme` (domyślnie `one-dark`)       |
 | `AbyssDebug`       | karta debugowania danych       | `data` — cienki wrapper nad `AbyssCode language="abyss-json"`                           |
-| `AbyssTemplateRoot`    | szkielet aplikacji (nav, content) | `device`, `orientation`, `screenRadius`, `overlayId`; slot `content` bez scrollu i paddingu; slot `overlay` w `overflow-wrapper` (prawy górny róg, `padding: 12px 8px`, `max-height: 100%`, `overflow: auto` tylko gdy zmierzona wysokość przekracza limit) + host `#abyss-template-overlay` na `AbyssNotify` (Teleport; odstęp kolejki z `::after` toasta) |
+| `AbyssTemplateRoot`    | szkielet aplikacji (nav + host treści) | `device`, `orientation`, `screenRadius`, `overlayId`; slot `#content` **tylko** inny szablon strony (`AbyssTemplateMain` domyślnie, `AbyssTemplateSidebar`, albo `AbyssTemplateLogin`) — nie karty/formularze bezpośrednio; puste sloty `navigation-start` i `navigation-end` ukrywają sidebar (`<aside>`), inner shadow contentu (inset 8px) chowa się za viewportem po prawej i na dole (bez nawigacji także po lewej); slot `content` bez scrollu i paddingu; slot `overlay` w `overflow-wrapper` (prawy górny róg, `padding: 12px 8px`, `max-height: 100%`, `overflow: auto` tylko gdy zmierzona wysokość przekracza limit) + host `#abyss-template-overlay` na `AbyssNotify` (Teleport; odstęp kolejki z `::after` toasta) |
 | `AbyssTemplateMain`  | przewijany obszar strony       | `device`, `safeArea`, opcjonalny reload; slot `top-bar` (poza scrollowym viewportem); padding treści w SCSS per `device` |
 | `AbyssTemplateSidebar`  | układ sidebar + detail (nawigacja zakładek) | własny scroll paneli z mixin scrollbara na urządzeniach z myszką; nie wymaga `AbyssTemplateMain` na poziomie strony |
+| `AbyssTemplateLogin`  | widok auth (logowanie)         | `device`; wewnętrzny kontener o stałej `max-width` (`ABYSS_TEMPLATE_LOGIN_MAX_WIDTH`); **wymaga `AbyssCard`** w slocie (tytuł + ikona w `#header-prepend`); przykładowa treść karty to formularz logowania (`AbyssForm`); viewport centruje treść w pionie i przewija, gdy formularz jest wyższy; padding per `device` (+ safe-area na mobile) |
 
 ### Warstwy nachodzące na treść
 
@@ -112,10 +114,69 @@ Komponenty layoutu znajdują się w [`src/components/templates`](../../src/compo
 
 | Komponent | Scroll | Padding treści |
 | --------- | ------ | -------------- |
-| `AbyssTemplateRoot` → slot `content` | **Nie** — `overflow: hidden` | **Nie** |
+| `AbyssTemplateRoot` → slot `content` | **Nie** — `overflow: hidden` | **Nie** — dziecko to szablon strony |
 | `AbyssTemplateMain` | **Tak** — viewport przewija treść | **Tak** — góra, boki i dół per `device`; opcjonalnie `safeArea` (mobile) |
 | `AbyssTemplateSidebar` | **Tak** — wewnętrznie w sidebarze i panelu treści (mixin scrollbara na urządzeniach z myszką) | Własne insety paneli |
-| Edytor / full-bleed | Własny layout 100% wysokości | W komponencie domenowym |
+| `AbyssTemplateLogin` | **Tak** — viewport przewija i centruje kontener (`margin-block: auto`) | **Tak** — desktop/web `24px`, mobile `8px` + `env(safe-area-inset-*)` |
+| Inny szablon strony (np. edytor, full-bleed) | W szablonie | W szablonie — **nie** bezpośrednio w Root |
+
+### Kompozycja `AbyssTemplateRoot`
+
+Slot `#content` przyjmuje **wyłącznie inny szablon strony**:
+
+- **Domyślnie** `AbyssTemplateMain` — przewijane widoki (start, archiwum, analiza).
+- `AbyssTemplateSidebar` — ustawienia i nawigacja zakładek.
+- `AbyssTemplateLogin` — logowanie i podobne widoki auth (zwykle bez nawigacji); wyśrodkowany kontener o stałej `max-width`; **slot wymaga `AbyssCard`** (w karcie formularz logowania; odblokowanie PIN — `AbyssAppLock` w karcie, patrz jego stories).
+- ewentualnie przyszły szablon full-bleed / edytor.
+
+**Zakaz:** karty, formularze, listy ani inny content strony bezpośrednio w `#content`. Root jest szkieletem (nav, chrome, overlay) — treść strony żyje w szablonie-dziecku.
+
+```vue
+<!-- DO — domyślna kompozycja -->
+<AbyssTemplateRoot :device="device">
+  <template #content>
+    <AbyssTemplateMain :device="device" safe-area safe-area-in-template>
+      <AbyssCard title="Aktywny plan">…</AbyssCard>
+    </AbyssTemplateMain>
+  </template>
+</AbyssTemplateRoot>
+
+<!-- DO — ustawienia -->
+<AbyssTemplateRoot :device="device">
+  <template #content>
+    <AbyssTemplateSidebar :device="device" :tabs="tabs">…</AbyssTemplateSidebar>
+  </template>
+</AbyssTemplateRoot>
+
+<!-- DO — logowanie (bez nawigacji) -->
+<AbyssTemplateRoot :device="device">
+  <template #content>
+    <AbyssTemplateLogin :device="device">
+      <AbyssCard title="Logowanie">
+        <template #header-prepend>
+          <q-icon name="sym_r_login" size="20px" />
+        </template>
+        <template #content>
+          <AbyssForm v-model="form" :sync="false" @submit-form="handleLogin">
+            <AbyssInput v-model="form.email" type="email" label="E-mail" />
+            <AbyssInput v-model="form.password" type="password" label="Hasło" />
+            <AbyssGrid align="right" :column-size="INPUT_COLUMN_SIZE" :max-columns="INPUT_GRID_MAX_COLUMNS">
+              <AbyssButton type="submit" size="big" label="Zaloguj się" full-width />
+            </AbyssGrid>
+          </AbyssForm>
+        </template>
+      </AbyssCard>
+    </AbyssTemplateLogin>
+  </template>
+</AbyssTemplateRoot>
+
+<!-- DON'T — content bezpośrednio w Root -->
+<AbyssTemplateRoot :device="device">
+  <template #content>
+    <AbyssCard title="Aktywny plan">…</AbyssCard>
+  </template>
+</AbyssTemplateRoot>
+```
 
 ### Presety paddingów `AbyssTemplateMain` (SCSS — bez propsów nadpisujących)
 
@@ -146,6 +207,14 @@ Komponenty layoutu znajdują się w [`src/components/templates`](../../src/compo
   <!-- przewijalna treść -->
 </AbyssTemplateMain>
 ```
+
+### Presety `AbyssTemplateLogin`
+
+- **desktop / web:** padding viewportu `24px`.
+- **mobile:** padding viewportu `8px`, nie mniejszy niż `env(safe-area-inset-*)`.
+- Wewnętrzny `__container`: `width: 100%`, `max-width` = `ABYSS_TEMPLATE_LOGIN_MAX_WIDTH` (`360px`), `margin-block: auto` — centruje krótki formularz, a przy przepełnieniu pozwala przewinąć od góry.
+- **Wymagany `AbyssCard`** w slocie domyślnym: `title` oraz ikona w `#header-prepend`; treść karty to formularz logowania (`AbyssForm`) albo inna treść auth (np. `AbyssAppLock`). Nie wkładaj paneli ani formularzy bezpośrednio do szablonu.
+- Zazwyczaj w Root **bez** slotów nawigacji. Nie owijaj w `AbyssTemplateMain`.
 
 ### Slot `top-bar` (`AbyssTemplateMain`)
 
@@ -591,7 +660,11 @@ Prop `expandable` lub obecność slotu `row-expand` aktywuje kolumnę +/- i wier
 - Ustawiaj i zmieniaj hasło wyłącznie w dedykowanym `AbyssDialog`.
 - Używaj `AbyssMarkdown` dla generycznego podglądu Markdown; logikę changelogu trzymaj w komponencie aplikacji (`ChangeLog`).
 - Używaj `AbyssTemplateMain` dla przewijanych widoków strony — nie polegaj na scrollu slotu `content` w `AbyssTemplateRoot`.
-- Ustawiaj `device` na `AbyssTemplateMain` zgodnie z kontekstem aplikacji (`mobile` / `desktop` / `web`).
+- W slocie `#content` `AbyssTemplateRoot` umieszczaj **szablon strony**: domyślnie `AbyssTemplateMain`, albo `AbyssTemplateSidebar`, albo `AbyssTemplateLogin`.
+- Gdy strona nie ma nawigacji, zostaw sloty `navigation-start` i `navigation-end` puste — `AbyssTemplateRoot` ukryje sidebar; inner shadow contentu chowa się 8px za viewportem (prawo i dół, bez nawigacji także lewa).
+- Ustawiaj `device` na `AbyssTemplateMain` / `AbyssTemplateLogin` zgodnie z kontekstem aplikacji (`mobile` / `desktop` / `web`).
+- Używaj `AbyssTemplateLogin` dla logowania i analogicznych widoków auth — stała szerokość kontenera (`ABYSS_TEMPLATE_LOGIN_MAX_WIDTH`), centrowanie w pionie, własny scroll. Slot **wymaga `AbyssCard`** (tytuł + ikona w `#header-prepend`); przykładowa treść karty: formularz logowania (`AbyssForm`).
+- Ustawiaj i zmieniaj PIN w `AbyssDialog` z `abyss-dialog--compact` — nie w `AbyssTemplateLogin`.
 - Na głównych podstronach zaczynaj treść od kart / paneli; tytuły dawaj tylko kartom (`AbyssCard` `title` lub `AbyssTitle` wewnątrz karty).
 - Na warstwie nachodzącej na treść z przezroczystym tłem ustawiaj `-webkit-backdrop-filter` i `backdrop-filter: blur(20px)` — dialog, picker daty/czasu, menu, sticky nagłówek, pływający przycisk.
 
@@ -614,7 +687,14 @@ Prop `expandable` lub obecność slotu `row-expand` aktywuje kolumnę +/- i wier
 - Nie osadzaj `AbyssNotify` w przewijanej treści strony — teleportuj do `#abyss-template-overlay` albo użyj slotu `#overlay` w `AbyssTemplateRoot`.
 - Nie zdejmuj `AbyssNotify` z `v-for` w `@close` — animacja zejścia się nie zagra. Zostaw instancję do `@after-leave`.
 - Nie dodawaj zagnieżdżonych pionowych scrollbarów w treści `AbyssDialog` — przewijaj wyłącznie body dialogu.
-- Nie dodawaj paddingu ani `overflow: auto` na wrapperze contentu `AbyssTemplateRoot` — to odpowiedzialność `AbyssTemplateMain` lub `AbyssTemplateSidebar`.
+- Nie dodawaj paddingu ani `overflow: auto` na wrapperze contentu `AbyssTemplateRoot` — to odpowiedzialność `AbyssTemplateMain`, `AbyssTemplateSidebar` albo `AbyssTemplateLogin`.
+- Nie wkładaj kart, formularzy ani innego contentu strony bezpośrednio do `#content` `AbyssTemplateRoot` — wymagany jest szablon (`AbyssTemplateMain` / `AbyssTemplateSidebar` / `AbyssTemplateLogin`).
+- Nie owijaj `AbyssTemplateLogin` w `AbyssTemplateMain` — Login sam zapewnia scroll, padding i ograniczenie szerokości.
+- Nie wkładaj `AbyssAppLock` ani formularza bezpośrednio do `AbyssTemplateLogin` — wymagany jest `AbyssCard`.
+- Nie rozciągaj kropek `AbyssPinInput` przez `justify-content: space-between` — rząd jest wyśrodkowany ze stałym `gap`.
+- Nie ustawiaj własnej `max-width` na treści logowania — szerokość jest stałą szablonu (`ABYSS_TEMPLATE_LOGIN_MAX_WIDTH`).
+- Nie pokazuj pełnoekranowego odblokowania (`AbyssAppLock`) w `AbyssDialog` — użyj `AbyssTemplateLogin` + `AbyssCard` w `#content` Root (bez nawigacji).
+- Nie zostawiaj pustego panelu nawigacji w `AbyssTemplateRoot` — puste sloty `navigation-start` i `navigation-end` ukrywają sidebar; inner shadow contentu ma chować się 8px za viewportem (prawo i dół).
 - Nie uzależniaj scrollu strony od ujemnych marginesów kompensujących padding szablonu.
 - Nie umieszczaj na głównej podstronie `AbyssTitle` (ani innego nagłówka) powielającego etykietę aktywnej zakładki nawigacji — kontekst niesie nawigacja; tytuły mają wyłącznie karty / dialogi.
 - Nie buduj przezroczystego overlayu (dialog, picker, menu, pływający przycisk nad treścią) bez `backdrop-filter: blur(20px)` — wyjątek: powierzchnie gradientowe (`AbyssBackground`, `AbyssGradientBox`, `AbyssButton` z `gradient`).
@@ -631,7 +711,10 @@ Prop `expandable` lub obecność slotu `row-expand` aktywuje kolumnę +/- i wier
 - `AbyssTable` — [`src/components/ui/AbyssTable/AbyssTable.stories.ts`](../../src/components/ui/AbyssTable/AbyssTable.stories.ts)
 - `AbyssMarkdown` — [`src/components/ui/AbyssMarkdown/AbyssMarkdown.stories.ts`](../../src/components/ui/AbyssMarkdown/AbyssMarkdown.stories.ts)
 - `AbyssCode` — [`src/components/ui/AbyssCode/AbyssCode.stories.ts`](../../src/components/ui/AbyssCode/AbyssCode.stories.ts)
+- `AbyssTemplateRoot` — [`src/components/templates/AbyssTemplateRoot/AbyssTemplateRoot.stories.ts`](../../src/components/templates/AbyssTemplateRoot/AbyssTemplateRoot.stories.ts)
 - `AbyssTemplateMain` — [`src/components/templates/AbyssTemplateMain/AbyssTemplateMain.stories.ts`](../../src/components/templates/AbyssTemplateMain/AbyssTemplateMain.stories.ts)
+- `AbyssAppLock` — [`src/components/ui/AbyssAppLock/AbyssAppLock.stories.ts`](../../src/components/ui/AbyssAppLock/AbyssAppLock.stories.ts)
+- `AbyssTemplateLogin` — [`src/components/templates/AbyssTemplateLogin/AbyssTemplateLogin.stories.ts`](../../src/components/templates/AbyssTemplateLogin/AbyssTemplateLogin.stories.ts)
 - `AbyssDebug` — [`src/components/ui/AbyssDebug/AbyssDebug.stories.ts`](../../src/components/ui/AbyssDebug/AbyssDebug.stories.ts)
 
 Przykłady użycia w ekranach aplikacji Maia znajdują się w repozytorium `maia-app`.

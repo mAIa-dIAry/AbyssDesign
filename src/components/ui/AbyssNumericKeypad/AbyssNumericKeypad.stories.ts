@@ -12,7 +12,8 @@ const meta = {
   parameters: {
     docs: {
       description: {
-        component: 'Klawiatura numeryczna z cyframi 0–9 i przyciskiem cofania.',
+        component:
+          'Klawiatura numeryczna z cyframi 0–9 i przyciskiem cofania. Wypełnia szerokość rodzica (w `AbyssAppLock` — szerokość treści karty / body dialogu).',
       },
     },
   },
@@ -57,6 +58,17 @@ export const Default: Story = {
       },
     },
   },
+  render: (args) => ({
+    components: { AbyssNumericKeypad },
+    setup() {
+      return { args };
+    },
+    template: `
+      <div style="width: min(100%, 328px);">
+        <AbyssNumericKeypad v-bind="args" />
+      </div>
+    `,
+  }),
   play: async ({ canvas, userEvent }) => {
     const keypad = canvas.getByRole('group', { name: 'Klawiatura numeryczna' });
     await expect(keypad).toBeVisible();
@@ -112,7 +124,7 @@ export const Chaos: Story = {
       };
     },
     template: `
-      <div style="display:flex;flex-direction:column;align-items:center;gap:12px;">
+      <div style="display:flex;flex-direction:column;width:min(100%, 328px);gap:12px;">
         <AbyssNumericKeypad
           chaos
           :can-backspace="value.length > 0"
@@ -188,7 +200,7 @@ export const Interactive: Story = {
       return { value, handleDigit, handleBackspace };
     },
     template: `
-      <div style="display:flex;flex-direction:column;align-items:center;gap:12px;">
+      <div style="display:flex;flex-direction:column;width:min(100%, 328px);gap:12px;">
         <AbyssNumericKeypad
           :can-backspace="value.length > 0"
           @digit="handleDigit"

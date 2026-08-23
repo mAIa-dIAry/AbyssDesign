@@ -1,132 +1,15 @@
 import type { Meta, StoryObj } from '@storybook/vue3';
-import { defineComponent, ref } from 'vue';
+import { ref } from 'vue';
 import { expect, waitFor } from 'storybook/test';
 import { ABYSS_TEMPLATE_OVERLAY_ID } from '@/components/templates/AbyssTemplateRoot/AbyssTemplateRoot.constants';
 import AbyssTemplateRoot from '@/components/templates/AbyssTemplateRoot/AbyssTemplateRoot.vue';
+import AbyssTemplateMain from '@/components/templates/AbyssTemplateMain/AbyssTemplateMain.vue';
 import AbyssNavigation from '@/components/ui/AbyssNavigation/AbyssNavigation.vue';
 import AbyssButton from '@/components/ui/AbyssButton/AbyssButton.vue';
 import AbyssButtonGroup from '@/components/ui/AbyssButtonGroup/AbyssButtonGroup.vue';
 import AbyssBackground from '@/components/ui/AbyssBackground/AbyssBackground.vue';
-import AbyssCard from '@/components/ui/AbyssCard/AbyssCard.vue';
-import AbyssTitle from '@/components/ui/AbyssTitle/AbyssTitle.vue';
-import AbyssInput from '@/components/ui/AbyssInput/AbyssInput.vue';
 import AbyssNotify from '@/components/ui/AbyssNotify/AbyssNotify.vue';
 import { createNotifyDemoQueue } from '@/components/ui/AbyssNotify/AbyssNotify.demo';
-
-const TestContent = defineComponent({
-  name: 'TestContent',
-  components: { AbyssCard, AbyssTitle, AbyssButton, AbyssInput },
-  setup() {
-    const name = ref('');
-    const email = ref('');
-    const search = ref('');
-    const note = ref('');
-    const date = ref('');
-    return { name, email, search, note, date };
-  },
-  template: `
-    <div style="display: flex; flex-direction: column; gap: 20px;">
-      <AbyssTitle type="h1" label="Panel użytkownika" icon="sym_r_person" />
-
-      <AbyssCard title="Dane osobowe">
-        <template #header-prepend>
-          <q-icon name="sym_r_badge" style="font-size: 20px; color: rgba(255,255,255,0.6);" />
-        </template>
-        <template #content>
-          <div style="padding: 16px; display: flex; flex-direction: column; gap: 12px;">
-            <AbyssInput v-model="name" label="Imię i nazwisko" placeholder="Jan Kowalski" />
-            <AbyssInput v-model="email" label="Adres e-mail" type="email" placeholder="jan@example.com" />
-            <AbyssInput label="Telefon" type="tel" placeholder="+48 123 456 789" />
-            <AbyssInput label="Data urodzenia" type="date" />
-            <div style="display: flex; gap: 8px; justify-content: flex-end; padding-top: 4px;">
-              <AbyssButton label="Anuluj" embedded />
-              <AbyssButton label="Zapisz zmiany" icon="sym_r_save" />
-            </div>
-          </div>
-        </template>
-      </AbyssCard>
-
-      <AbyssCard title="Powiadomienia">
-        <template #header-prepend>
-          <q-icon name="sym_r_notifications" style="font-size: 20px; color: rgba(255,255,255,0.6);" />
-        </template>
-        <template #header-append>
-          <AbyssButton icon="sym_r_add" size="small" label="Dodaj" />
-        </template>
-        <template #content>
-          <div style="padding: 16px; display: flex; flex-direction: column; gap: 10px;">
-            <AbyssTitle type="h3" label="Aktywne" />
-            <AbyssCard v-for="i in 3" :key="i">
-              <template #content>
-                <div style="padding: 12px 16px; display: flex; align-items: center; gap: 12px;">
-                  <q-icon name="sym_r_circle_notifications" style="font-size: 20px; color: #a78bfa;" />
-                  <div style="flex: 1;">
-                    <div style="font-size: 14px; font-weight: 500;">Przypomnienie o spotkaniu {{ i }}</div>
-                    <div style="font-size: 12px; opacity: 0.5; margin-top: 2px;">Dziś o {{ 8 + i * 2 }}:00</div>
-                  </div>
-                  <AbyssButton icon="sym_r_close" size="small" embedded />
-                </div>
-              </template>
-            </AbyssCard>
-          </div>
-        </template>
-      </AbyssCard>
-
-      <AbyssCard title="Wyszukiwarka">
-        <template #header-prepend>
-          <q-icon name="sym_r_search" style="font-size: 20px; color: rgba(255,255,255,0.6);" />
-        </template>
-        <template #content>
-          <div style="padding: 16px; display: flex; flex-direction: column; gap: 12px;">
-            <AbyssInput v-model="search" label="Szukaj" type="search" placeholder="Wpisz frazę..." />
-            <AbyssTitle type="h3" label="Ostatnie wyniki" />
-            <AbyssCard v-for="j in 4" :key="j">
-              <template #content>
-                <div style="padding: 12px 16px; display: flex; align-items: center; gap: 12px;">
-                  <q-icon name="sym_r_description" style="font-size: 18px; opacity: 0.6;" />
-                  <div style="flex: 1; font-size: 14px;">Dokument – wynik wyszukiwania #{{ j }}</div>
-                  <AbyssButton icon="sym_r_open_in_new" size="small" embedded />
-                </div>
-              </template>
-            </AbyssCard>
-          </div>
-        </template>
-      </AbyssCard>
-
-      <AbyssCard>
-        <template #header>
-          <AbyssTitle type="h3" label="Notatki" icon="sym_r_edit_note" />
-        </template>
-        <template #content>
-          <div style="padding: 16px; display: flex; flex-direction: column; gap: 12px;">
-            <AbyssInput v-model="note" label="Nowa notatka" type="textarea" placeholder="Zacznij pisać..." />
-            <div style="display: flex; gap: 8px; justify-content: flex-end;">
-              <AbyssButton label="Wyczyść" icon="sym_r_delete" embedded />
-              <AbyssButton label="Zapisz notatkę" icon="sym_r_check" />
-            </div>
-          </div>
-        </template>
-      </AbyssCard>
-
-      <AbyssCard title="Akcje">
-        <template #header-prepend>
-          <q-icon name="sym_r_bolt" style="font-size: 20px; color: rgba(255,255,255,0.6);" />
-        </template>
-        <template #content>
-          <div style="padding: 16px; display: flex; flex-wrap: wrap; gap: 10px;">
-            <AbyssButton label="Eksportuj dane" icon="sym_r_download" />
-            <AbyssButton label="Importuj" icon="sym_r_upload" />
-            <AbyssButton label="Synchronizuj" icon="sym_r_sync" />
-            <AbyssButton label="Raport" icon="sym_r_bar_chart" />
-            <AbyssButton label="Udostępnij" icon="sym_r_share" />
-            <AbyssButton label="Archiwizuj" icon="sym_r_archive" embedded />
-            <AbyssButton label="Usuń konto" icon="sym_r_delete_forever" embedded />
-          </div>
-        </template>
-      </AbyssCard>
-    </div>
-  `,
-});
 
 const meta: Meta<typeof AbyssTemplateRoot> = {
   title: 'Templates/AbyssTemplateRoot',
@@ -138,6 +21,8 @@ const meta: Meta<typeof AbyssTemplateRoot> = {
       description: {
         component:
           'Główny komponent aplikacji definiujący strukturę layoutu. Obsługuje warianty: `desktop` (Electron z paskiem tytułu), `web` (panel webowy bez paska tytułu) oraz `mobile` z poziomą nawigacją na dole ekranu. ' +
+          'Slot `#content` przyjmuje **wyłącznie inny szablon strony**: domyślnie `AbyssTemplateMain`, `AbyssTemplateSidebar` (ustawienia) albo `AbyssTemplateLogin` (auth). Nie wkładaj kart, formularzy ani innego contentu bezpośrednio do Root. ' +
+          'Gdy sloty `navigation-start` i `navigation-end` są puste, `<aside>` nie jest renderowany — treść zajmuje całą szerokość, a inner shadow (inset 8px) chowa się za viewportem po prawej i na dole (bez nawigacji także po lewej). ' +
           '`AbyssNotify` teleportuj do hosta overlay w `overflow-wrapper` (`#abyss-template-overlay` albo `overlay-id`) — toast kotwiczy się w prawym górnym rogu obszaru treści. Host ma `gap: 0` (odstęp 8px z `::after` toasta), `padding: 12px 8px` i `max-height: 100%`. `overflow: auto` tylko gdy zmierzona wysokość kolejki przekracza limit (debounce 0,2 s = animacja wejścia, zejścia i akordeonu).',
       },
     },
@@ -196,7 +81,7 @@ const meta: Meta<typeof AbyssTemplateRoot> = {
     },
     'navigation-start': {
       description:
-        'Główna nawigacja aplikacji. Na **desktop** renderowana jako pionowy panel boczny po lewej stronie. Na **mobile** renderowana jako poziomy pasek nawigacji na dole ekranu. Dostępny na **obu platformach**.',
+        'Główna nawigacja aplikacji. Na **desktop** / **web** renderowana jako pionowy panel boczny po lewej stronie. Na **mobile** renderowana jako poziomy pasek nawigacji na dole ekranu. Pusty slot (albo brak slotu) razem z pustym `navigation-end` ukrywa sidebar.',
       table: {
         category: 'slots',
         type: { summary: 'slot' },
@@ -204,7 +89,7 @@ const meta: Meta<typeof AbyssTemplateRoot> = {
     },
     'navigation-end': {
       description:
-        'Nawigacja pomocnicza wyświetlana w dolnej części bocznego panelu nawigacyjnego. Przeznaczona na dodatkowe akcje lub linki drugorzędne. Dostępna **wyłącznie na desktop** – w trybie mobile ten slot nie jest renderowany.',
+        'Nawigacja pomocnicza wyświetlana w dolnej części bocznego panelu nawigacyjnego. Przeznaczona na dodatkowe akcje lub linki drugorzędne. Dostępna **wyłącznie na desktop/web** – w trybie mobile ten slot nie jest renderowany i nie utrzymuje sidebara. Pusty razem z `navigation-start` ukrywa `<aside>`.',
       table: {
         category: 'slots',
         type: { summary: 'slot' },
@@ -221,7 +106,7 @@ const meta: Meta<typeof AbyssTemplateRoot> = {
     },
     content: {
       description:
-        'Główny obszar treści aplikacji. Przewijalny, zajmuje pozostałą przestrzeń po odjęciu paska aplikacji i nawigacji. Dostępny na **obu platformach** (desktop i mobile).',
+        'Główny obszar treści aplikacji. **Nie wkładaj tu contentu strony.** Jedynym dozwolonym dzieckiem jest inny szablon: domyślnie `AbyssTemplateMain`, `AbyssTemplateSidebar` albo `AbyssTemplateLogin`. Slot nie ma własnego scrollu ani paddingu — to odpowiedzialność szablonu strony. Dostępny na **obu platformach**.',
       table: {
         category: 'slots',
         type: { summary: 'slot' },
@@ -254,7 +139,7 @@ const renderMobileStory: NonNullable<Story['render']> = (args) => ({
     AbyssNavigation,
     AbyssButton,
     AbyssBackground,
-    TestContent,
+    AbyssTemplateMain,
   },
   setup() {
     const currentRoute = ref('index');
@@ -266,7 +151,11 @@ const renderMobileStory: NonNullable<Story['render']> = (args) => ({
         <AbyssBackground style="position: absolute; inset: 0;" />
       </template>
       <template #content>
-        <TestContent />
+        <AbyssTemplateMain
+          :device="args.device"
+          :orientation="args.orientation"
+          :safe-area="args.device === 'mobile'"
+        />
       </template>
       <template #navigation-start>
         <AbyssNavigation device="mobile" :current-route="currentRoute">
@@ -296,7 +185,7 @@ export const Web: Story = {
       AbyssNavigation,
       AbyssButton,
       AbyssBackground,
-      TestContent,
+      AbyssTemplateMain,
     },
     setup() {
       const currentRoute = ref('index');
@@ -321,7 +210,7 @@ export const Web: Story = {
           </AbyssNavigation>
         </template>
         <template #content>
-          <TestContent />
+          <AbyssTemplateMain :device="args.device" />
         </template>
       </AbyssTemplateRoot>
     `,
@@ -330,7 +219,7 @@ export const Web: Story = {
     docs: {
       description: {
         story:
-          'Layout webowy – jak desktop, ale bez paska tytułu. Obszar treści bez zaokrąglenia w lewym górnym rogu i z ujemnym marginesem górnym -8px.',
+          'Layout webowy – jak desktop, ale bez paska tytułu. Obszar treści bez zaokrąglenia w lewym górnym rogu i z ujemnym marginesem górnym -8px. W `#content` jest `AbyssTemplateMain`.',
       },
       source: {
         code: `<AbyssTemplateRoot device="web">
@@ -343,7 +232,7 @@ export const Web: Story = {
     </AbyssNavigation>
   </template>
   <template #content>
-    <div>Treść aplikacji</div>
+    <AbyssTemplateMain device="web" />
   </template>
 </AbyssTemplateRoot>`,
       },
@@ -362,7 +251,7 @@ export const Desktop: Story = {
       AbyssNavigation,
       AbyssButton,
       AbyssBackground,
-      TestContent,
+      AbyssTemplateMain,
     },
     setup() {
       const currentRoute = ref('index');
@@ -393,7 +282,7 @@ export const Desktop: Story = {
           </AbyssNavigation>
         </template>
         <template #content>
-          <TestContent />
+          <AbyssTemplateMain :device="args.device" />
         </template>
       </AbyssTemplateRoot>
     `,
@@ -402,7 +291,7 @@ export const Desktop: Story = {
     docs: {
       description: {
         story:
-          'Layout desktopowy z paskiem aplikacji, boczną nawigacją i obszarem treści.',
+          'Layout desktopowy z paskiem aplikacji, boczną nawigacją i `AbyssTemplateMain` w slocie `#content`.',
       },
       source: {
         code: `<AbyssTemplateRoot device="desktop">
@@ -422,7 +311,7 @@ export const Desktop: Story = {
     </AbyssNavigation>
   </template>
   <template #content>
-    <div>Treść aplikacji</div>
+    <AbyssTemplateMain device="desktop" />
   </template>
 </AbyssTemplateRoot>`,
       },
@@ -487,7 +376,7 @@ onMounted(async () => {
       <AbyssBackground />
     </template>
     <template #content>
-      <div>Treść aplikacji</div>
+      <AbyssTemplateMain device="mobile" safe-area />
     </template>
     <template #navigation-start>
       <AbyssNavigation device="mobile" current-route="index">
@@ -523,7 +412,7 @@ export const MobileLandscape: Story = {
     <AbyssBackground />
   </template>
   <template #content>
-    <div>Treść aplikacji</div>
+    <AbyssTemplateMain device="mobile" orientation="landscape" safe-area />
   </template>
   <template #navigation-start>
     <AbyssNavigation device="mobile" current-route="index">
@@ -554,7 +443,7 @@ export const EmptyDesktop: Story = {
         <template #app-bar-end>[app-bar-end]</template>
         <template #navigation-start>[navigation-start]</template>
         <template #navigation-end>[navigation-end]</template>
-        <template #content>[content]</template>
+        <template #content>[AbyssTemplateMain]</template>
         <template #overlay>[overlay]</template>
       </AbyssTemplateRoot>
     `,
@@ -584,7 +473,7 @@ export const EmptyMobile: Story = {
       <AbyssTemplateRoot v-bind="args" style="height: 100vh;">
         <template #background>[background]</template>
         <template #navigation-start>[navigation-start]</template>
-        <template #content>[content]</template>
+        <template #content>[AbyssTemplateMain]</template>
         <template #overlay>[overlay]</template>
       </AbyssTemplateRoot>
     `,
@@ -608,7 +497,7 @@ export const DesktopNoNavigation: Story = {
     components: {
       AbyssTemplateRoot,
       AbyssBackground,
-      TestContent,
+      AbyssTemplateMain,
     },
     setup() {
       return { args };
@@ -625,7 +514,7 @@ export const DesktopNoNavigation: Story = {
           <span style="padding: 0 16px;">Użytkownik</span>
         </template>
         <template #content>
-          <TestContent />
+          <AbyssTemplateMain :device="args.device" />
         </template>
       </AbyssTemplateRoot>
     `,
@@ -634,9 +523,60 @@ export const DesktopNoNavigation: Story = {
     docs: {
       description: {
         story:
-          'Layout desktopowy bez żadnego slotu nawigacji – sekcja `<aside>` jest ukryta, grid zajmuje całą szerokość, a cień przylegający do nawigacji znika.',
+          'Layout desktopowy bez slotów nawigacji – `<aside>` jest ukryty, treść zajmuje całą szerokość. Inner shadow contentu (inset 8px) chowa się za viewportem po prawej, na dole i po lewej. W `#content` jest `AbyssTemplateMain`.',
       },
     },
+  },
+  play: async ({ canvas }) => {
+    await waitFor(() => {
+      expect(canvas.getByRole('main')).toBeVisible();
+    });
+    expect(canvas.queryByRole('navigation')).toBeNull();
+    expect(canvas.queryByRole('complementary')).toBeNull();
+  },
+};
+
+export const WebNoNavigation: Story = {
+  name: 'Web – bez nawigacji',
+  args: {
+    device: 'web',
+  },
+  render: (args) => ({
+    components: {
+      AbyssTemplateRoot,
+      AbyssBackground,
+      AbyssTemplateMain,
+    },
+    setup() {
+      return { args };
+    },
+    template: `
+      <AbyssTemplateRoot v-bind="args" style="height: 100vh;">
+        <template #background>
+          <AbyssBackground style="position: absolute; inset: 0;" />
+        </template>
+        <template #navigation-start></template>
+        <template #navigation-end></template>
+        <template #content>
+          <AbyssTemplateMain :device="args.device" />
+        </template>
+      </AbyssTemplateRoot>
+    `,
+  }),
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'Layout webowy z pustymi slotami `navigation-start` i `navigation-end` — sidebar nie jest renderowany. Inner shadow contentu chowa się 8px za viewportem (prawo, dół i lewa). W `#content` jest `AbyssTemplateMain`.',
+      },
+    },
+  },
+  play: async ({ canvas }) => {
+    await waitFor(() => {
+      expect(canvas.getByRole('main')).toBeVisible();
+    });
+    expect(canvas.queryByRole('navigation')).toBeNull();
+    expect(canvas.queryByRole('complementary')).toBeNull();
   },
 };
 
@@ -651,7 +591,7 @@ export const MobileNoNavigation: Story = {
     components: {
       AbyssTemplateRoot,
       AbyssBackground,
-      TestContent,
+      AbyssTemplateMain,
     },
     setup() {
       return { args };
@@ -662,7 +602,11 @@ export const MobileNoNavigation: Story = {
           <AbyssBackground style="position: absolute; inset: 0;" />
         </template>
         <template #content>
-          <TestContent />
+          <AbyssTemplateMain
+            :device="args.device"
+            :orientation="args.orientation"
+            safe-area
+          />
         </template>
       </AbyssTemplateRoot>
     `,
@@ -671,9 +615,16 @@ export const MobileNoNavigation: Story = {
     docs: {
       description: {
         story:
-          'Layout mobilny bez żadnego slotu nawigacji – pasek dolny jest ukryty, treść zajmuje cały ekran, maska concave-corners oraz cień przy nawigacji są wyłączone.',
+          'Layout mobilny bez slotów nawigacji – pasek dolny jest ukryty, treść zajmuje cały ekran, maska concave-corners oraz cień przy nawigacji są wyłączone. W `#content` jest `AbyssTemplateMain`.',
       },
     },
+  },
+  play: async ({ canvas }) => {
+    await waitFor(() => {
+      expect(canvas.getByRole('main')).toBeVisible();
+    });
+    expect(canvas.queryByRole('navigation')).toBeNull();
+    expect(canvas.queryByRole('complementary')).toBeNull();
   },
 };
 
@@ -710,14 +661,16 @@ function remove(instanceId) {
       </AbyssNavigation>
     </template>
     <template #content>
-      <AbyssButtonGroup vertical>
-        <AbyssButton
-          v-for="template in templates"
-          :key="template.id"
-          :label="template.label"
-          @click="enqueue(template)"
-        />
-      </AbyssButtonGroup>
+      <AbyssTemplateMain device="desktop">
+        <AbyssButtonGroup vertical>
+          <AbyssButton
+            v-for="template in templates"
+            :key="template.id"
+            :label="template.label"
+            @click="enqueue(template)"
+          />
+        </AbyssButtonGroup>
+      </AbyssTemplateMain>
       <Teleport defer to="#${ABYSS_TEMPLATE_OVERLAY_ID}">
         <AbyssNotify
           v-for="item in queue"
@@ -750,7 +703,7 @@ const notifyStoryPlay: Story['play'] = async ({ canvas, userEvent }) => {
 };
 
 const notifyQueueContent = `
-          <div style="padding: 24px; max-width: 180px;">
+          <AbyssTemplateMain :device="args.device">
             <AbyssButtonGroup vertical>
               <AbyssButton
                 v-for="template in templates"
@@ -759,7 +712,7 @@ const notifyQueueContent = `
                 @click="enqueue(template)"
               />
             </AbyssButtonGroup>
-          </div>
+          </AbyssTemplateMain>
           <Teleport defer :to="'#' + overlayId">
             <AbyssNotify
               v-for="item in queue"
@@ -782,6 +735,7 @@ export const NotifyDesktop: Story = {
   render: (args) => ({
     components: {
       AbyssTemplateRoot,
+      AbyssTemplateMain,
       AbyssNavigation,
       AbyssButton,
       AbyssButtonGroup,
@@ -843,6 +797,7 @@ export const NotifyWeb: Story = {
   render: (args) => ({
     components: {
       AbyssTemplateRoot,
+      AbyssTemplateMain,
       AbyssNavigation,
       AbyssButton,
       AbyssButtonGroup,
@@ -903,6 +858,7 @@ export const NotifyMobile: Story = {
   render: (args) => ({
     components: {
       AbyssTemplateRoot,
+      AbyssTemplateMain,
       AbyssNavigation,
       AbyssButton,
       AbyssButtonGroup,
@@ -920,7 +876,7 @@ export const NotifyMobile: Story = {
           <AbyssBackground style="position: absolute; inset: 0;" />
         </template>
         <template #content>
-          <div style="padding: 16px; max-width: 180px;">
+          <AbyssTemplateMain :device="args.device" orientation="portrait" safe-area>
             <AbyssButtonGroup vertical>
               <AbyssButton
                 v-for="template in templates"
@@ -929,7 +885,7 @@ export const NotifyMobile: Story = {
                 @click="enqueue(template)"
               />
             </AbyssButtonGroup>
-          </div>
+          </AbyssTemplateMain>
           <Teleport defer :to="'#' + overlayId">
             <AbyssNotify
               v-for="item in queue"

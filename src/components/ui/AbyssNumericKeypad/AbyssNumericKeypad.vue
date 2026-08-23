@@ -164,7 +164,7 @@ function handleShuffle(): void {
   grid-template-columns: repeat(3, minmax(0, 1fr));
   grid-auto-rows: var(--key-size);
   gap: 10px;
-  width: min(100%, 280px);
+  width: 100%;
   align-items: stretch;
 
   :deep(.abyss-numeric-keypad__key.abyss-button) {

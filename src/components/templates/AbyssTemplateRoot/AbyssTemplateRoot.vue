@@ -56,7 +56,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, useSlots } from 'vue';
+import { Comment, Fragment, Text, computed, useSlots, type VNode } from 'vue';
 import { useKeyboardState } from '@/composables/useKeyboardState';
 import { ABYSS_TEMPLATE_OVERLAY_ID } from '@/components/templates/AbyssTemplateRoot/AbyssTemplateRoot.constants';
 
@@ -79,9 +79,32 @@ const props = withDefaults(defineProps<AbyssTemplateRootProps>(), {
 const slots = useSlots();
 const { isKeyboardVisible } = useKeyboardState();
 
-const hasNavigationSlots = computed(
-  () => !!slots['navigation-start'] || !!slots['navigation-end'],
-);
+function hasRenderableNode(node: VNode): boolean {
+  if (node.type === Comment) return false;
+  if (node.type === Text) {
+    return typeof node.children === 'string' && node.children.trim() !== '';
+  }
+  if (node.type === Fragment) {
+    const children = node.children;
+    if (Array.isArray(children)) {
+      return children.some((child) => hasRenderableNode(child as VNode));
+    }
+    return false;
+  }
+  return true;
+}
+
+function slotHasContent(name: string): boolean {
+  const slot = slots[name];
+  if (!slot) return false;
+  return slot().some(hasRenderableNode);
+}
+
+const hasNavigationSlots = computed(() => {
+  if (slotHasContent('navigation-start')) return true;
+  if (props.device === 'mobile') return false;
+  return slotHasContent('navigation-end');
+});
 
 const hasNavigation = computed(
   () =>
@@ -429,7 +452,8 @@ const hasNavigation = computed(
 
   }
 
-  // No navigation overrides
+  // No navigation — inset box-shadow 8px chowa się za viewportem
+  // (prawo i dół; bez sidebara także lewa, bo znika szew z nawigacją).
   &.no-navigation {
     &.device--desktop {
       grid-template-areas: 'app-bar' 'content';
@@ -446,17 +470,18 @@ const hasNavigation = computed(
       grid-template-rows: 1fr;
     }
 
-    .abyss-template__content.device--desktop {
-      border-top-left-radius: 0;
-      margin-left: -8px;
-      width: calc(100% + 16px);
-      padding-left: 8px;
-    }
-
+    .abyss-template__content.device--desktop,
     .abyss-template__content.device--web {
       margin-left: -8px;
       width: calc(100% + 16px);
+      height: calc(100% + 8px);
       padding-left: 8px;
+      padding-right: 8px;
+      padding-bottom: 8px;
+    }
+
+    .abyss-template__content.device--desktop {
+      border-top-left-radius: 0;
     }
 
     .abyss-template__content.device--mobile {
@@ -472,7 +497,6 @@ const hasNavigation = computed(
         width: 100%;
         mask-image: none;
       }
-
     }
   }
 }

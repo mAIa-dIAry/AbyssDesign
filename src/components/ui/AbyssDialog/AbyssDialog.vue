@@ -401,7 +401,7 @@ function getActionButtonProps(
     width: min(312px, calc(100vw - 32px));
 
     .abyss-dialog__body {
-      align-items: center;
+      align-items: stretch;
     }
   }
 }

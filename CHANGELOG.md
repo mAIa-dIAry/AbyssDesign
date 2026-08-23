@@ -1,5 +1,12 @@
 # Changelog
 
+## [Unreleased]
+
+### Nowości
+
+- `AbyssTemplateLogin` — szablon strony logowania z wyśrodkowanym kontenerem o stałej `max-width` (`ABYSS_TEMPLATE_LOGIN_MAX_WIDTH`); slot wymaga `AbyssCard` (przykład: formularz logowania)
+- `AbyssAppLock` / `AbyssNumericKeypad`: klawiatura na szerokość treści karty (bez cap `280px`); `AbyssPinInput`: kropki wyśrodkowane ze stałym `gap`
+
 ## [0.1.2] - 2026-08-19
 
 Kolejka `AbyssNotify` w overlayu szablonu: akordeon, auto-close, licznik powtórzeń i `overflow: auto` dopiero gdy toasty przekraczają wysokość obszaru treści.
