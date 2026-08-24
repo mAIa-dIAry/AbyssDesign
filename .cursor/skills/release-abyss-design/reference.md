@@ -46,9 +46,10 @@ CI (`release.yml`) powtarza `yarn build` przed `npm publish`.
 
 Nie publikuj ręcznie (`npm publish`) w ramach tej procedury. Ścieżka:
 
-1. `yarn release` → tag + GitHub Release.
-2. `on: release: types: [published]` → `.github/workflows/release.yml`.
-3. `NODE_AUTH_TOKEN` ze secreta `NPM_TOKEN` → `npm publish --access public`.
+1. `yarn release` → tag + GitHub Release (**pushuje tylko tag**, nie gałąź).
+2. `git push origin HEAD` — **konieczny** po release; commity z bumpa wersji muszą trafić na `origin` (m.in. skille HTTP na `main`).
+3. `on: release: types: [published]` → `.github/workflows/release.yml`.
+4. `NODE_AUTH_TOKEN` ze secreta `NPM_TOKEN` → `npm publish --access public`.
 
 Jednorazowo:
 
@@ -75,6 +76,7 @@ Szablon: `.env.example`.
 | Tag `vX.Y.Z` ≠ `package.json` | Workflow npm się wywali — wyrównaj wersję i tag |
 | `npm publish` 403 / ENEEDAUTH | Secret `NPM_TOKEN` w repo + `registry-url` w `release.yml` |
 | Wersja już na npm | Nie odpalaj `yarn release` dla tej samej `version` |
+| Tag `vX.Y.Z` jest na remote, `main` w tyle | Krok 9: `git push origin HEAD` — `yarn release` nie wypycha gałęzi |
 
 ## Skróty (poza pełną procedurą)
 

@@ -19,14 +19,14 @@ Katalog roboczy: root AbyssDesign. Package manager: **yarn**.
 ## Wymagania wstępne
 
 - Node zgodny z `engines` w `package.json`.
-- Dla kroku 8: `GITHUB_TOKEN` lub `GH_TOKEN` w `.env` / `.env.local` (priorytet pliku nad shellem). Fine-grained PAT: Contents Read and write na `mAIa-dIAry/AbyssDesign`.
+- Dla kroków 8–9: `GITHUB_TOKEN` lub `GH_TOKEN` w `.env` / `.env.local` (priorytet pliku nad shellem). Fine-grained PAT: Contents Read and write na `mAIa-dIAry/AbyssDesign`.
 - Secret GitHub Actions `NPM_TOKEN` (granular token npm z prawem publish w org `maiadiary`).
 
 Szczegóły changelogu, npm i troubleshooting: [reference.md](reference.md).
 
 ---
 
-## Procedura (8 kroków)
+## Procedura (9 kroków)
 
 Skopiuj checklistę i odznaczaj postęp:
 
@@ -40,6 +40,7 @@ Release progress:
 - [ ] 6. Podbicie wersji + changelog + commit
 - [ ] 7. Build
 - [ ] 8. Release
+- [ ] 9. Push gałęzi
 ```
 
 ### 1. Lint
@@ -151,7 +152,7 @@ Publikacja:
 yarn release
 ```
 
-To tworzy/aktualizuje tag `vX.Y.Z` i publikuje GitHub Release. Workflow `release.yml` publikuje `@maiadiary/abyss-design` na npm.
+To tworzy/aktualizuje tag `vX.Y.Z` i **wypycha tylko tag**. GitHub Release i workflow `release.yml` (npm) idą z tagu. Commity z kroków 5–6 nadal są tylko lokalne — bez kroku 9 `main` na remote zostaje w tyle, a URL-e `raw.githubusercontent.com/.../main/docs/skills/` nie widzą nowej wersji.
 
 Dry-run (bez API GitHub):
 
@@ -159,17 +160,27 @@ Dry-run (bez API GitHub):
 yarn release:dry-run
 ```
 
+### 9. Wypchnij gałąź (konieczne)
+
+`yarn release` **nie** wypycha gałęzi. Push na końcu jest obowiązkowy — bez niego commity release nie są na `origin`, a kanoniczne skille HTTP wskazują na `main`.
+
+```powershell
+git push origin HEAD
+```
+
+Potwierdź, że remote dogonił lokalny HEAD (`git status` pokazuje `Your branch is up to date with 'origin/...'`).
+
 ---
 
 ## Zasady dla agenta
 
-1. **Nie pomijaj kroków** — każdy gate (lint → typecheck → build) przed `yarn release`.
+1. **Nie pomijaj kroków** — każdy gate (lint → typecheck → build) przed `yarn release`, potem **zawsze** krok 9 (`git push`).
 2. **Commity tylko gdy są zmiany** — oprócz kroków, gdzie użytkownik jawnie wymaga commita (5–6).
-3. **Nie pushuj gałęzi** na remote, chyba że użytkownik poprosi. `yarn release` sam wypycha tag.
+3. **Push gałęzi na końcu jest konieczny.** `yarn release` wypycha tylko tag. Nie kończ procedury, dopóki `git push origin HEAD` nie przejdzie.
 4. **Nie aktualizuj git config**.
 5. **Nie commituj** `.env` / `.env.local`.
-6. Po kroku 8 podaj: wersję, URL GitHub Release, URL pakietu npm (`https://www.npmjs.com/package/@maiadiary/abyss-design`), informację że Actions publikuje npm.
-7. Jeśli build lub release się wywali — napraw przyczynę, wróć do **pierwszego kroku, który zależy od zmiany** (zwykle od 1 lub 7).
+6. Po kroku 9 podaj: wersję, URL GitHub Release, URL pakietu npm (`https://www.npmjs.com/package/@maiadiary/abyss-design`), informację że Actions publikuje npm, oraz że gałąź poszła na remote.
+7. Jeśli build, release lub push się wywali — napraw przyczynę, wróć do **pierwszego kroku, który zależy od zmiany** (zwykle od 1, 7 lub 9).
 
 ## Przykłady wywołania
 
