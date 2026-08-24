@@ -19,8 +19,8 @@ const meta: Meta<typeof AbyssInputLabel> = {
     label: { control: 'text' },
     size: {
       control: { type: 'select' },
-      options: ['normal', 'small'],
-      table: { defaultValue: { summary: 'normal' } },
+      options: ['small', 'big'],
+      table: { defaultValue: { summary: 'big' } },
     },
   },
 };

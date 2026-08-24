@@ -41,6 +41,18 @@ Kanoniczny dokument używania systemu: [`docs/architecture/abyss-design.md`](doc
 
 Storybook dokumentuje API komponentów (propsy, sloty, zdarzenia); reguły formularzy, kart i komponentów złożonych — w pliku powyżej.
 
+## Skille dla LLM
+
+Kanon: https://github.com/mAIa-dIAry/AbyssDesign (`docs/skills/`). Pakiet w `node_modules` jest poza zasięgiem agenta — instalacja tylko przez HTTP. Działa z Cursor, Claude Code, GitHub Copilot i innymi agentami `SKILL.md`.
+
+Wklej w czacie agenta **w repozytorium aplikacji**:
+
+```
+Pobierz https://raw.githubusercontent.com/mAIa-dIAry/AbyssDesign/main/docs/skills/install-abyss-skills/SKILL.md i zainstaluj skille Abyss Design w tej aplikacji (tylko HTTP z https://github.com/mAIa-dIAry/AbyssDesign, bez node_modules).
+```
+
+Agent zapisze `install-abyss-skills`, `implement-abyss-ui` i `audit-abyss-compliance` w `.agents/skills/`, `.claude/skills/` i `.cursor/skills/`.
+
 ## Integracja z Quasar
 
 ### 1. Aliasy Vite i TypeScript

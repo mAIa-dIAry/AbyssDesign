@@ -175,7 +175,7 @@ const props = withDefaults(defineProps<AbyssSelectProps>(), {
   readonly: false,
   autofocus: false,
   dense: false,
-  size: 'normal',
+  size: 'big',
   flat: false,
   behavior: 'menu',
   popupNoRouteDismiss: false,

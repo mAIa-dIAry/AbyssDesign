@@ -8,10 +8,11 @@
 - [Powierzchnie i warstwy](#powierzchnie-i-warstwy) (w tym [Warstwy nachodzące na treść](#warstwy-nachodzące-na-treść))
 - [Layout strony](#layout-strony) (w tym [Tytuły stron i zakładek](#tytuły-stron-i-zakładek))
 - [Feedback po akcjach użytkownika](#feedback-po-akcjach-użytkownika)
-- [Matryca AbyssButton](#matryca-abyssbutton)
+- [Matryca AbyssButton](#matryca-abyssbutton) (w tym [Skala `size`](#skala-size))
 - [Wzorce kompozycji](#wzorce-kompozycji)
 - [Do / Don't](#do--dont)
 - [Referencyjne implementacje](#referencyjne-implementacje)
+- [Skille dla LLM](#skille-dla-llm)
 - [Powiązane pliki](#powiązane-pliki)
 
 ---
@@ -448,11 +449,25 @@ Reguły:
 | Prop           | Kiedy używać                                              |
 | -------------- | --------------------------------------------------------- |
 | `full-width`   | samodzielna akcja blokowa w pionowym stacku (dialog, formularz) |
-| `size="small"` | akcja pomocnicza, toolbar, nagłówek karty                 |
+| `size="small"` | akcja pomocnicza, toolbar, nagłówek karty, kompaktowe pole |
+| `size="medium"` | header/stopka karty i dialogu, `AbyssNavHeader` — tylko `AbyssButton` |
+| `size="big"`   | domyślny rozmiar przycisku i pola formularza |
 | `icon-only`    | znaczenie oczywiste z kontekstu (zamknięcie, znane ikony) |
 | `loading`      | akcja trwa — blokada ponownego kliknięcia                 |
 | `percentage`   | postęp ma wartość informacyjną dla użytkownika            |
 | `embedded`     | akcja poboczna bez przyciągania uwagi (np. reset hasła)   |
+
+### Skala `size`
+
+Wspólne nazwy: `small` i `big`. `AbyssButton` ma dodatkowo `medium`. Domyślnie wszędzie `big`.
+
+| `size` | Typy | Wysokość | Font | Ikona | Padding (y / x) | Radius |
+| ------ | ---- | -------- | ---- | ----- | --------------- | ------ |
+| `small` | `AbyssButton`, `AbyssInput`, `AbyssSelect`, `AbyssInputLabel` | **32px** | 12px | 16px | 8px / 12px | 6px |
+| `medium` | tylko `AbyssButton` | **40px** | 12px | 16px | 12px / 16px | 6px |
+| `big` | `AbyssButton`, `AbyssInput`, `AbyssSelect`, `AbyssInputLabel` | **48px** | 16px | 24px | 12px / 16px | 8px |
+
+Przyciski wbudowane w `AbyssInput` (hasło, lupa, kopiuj, data): przy `size="small"` pola dostają `AbyssButton` `small` (32px); przy `size="big"` pola — `AbyssButton` `medium` (40px).
 
 ---
 
@@ -721,7 +736,24 @@ Przykłady użycia w ekranach aplikacji Maia znajdują się w repozytorium `maia
 
 ---
 
+## Skille dla LLM
+
+Kanon: https://github.com/mAIa-dIAry/AbyssDesign (`docs/skills/`). W aplikacji wklej w czacie agenta (Cursor, Claude Code, GitHub Copilot i inne):
+
+```
+Pobierz https://raw.githubusercontent.com/mAIa-dIAry/AbyssDesign/main/docs/skills/install-abyss-skills/SKILL.md i zainstaluj skille Abyss Design w tej aplikacji (tylko HTTP z https://github.com/mAIa-dIAry/AbyssDesign, bez node_modules).
+```
+
+| Skill | Zastosowanie |
+| ----- | ------------ |
+| [`install-abyss-skills`](../skills/install-abyss-skills/SKILL.md) | instalacja HTTP do `.agents/skills/`, `.claude/skills/`, `.cursor/skills/` |
+| [`implement-abyss-ui`](../skills/implement-abyss-ui/SKILL.md) | implementacja i zmiana UI |
+| [`audit-abyss-compliance`](../skills/audit-abyss-compliance/SKILL.md) | audyt zgodności |
+
+---
+
 ## Powiązane pliki
 
 - [`src/stories/AbyssDesign.mdx`](../../src/stories/AbyssDesign.mdx) — landing page w Storybooku.
 - [`docs/architecture/abyss-design.md`](./abyss-design.md) — ten dokument.
+- [`docs/skills/README.md`](../skills/README.md) — skille agenta do skopiowania do aplikacji konsumujących.

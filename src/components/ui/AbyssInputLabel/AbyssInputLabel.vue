@@ -12,11 +12,11 @@
 <script setup lang="ts">
 export interface AbyssInputLabelProps {
   label?: string;
-  size?: 'normal' | 'small';
+  size?: 'small' | 'big';
 }
 
 withDefaults(defineProps<AbyssInputLabelProps>(), {
-  size: 'normal',
+  size: 'big',
 });
 </script>
 

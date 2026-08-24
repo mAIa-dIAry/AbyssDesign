@@ -92,9 +92,9 @@ const meta = {
     },
     size: {
       control: { type: 'select' },
-      options: ['normal', 'small'],
-      description: 'Rozmiar pola — `small` zmniejsza padding, font i ikonę',
-      table: { defaultValue: { summary: 'normal' } },
+      options: ['small', 'big'],
+      description: 'Rozmiar pola — ta sama skala co `AbyssButton` (`small` | `big`, domyślnie `big`)',
+      table: { defaultValue: { summary: 'big' } },
     },
     flat: {
       control: 'boolean',

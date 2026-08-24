@@ -239,7 +239,7 @@ export interface AbyssInputProps {
   collapsed?: boolean;
   /** Usuwa cień pola — wariant bez wypukłości, np. w nagłówku tabeli. */
   flat?: boolean;
-  size?: 'normal' | 'small';
+  size?: 'small' | 'big';
   /** Quasar QDate `options` — np. ograniczenie wybieralnych dni (format daty: YYYY/MM/DD). */
   dateOptions?: (date: string) => boolean;
   /** Quasar QDate `default-year-month` — np. `2026/07`. */
@@ -268,7 +268,7 @@ const props = withDefaults(defineProps<AbyssInputProps>(), {
   fillMask: false,
   collapsed: false,
   flat: false,
-  size: 'normal',
+  size: 'big',
 });
 
 if (props.maxLength < -1) {
