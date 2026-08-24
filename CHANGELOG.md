@@ -1,11 +1,21 @@
 # Changelog
 
-## [Unreleased]
+## [0.2.0] - 2026-08-24
+
+Wspólna nazwa `size` dla pól i przycisków: `normal` zastąpione przez `big`.
 
 ### Nowości
 
 - `AbyssTemplateLogin` — szablon strony logowania z wyśrodkowanym kontenerem o stałej `max-width` (`ABYSS_TEMPLATE_LOGIN_MAX_WIDTH`); slot wymaga `AbyssCard` (przykład: formularz logowania)
 - `AbyssAppLock` / `AbyssNumericKeypad`: klawiatura na szerokość treści karty (bez cap `280px`); `AbyssPinInput`: kropki wyśrodkowane ze stałym `gap`
+
+### Zmiany
+
+- `AbyssInput`, `AbyssSelect`, `AbyssInputLabel`: prop `size` to `'small' | 'big'` (domyślnie `big`). Wartość `normal` usunięta — to ten sam token co `AbyssButton` `big`.
+
+### Techniczne
+
+- Skille LLM (`docs/skills/`): `install-abyss-skills`, `implement-abyss-ui`, `audit-abyss-compliance` — instalacja HTTP do `.agents/skills/`, `.claude/skills/` i `.cursor/skills/` (Cursor, Claude Code, GitHub Copilot)
 
 ## [0.1.2] - 2026-08-19
 
