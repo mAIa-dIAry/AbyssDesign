@@ -4,8 +4,8 @@
 
 | Plik | Rola | Co aktualizować |
 | ---- | ---- | ---------------- |
-| `docs/architecture/abyss-design.md` | Standard używania systemu — reguły kompozycji, Do/Don't, matryce | Zasady nadrzędne, wzorce kompozycji, tabele komponentów, sekcje per komponent (np. AbyssTable) |
-| `src/stories/AbyssDesign.mdx` | Landing Storybook — mapa rodzin komponentów, skrócone reguły | Tylko gdy landing powiela regułę zmienioną w standardzie; unikaj duplikowania pełnego API |
+| `docs/architecture/abyss-design.md` | Standard używania systemu — mapa **potrzeba → jeden komponent**, Do/Don't, matryce | Zasady nadrzędne, tabela wyboru, wzorce kompozycji, sekcje per komponent |
+| `src/stories/AbyssDesign.mdx` | Landing Storybook — link do tabeli wyboru, skrócone reguły | Nie utrzymuj drugiej listy nazw bez „kiedy nie”; linkuj sekcję „Potrzeba → jeden komponent” |
 | `.cursor/rules/storybook.mdc` | Reguły Cursor dla plików `*.stories.ts` | Konwencje `docs.source.code`, opisy `class`/`style`, kolory semantyczne w stories |
 | `src/components/ui/Abyss*/Abyss*.stories.ts` | API i przykłady per komponent | `parameters.docs.description`, `argTypes`, opisy poszczególnych story |
 

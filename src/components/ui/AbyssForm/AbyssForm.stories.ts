@@ -45,7 +45,7 @@ const meta = {
           '### Hasło\n\n' +
           'Ustawianie lub zmiana hasła **zawsze** odbywa się w dedykowanym `AbyssDialog`. W `AbyssCard` wiersz triggera to `AbyssGrid` z `AbyssInputLabel` + przycisk (wzór: story **AbyssInput → Wzorzec: zmiana hasła**). Pola hasła nie umieszczaj inline w karcie — wyjątek: logowanie (pole bieżącego hasła w formularzu auth).\n\n' +
           '### Układ formularza w `AbyssCard`\n\n' +
-          'Formularz umieszczaj w `AbyssCard` (nagłówek z ikoną w `header-prepend`). Pola (`AbyssInput`, `AbyssSelect` itd.) w `AbyssForm` lub bezpośrednio w treści karty — **nie owijaj ich ręcznie w `AbyssGrid`**. `AbyssInput` i `AbyssSelect` mają wewnętrzny `AbyssGrid` (etykieta + kontrolka) z tymi samymi parametrami co siatka przycisków.\n\n' +
+          'Formularz umieszczaj w `AbyssCard` (nagłówek z ikoną w `header-prepend`). Pola (`AbyssInput`, `AbyssSelect` itd.) **zawsze** w `AbyssForm` — nie natywny `<form>`, nie pola bezpośrednio w treści karty. **Nie owijaj ich ręcznie w `AbyssGrid`**. `AbyssInput` i `AbyssSelect` mają wewnętrzny `AbyssGrid` (etykieta + kontrolka) z tymi samymi parametrami co siatka przycisków.\n\n' +
           '**Bez custom styli:** w formularzach i standardowych kartach nie przekazuj `class` ani `style` na prymitywach Abyss — wyłącznie propsy. Custom stylowanie jest dozwolone w komponentach złożonych aplikacji (np. edytor), nie w widokach ustawień.\n\n' +
           '**Wspólna siatka formularza** — pola i przyciski używają tych samych stałych:\n\n' +
           '```html\n' +

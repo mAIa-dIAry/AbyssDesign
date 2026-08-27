@@ -79,7 +79,7 @@ const meta: Meta<typeof AbyssHistogram> = {
     docs: {
       description: {
         component:
-          'Histogram słupkowy z responsywnymi etykietami osi X. `data` to wartości w przedziałach (np. udział procentowy w 24 godzinach doby), `labels` mapuje je na skrót osi (`shortValue`) i pełną etykietę w tooltipie (`value`).',
+          'Histogram słupkowy — koszyki / udział. Nie ciągła seria czasowa (to `AbyssChart`). `data` to wartości w przedziałach (np. udział procentowy w 24 godzinach doby), `labels` mapuje je na skrót osi (`shortValue`) i pełną etykietę w tooltipie (`value`).',
       },
     },
   },

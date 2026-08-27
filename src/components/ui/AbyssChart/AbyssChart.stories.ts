@@ -44,7 +44,7 @@ const meta: Meta<typeof AbyssChart> = {
     docs: {
       description: {
         component:
-          'Wykres area z responsywnymi etykietami osi X. `data` to wartości liczbowe, `labels` mapuje je na skrót osi (`shortValue`) i pełną etykietę w tooltipie (`value`).',
+          'Wykres area — ciągła seria czasowa. Nie koszyki / udział (to `AbyssHistogram`). `data` to wartości liczbowe, `labels` mapuje je na skrót osi (`shortValue`) i pełną etykietę w tooltipie (`value`).',
       },
     },
   },

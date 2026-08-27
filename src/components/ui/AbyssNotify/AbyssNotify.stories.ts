@@ -19,6 +19,7 @@ const meta: Meta<typeof AbyssNotify> = {
       description: {
         component:
           'Toast AbyssNotify służy do **efemerycznego feedbacku po akcji użytkownika** (zapis, błąd API, usunięcie). ' +
+          'Strony wołają helper kolejki `notify()` w aplikacji — nie montują tego komponentu i nie robią `Teleport` ze strony. Host w overlayu `AbyssTemplateRoot` to implementacja hosta. ' +
           'Nie zastępuje `AbyssInfo` — ten zostaje przy **statycznych** komunikatach w układzie strony. ' +
           'Typy (`info`, `warning`, `danger`, `success`, `hint`) używają tych samych semantycznych gradientów co `AbyssInfo`. ' +
           'Lewa ikona i treść leżą na zaokrąglonym overlayu `rgba(black, 0.5)` odsuniętym 1px od krawędzi toasta; tekst i obie ikony są zawsze białe. ' +
@@ -26,7 +27,7 @@ const meta: Meta<typeof AbyssNotify> = {
           '`description` jest opcjonalny i **domyślnie zwinięty**; przy niepustym opisie po prawej tytułu jest chevron. Kliknięcie paska tytułu (ripple od press) otwiera akordeon (0,2 s) na opisie i na tytule — od jednego wiersza z ellipsisem do pełnego zawinięcia, ze stałym odstępem pierwszego wiersza od góry. ' +
           'Opcjonalny `count` (od 2 wzwyż) pokazuje badge z liczbą powtórzeń tego samego toasta, na prawo od tytułu, przed chevronem. Przy zmianie liczby badge puszcza rozszerzający się, zanikający ripple (0,4 s). ' +
           'Opcjonalny `autoClose` (ms) sam zamyka toast; wokół przycisku X biegnie circular progress. Hover i `:focus-within` wstrzymują timer i ściszają pierścień do opacity 0,5. Zmiana `count` resetuje timer. ' +
-          'W `AbyssTemplateRoot` teleportuj toast do `#abyss-template-overlay` (albo slot `#overlay`). Host overlay ma `padding: 12px 8px` i `max-height: 100%`; `overflow: auto` to przełącznik po 0,2 s ciszy — dodawanie nie zdejmuje `auto` od razu. Poza szablonem owiń kolejkę klasą `abyss-notify-queue`. ' +
+          'W `AbyssTemplateRoot` host kolejki to `#abyss-template-overlay` (albo slot `#overlay`) — implementacja hosta, nie wzorzec strony. Host overlay ma `padding: 12px 8px` i `max-height: 100%`; `overflow: auto` to przełącznik po 0,2 s ciszy — dodawanie nie zdejmuje `auto` od razu. Poza szablonem owiń kolejkę klasą `abyss-notify-queue`. ' +
           'Wejście (z góry) i zejście (w dół) trwają **0,2 s**. Slot (toast + 8px odstęp jako `::after`) zwija wysokość, `overflow: visible` — toast wystaje ze slotu. Ostatni toast przy zejściu **nie zwija wysokości** — tylko `translateY` i opacity. Padding hosta (`12px 8px`) mieści `translateY`. Widoczność kontroluj `v-model` (`modelValue` domyślnie `true`); nowo zamontowany toast też wchodzi z `appear`. ' +
           'W kolejce nie zdejmuj instancji z `v-for` w `@close` — zostaw ją do `@after-leave`.\n\n' +
           '> Nie używaj `AbyssInfo` z `v-if` / `v-show` do wyniku operacji. Szczegóły: ' +

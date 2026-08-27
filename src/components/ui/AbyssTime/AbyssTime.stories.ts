@@ -5,7 +5,8 @@ import { withAbyssBackground } from '@/stories/AbyssBackgroundDecorator';
 
 const nativePickerWarning =
   '**Nigdy nie używaj systemowych selektorów czasu** (`<input type="time">`, `<input type="datetime-local">` z natywnym UI przeglądarki/OS). ' +
-  'Zawsze uruchamiaj dokładnie `AbyssTime` — bezpośrednio lub przez `AbyssInput` z `type="time"` / `type="datetime-local"`, który osadza ten komponent w popupie.';
+  'W formularzu używaj wyłącznie `AbyssInput` z `type="time"` / `"datetime-local"` (osadza ten picker w popupie). ' +
+  'Samodzielny `AbyssTime` tylko w popupie lub toolbarze — nie jako pole formularza ustawień.';
 
 const meta: Meta<typeof AbyssTime> = {
   title: 'UI/AbyssTime',
@@ -16,7 +17,7 @@ const meta: Meta<typeof AbyssTime> = {
     docs: {
       description: {
         component:
-          'Jedyny dopuszczalny picker czasu w Abyss. Układ jak `AbyssDialog`: zegar w body, separator i stopka z Anuluj (`flat`) oraz Potwierdź (`flat` + `gradient` + `success`).\n\n' +
+          'Picker czasu w Abyss. W formularzu nie osadzaj go samodzielnie — użyj `AbyssInput` z `type="time"` / `"datetime-local"`. Samodzielnie tylko w popupie / toolbarze. Układ jak `AbyssDialog`: zegar w body, separator i stopka z Anuluj (`flat`) oraz Potwierdź (`flat` + `gradient` + `success`).\n\n' +
           `${nativePickerWarning}\n\n` +
           'Przy osadzaniu w `q-popup-proxy` ustaw wymaganą klasę integracyjną `class="abyss-time-menu"` na elemencie popup oraz `:breakpoint="0"`, żeby Quasar nie przełączał pickera na modal `QDialog` na małych viewportach.\n\n' +
           '```html\n<q-popup-proxy class="abyss-time-menu" :breakpoint="0">\n  <AbyssTime v-model="time" @close="popup = false" />\n</q-popup-proxy>\n```',

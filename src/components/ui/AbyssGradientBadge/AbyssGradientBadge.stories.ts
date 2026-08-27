@@ -14,7 +14,7 @@ const meta: Meta<typeof AbyssGradientBadge> = {
     docs: {
       description: {
         component:
-          'Komponent badge z gradientowym tłem. Dostępne warianty: gold, sakura, garden.',
+          'Badge subskrypcji z gradientowym tłem. Warianty: `gold`, `sakura`, `garden`. **Nie** badge statusu semantycznego w tabeli (`success` / `warning` / `danger` — ten prymityw to BRAK; nie zastępuj `q-badge`).',
       },
     },
   },

@@ -50,7 +50,7 @@ const meta: Meta<typeof AbyssSwitcher> = {
     docs: {
       description: {
         component:
-          'Przełącznik wieloopcyjny oparty na własnym UI. Przyjmuje listę opcji (`name`, `label`, opcjonalnie `icon`) i synchronizuje `v-model` z `name` aktywnej opcji.',
+          'Przełącznik 2–5 równorzędnych widoków w miejscu (taby dialogu, widok wykresu). Nie zestaw akcji (to `AbyssButtonGroup`) i nie pole formularza z wieloma opcjami (to `AbyssSelect`). Przyjmuje listę opcji (`name`, `label`, opcjonalnie `icon`) i synchronizuje `v-model` z `name` aktywnej opcji. Wewnętrzne przyciski są `flat`.',
       },
     },
   },

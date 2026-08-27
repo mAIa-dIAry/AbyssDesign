@@ -13,9 +13,7 @@ const meta: Meta<typeof AbyssDebug> = {
     docs: {
       description: {
         component:
-          'Komponent debugowania (AbyssDebug) wyświetla przekazane dane w czasie rzeczywistym ' +
-          'z kolorowaniem składni: klucze obiektów (biały), wartości tekstowe (zielony), ' +
-          'wartości liczbowe (niebieski), indeksy tablic (żółty).',
+          'Karta debug design systemu — podgląd obiektu z kolorowaniem składni. Nie renderer JSON na stronie produktowej (to `AbyssCode`).',
       },
     },
   },

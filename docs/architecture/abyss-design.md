@@ -4,6 +4,7 @@
 
 - [Status i zakres](#status-i-zakres)
 - [Zasady nadrzędne](#zasady-nadrzędne)
+- [Potrzeba → jeden komponent](#potrzeba--jeden-komponent) (w tym [Quasar dozwolony](#quasar-dozwolony))
 - [Formularze i karty vs komponenty złożone](#formularze-i-karty-vs-komponenty-złożone)
 - [Powierzchnie i warstwy](#powierzchnie-i-warstwy) (w tym [Warstwy nachodzące na treść](#warstwy-nachodzące-na-treść))
 - [Layout strony](#layout-strony) (w tym [Tytuły stron i zakładek](#tytuły-stron-i-zakładek))
@@ -25,26 +26,103 @@ Najważniejsze zasady interpretacji:
 
 - interfejs budujesz z komponentów `src/components/ui` (prymitywy) i `src/components/templates` (layout) oraz ich udokumentowanych propsów, slotów oraz zdarzeń,
 - Storybook dokumentuje API każdego komponentu — ten plik opisuje reguły łączenia komponentów w ekrany,
-- **zakres tego dokumentu to głównie formularze, standardowe karty i dialogi** — tam obowiązują restrykcyjne reguły bez custom styli,
+- **zakres tego dokumentu to pełny zestaw publicznych komponentów Abyss** — mapa wyboru jest tabelą [Potrzeba → jeden komponent](#potrzeba--jeden-komponent); każda potrzeba UI ma dokładnie jeden przepisany komponent,
+- w formularzach, standardowych kartach i dialogach obowiązują restrykcyjne reguły bez custom styli,
 - komponenty wyższego rzędu w aplikacji (np. edytor notatek) mogą używać `class` i `style` na prymitywach Abyss — patrz sekcja [Formularze i karty vs komponenty złożone](#formularze-i-karty-vs-komponenty-złożone),
-- jeżeli aktualny kod odbiega od tego dokumentu, traktuj to jako świadomy dług techniczny, a nie nową normę.
+- jeżeli aktualny kod odbiega od tego dokumentu, traktuj to jako świadomy dług techniczny, a nie nową normę (m.in. AdminWeb `LoginPage` bez `AbyssTemplateLogin`, natywny `<form>` zamiast `AbyssForm`, `class="settings-card"` na kartach ustawień).
 
 ---
 
 ## Zasady nadrzędne
 
-1. **Abyss jest warstwą pierwszego wyboru.** Jeśli istnieje komponent w [src/components/ui](../../src/components/ui), używaj go zamiast składać interfejs bezpośrednio z Quasara.
+1. **Abyss jest warstwą pierwszego wyboru.** Jeśli istnieje komponent w [src/components/ui](../../src/components/ui), używaj go zamiast składać interfejs bezpośrednio z Quasara. Jedyny wyjątek Quasar to tabela [Quasar dozwolony](#quasar-dozwolony).
 2. **Formularze i standardowe karty — tylko propsy.** W `AbyssCard`, `AbyssForm`, `AbyssDialog` (ustawienia, auth, potwierdzenia) nie dodawaj własnych klas, stylów inline ani nadpisań SCSS na prymitywach Abyss. Układ kontroluj propsami (`full-width`, `AbyssGrid`, sloty karty itd.).
 3. **Komponenty złożone mogą stylować prymitywy.** Przy budowie domenowych komponentów wyższego rzędu (np. edytor, pasek narzędzi archiwum) dozwolone jest przekazywanie `class` i `style` do `AbyssInput`, `AbyssButton` itd. — o ile logika layoutu pozostaje w komponencie nadrzędnym, a nie rozproszona po widokach formularzowych.
-4. **Warstwy tymczasowe to `AbyssDialog`.** Decyzje, potwierdzenia i skupione wprowadzanie danych realizuj dialogiem — nie buduj własnych overlayów.
+4. **Warstwy tymczasowe to `AbyssDialog`.** Decyzje, potwierdzenia i skupione wprowadzanie danych realizuj dialogiem — nie buduj własnych overlayów decyzji. Pełnoekranowy auth to `AbyssTemplateLogin`, nie dialog.
 5. **Scroll w dialogu — tylko body.** W `AbyssDialog` jedynym pionowym kontenerem przewijania jest `abyss-dialog__body`. Taby i nawigacja idą do slotu `navigation` (poza body). Treść w body nie może mieć własnych pionowych scrollbarów — używaj `AbyssTable` bez `height`, `AbyssCode` z `scrollable={false}`, `AbyssMarkdown` w trybie osadzonym bez wewnętrznych paneli ze scrollem.
 6. **Jedna czytelna hierarchia akcji na blok.** Użytkownik ma od razu widzieć akcję główną, wspierającą i informacyjną. Realizuj to kombinacją `gradient`, `gradientColors`, `flat`, `embedded` i `full-width` na `AbyssButton`.
 7. **Operacje destrukcyjne:** `AbyssButton` z `gradient` + `gradient-colors="danger"` oraz kontekst ryzyka przez `AbyssInfo`, ikonografię i copy w `AbyssCard`.
-8. **Formularze:** pola (`AbyssInput`, `AbyssSelect`, `AbyssToggle` itd.) mają wewnętrzny układ — nie owijaj ich dodatkowym `AbyssGrid`. Przyciski akcji pod polami układaj w `AbyssGrid` ze stałymi `INPUT_COLUMN_SIZE` i `INPUT_GRID_MAX_COLUMNS` (patrz `AbyssForm` w Storybooku).
-9. **Daty i czas:** wyłącznie `AbyssDate`, `AbyssTime` albo `AbyssInput` z `type="date"`, `type="time"`, `type="datetime-local"`.
-10. **Feedback po akcjach:** powodzenie lub niepowodzenie operacji (zapis, usunięcie, ponowienie itd.) komunikuj **`AbyssNotify`**, nie `AbyssInfo` i nie surowym `$q.notify`. `AbyssInfo` służy wyłącznie do **statycznych** komunikatów kontekstowych osadzonych w układzie strony.
-11. **Główne podstrony bez tytułu strony.** Nie powielaj etykiety aktywnej zakładki nawigacji (`AbyssNavigation`) nagłówkiem w treści (np. Dashboard → zakaz `AbyssTitle` „Dashboard”). Tytuły (`AbyssTitle` / `title` karty) wolno stosować **tylko na kartach** i w powierzchniach modalnych — patrz [Tytuły stron i zakładek](#tytuły-stron-i-zakładek).
+8. **Formularze:** zawsze owijaj pola w `AbyssForm`. Pola (`AbyssInput`, `AbyssSelect`, `AbyssToggle` itd.) mają wewnętrzny układ — nie owijaj ich dodatkowym `AbyssGrid`. Przyciski akcji pod polami układaj w `AbyssGrid` ze stałymi `INPUT_COLUMN_SIZE` i `INPUT_GRID_MAX_COLUMNS` (patrz `AbyssForm` w Storybooku). Nie używaj natywnego `<form>`.
+9. **Daty i czas:** w formularzu wyłącznie `AbyssInput` z `type="date"`, `type="time"` lub `type="datetime-local"`. Samodzielny `AbyssDate` / `AbyssTime` tylko w popupie lub toolbarze (wzorzec archiwum). Nie używaj natywnych pickerów systemowych.
+10. **Feedback po akcjach:** powodzenie lub niepowodzenie operacji (zapis, usunięcie, ponowienie itd.) komunikuj helperem kolejki `notify()` w aplikacji; host `AbyssNotify` żyje w overlayu `AbyssTemplateRoot`. Nie `AbyssInfo` i nie surowy `$q.notify`. `AbyssInfo` służy wyłącznie do **statycznych** komunikatów kontekstowych osadzonych w układzie strony.
+11. **Główne podstrony bez tytułu strony.** Nie powielaj etykiety aktywnej zakładki nawigacji (`AbyssNavigation`) nagłówkiem w treści (np. Dashboard → zakaz `AbyssTitle` „Dashboard”). Tytuł sekcji to wyłącznie `title` na `AbyssCard`. `AbyssTitle` tylko na stronach informacyjnych i prawnych poza nawigacją — patrz [Tytuły stron i zakładek](#tytuły-stron-i-zakładek).
 12. **Warstwa nachodząca na treść z przezroczystym tłem ma `backdrop-filter`.** Każdy element, który może wizualnie nakładać się na inną treść i nie jest powierzchnią gradientową (`AbyssBackground`, `AbyssGradientBox`, `AbyssButton` z `gradient`), musi mieć `-webkit-backdrop-filter` i `backdrop-filter` — kanon to `blur(20px)`. Dotyczy dialogów, pickerów daty/czasu, menu, sticky nagłówków i własnych overlayów w komponentach złożonych (np. przycisk dyktowania nad polem edytora). Szczegóły: [Warstwy nachodzące na treść](#warstwy-nachodzące-na-treść).
+
+---
+
+## Potrzeba → jeden komponent
+
+Dla każdej potrzeby UI kanon wskazuje **dokładnie jeden** komponent albo **jedną** kompozycję. Kolumna „Komponent” nie zawiera ścieżek do wyboru. Wiersze **BRAK** oznaczają brakujący prymityw: nie zastępuj go Quasarem ani improwizacją — zgłoś `make-component` w AbyssDesign.
+
+`AbyssPinInput` i `AbyssNumericKeypad` są wewnętrzne względem `AbyssAppLock` — nie dobieraj ich z tej tabeli.
+
+Nie importuj shadow-wrapperów `AbyssTemplate`, `AbyssScrollView`, `AbyssSidebarNav`. Kanoniczne nazwy: `AbyssTemplateRoot`, `AbyssTemplateMain`, `AbyssTemplateSidebar`, `AbyssTemplateLogin`.
+
+| Potrzeba | Komponent | Kiedy nie |
+| -------- | --------- | --------- |
+| Szkielet aplikacji (nav, chrome, overlay toastów) | `AbyssTemplateRoot` | Nie importuj `AbyssTemplate`. |
+| Host routingu w layoucie | `router-view` w `#content` Root; strona trasy montuje szablon | Nie wkładaj kart, formularzy ani list bezpośrednio do `#content`. Wyjątek lock PIN: layout może wstawić `AbyssTemplateLogin` zamiast `router-view`. W Storybooku izolowane demo może zagnieździć szablon w Root. |
+| Przewijana strona merytoryczna | `AbyssTemplateMain` | Nie na pełnoekranowy auth. Nie importuj `AbyssScrollView`. |
+| Ustawienia / nawigacja zakładek | `AbyssTemplateSidebar` | Nie importuj `AbyssSidebarNav`. Nie owijaj dodatkowo w `AbyssTemplateMain`. |
+| Pełnoekranowy login / rejestracja | `AbyssTemplateLogin` + `AbyssCard` + `AbyssForm` | Nie `AbyssTemplateMain` ani custom panel auth. Nie `AbyssDialog` (to login nad aplikacją). AdminWeb `LoginPage` jest długiem względem kanonu. |
+| Pełnoekranowe odblokowanie PIN | `AbyssTemplateLogin` + `AbyssCard` + `AbyssAppLock` | Nie `AbyssDialog` na pełny lock. Ustawianie PIN: `AbyssDialog` `abyss-dialog--compact`, nie Login. Nie dobieraj `AbyssPinInput` / `AbyssNumericKeypad`. |
+| Login / reauth nad działającą aplikacją | `AbyssDialog` + `AbyssForm` | Nie `AbyssTemplateLogin`. Nie natywny `<form>`. |
+| Decyzja, potwierdzenie, skupione wprowadzanie (hasło, PIN set) | `AbyssDialog` | Nie własny overlay decyzji. Nie pełnoekranowy auth. |
+| Sekcja z nagłówkiem i ikoną | `AbyssCard` | Nie `AbyssPanel` (brak chrome karty). Nie `AbyssTile`. Nie własny `div` sekcji. |
+| Powierzchnia bez chrome karty (changelog, markdown) | `AbyssPanel` | Nie `AbyssCard`. Nie `AbyssTile`. |
+| Kafelek w siatce równorzędnych elementów | `AbyssTile` w `AbyssGrid` | Nie `AbyssCard` na komórkę siatki. Nie `AbyssPanel`. |
+| Tytuł sekcji | `title` na `AbyssCard` | Nie `AbyssTitle` w karcie, dialogu ani panelu. |
+| Tytuł strony informacyjnej / prawnej poza nawigacją | `AbyssTitle` (`type`, `icon`, `label`) | Nie na głównej podstronie z nawigacją. Nie jako tytuł karty. Brak propsów `level` i `size`. |
+| Wrapper formularza | `AbyssForm` | Nie natywny `<form>`. Nie pola luzem w karcie. |
+| Pole tekstowe, hasło, e-mail, liczba, copy, search | `AbyssInput` | Data i czas w formularzu: `type="date"`, `"time"` lub `"datetime-local"`, nie samodzielny `AbyssDate` / `AbyssTime`. |
+| Data lub czas w formularzu | `AbyssInput` (`type="date"`, `"time"` lub `"datetime-local"`) | Nie samodzielny `AbyssDate` / `AbyssTime`. Nie natywny picker systemowy. |
+| Data w popupie / toolbarze (archiwum) | `AbyssDate` | Nie w formularzu ustawień (to `AbyssInput`). Nie natywny `<input type="date">`. |
+| Czas w popupie / toolbarze | `AbyssTime` | Nie w formularzu. Nie natywny picker. |
+| Wybór z wielu opcji (pole formularza) | `AbyssSelect` | Nie `AbyssSwitcher` (2–5 widoków). Nie `AbyssButtonGroup`. |
+| 2–5 równorzędnych widoków w miejscu | `AbyssSwitcher` | Nie `AbyssButtonGroup`. Nie `AbyssSelect`. Nie taby z `AbyssButton` `toggled` / `current`. |
+| Zestaw akcji (toolbar, w tym pionowy) | `AbyssButtonGroup` | Nie `AbyssSwitcher`. Dzieci: wyłącznie `AbyssButton`. |
+| Pojedyncza akcja | `AbyssButton` | `flat` tylko w miejscach z listy `flat` (poniżej). Nie `q-btn`. |
+| Przełącznik włącz / wyłącz | `AbyssToggle` | Nie `AbyssButton` `toggled` jako jedyny przełącznik ustawienia. |
+| Suwak — jedna wartość | `AbyssSlider` | Nie `AbyssRange` (dwa kciuki). |
+| Zakres liczbowy — dwa kciuki | `AbyssRange` | Nie `AbyssSlider`. Nie para inputów min/max, gdy potrzeba dwóch kciuków. |
+| Etykieta wiersza bez kontrolki (np. Zmień hasło) | `AbyssInputLabel` + `AbyssButton` w `AbyssGrid` | Nie `AbyssInput` `readonly` jako etykieta. |
+| Siatka przycisków akcji / kafelków | `AbyssGrid` | Nie owijaj pojedynczego `AbyssInput` / `AbyssSelect` dodatkowym Gridem. |
+| Nawigacja główna aplikacji | `AbyssNavigation` + `AbyssButton` (`embedded`; `current` na aktywnym route) | Nie `AbyssSwitcher`. Nie `AbyssButtonGroup` jako nav główna. |
+| Sticky nagłówek kontekstowy (detal, wstecz) | `AbyssNavHeader` | Nie duplikat etykiety głównej zakładki. Przyciski w `#actions`: `size="medium"` `flat` `embedded`. |
+| Menu akcji wiersza tabeli | `AbyssDropdown` | Nie lista przycisków poza Dropdown. Trigger: `icon-only` `more_vert`. |
+| Tabela danych | `AbyssTable` (`as-card` na stronie; bez `as-card` w dialogu / panelu) | Nie `q-table`. Dwa tryby to jeden komponent — kontekst ustawia prop, nie drugi kontener. |
+| Ciągła seria czasowa | `AbyssChart` | Nie `AbyssHistogram` (koszyki / udział). |
+| Koszyki / udział | `AbyssHistogram` | Nie `AbyssChart` (seria ciągła). |
+| Oś czasu zdarzeń | `AbyssTimeline` + `AbyssTimelineItem` | Nie lista kart jako timeline. |
+| Podgląd Markdown z przełącznikiem preview / code | `AbyssMarkdown` | Nie własny `marked` / `v-html`. Logika changelogu zostaje w warstwie aplikacji. |
+| Gotowy HTML (notatka, changelog po sanityzacji) | `AbyssContent` | Nie gdy potrzebujesz przełącznika kod / podgląd (to `AbyssMarkdown`). |
+| JSON / kolorowany kod | `AbyssCode` | Nie `AbyssDebug` poza kartą debug DS. Nie `<pre>`. |
+| Karta debug design systemu | `AbyssDebug` | Nie jako renderer JSON na stronie produktowej (to `AbyssCode`). |
+| Statyczny komunikat kontekstowy | `AbyssInfo` | Nie feedback po akcji (to `notify()`). |
+| Feedback po akcji (toast) | helper kolejki `notify()` w aplikacji; host `AbyssNotify` w overlayu Root | Nie `Teleport` `AbyssNotify` ze strony. Nie `$q.notify`. Nie reaktywny `AbyssInfo`. Nie hard-coded `notify.store`. |
+| Pasek postępu | `AbyssProgress` | Nie spinner w miejscu (**BRAK**). Nie `AbyssTemplateMainIndicator` poza szablonem Main. |
+| Spinner / loader w miejscu (Suspense, widget) | **BRAK** | Nie `q-spinner` / `q-spinner-dots`. Nie `AbyssProgress` jako spinner. Zgłoś `make-component`. |
+| Badge statusu semantycznego (`success` / `warning` / `danger`) | **BRAK** | Nie `q-badge`. Nie `AbyssGradientBadge` (to subskrypcja gold / sakura / garden). Zgłoś `make-component`. |
+| Badge subskrypcji gold / sakura / garden | `AbyssGradientBadge` | Nie status wiersza tabeli. Nie `q-badge`. |
+| Wiersz listy (klikalny rekord, dzień analizy) | **BRAK** | Nie `AbyssButton flat` poza dozwolonymi miejscami `flat`. Nie `ul` / `li` + `flat`. Zgłoś `make-component`. |
+| Tło gradientowe aplikacji | `AbyssBackground` | Nie `AbyssGradientBox` jako tło całego layoutu. |
+| Preset gradientu (box) | `AbyssGradientBox` | Nie `AbyssBackground` wewnątrz karty. |
+| Separator wizualny | `AbyssSeparator` | Nie `hr` / własny border jako separator systemowy. |
+| Skrót klawiszowy | `AbyssKeybind` | — |
+| Strona 404 / błąd | `AbyssTemplateMain` + `AbyssButton` | Nie `q-btn` i surowy szablon Quasar `ErrorNotFound`. |
+
+**`flat` na `AbyssButton` — jedna lista miejsc:** header i stopka `AbyssCard`, `AbyssDialog`, sloty `#prepend` / `#append` w `AbyssInput`, akcje `AbyssNavHeader`, wnętrze `AbyssSwitcher`. Wszędzie indziej `flat` jest naruszeniem (w tym wiersz listy — patrz **BRAK** powyżej).
+
+### Quasar dozwolony
+
+Wszystko spoza tej tabeli jest naruszeniem — w tym `q-spinner`, `q-badge`, `q-btn`, `q-card`, `q-input`, `q-dialog`, `q-table` i natywny `<form>`.
+
+| Quasar | Jedyne dozwolone użycie |
+| ------ | ----------------------- |
+| `q-icon` | ikona w slotach Abyss (`#header-prepend`, `AbyssTitle`, prop `icon` przycisku itd.) |
+| `q-popup-proxy` | popup `AbyssDate` / `AbyssTime` z `class="abyss-date-menu"` / `"abyss-time-menu"` i `:breakpoint="0"` |
+| `q-chip` | token daty w search (wzorzec `AbyssInput` typu `search`) |
+| `q-td` / `q-tr` | sloty komórek i wierszy `AbyssTable` |
 
 ---
 
@@ -71,20 +149,30 @@ Przykład niedozwolonego użycia: karta „Konto” w ustawieniach z `class="set
 | ------------------ | ------------------------------ | --------------------------------------------------------------------------------------- |
 | `AbyssCard`        | kontener sekcji                | `title`, sloty `header-prepend`, `header-append`, `content`, `footer` (rzadko)           |
 | `AbyssDialog`      | warstwa tymczasowa nad treścią | `model-value`, sloty `header`, `navigation` (taby poza scrollowym body), domyślny content, `actions`; przyciski w stopce zawsze `flat`   |
-| `AbyssTitle`       | hierarchia nagłówków           | `level` (`h1`–`h6`), `size` (`lg`, `md`, `sm`)                                          |
+| `AbyssTitle`       | tytuł strony informacyjnej / prawnej poza nawigacją | tylko `type` (`h1`–`h6`), `icon`, `label` — **brak** `level` i `size`; nie jako tytuł karty |
 | `AbyssInfo`        | statyczny komunikat kontekstowy | `type`, `title`, `icon` — pusty stan, ostrzeżenie przed akcją, trwała wskazówka; **nie** feedback po akcji |
 | `AbyssNotify`      | toast po akcji użytkownika     | `type`, `message`, `description` (opcjonalny, domyślnie zwinięty), `count` (badge powtórzeń od 2, na prawo od tytułu), `autoClose` (ms, circular progress wokół X), `icon`, `closeable`, `v-model`, `@after-leave` — sukces/błąd operacji; **nie** stały komunikat w układzie strony |
-| `AbyssButtonGroup` | zestaw równorzędnych akcji     | `vertical` (lista pionowa, domyślnie 100% szerokości); dzieci: wyłącznie `AbyssButton` |
+| `AbyssButtonGroup` | zestaw akcji (toolbar, w tym pionowy) | `vertical` (lista pionowa, domyślnie 100% szerokości); dzieci: wyłącznie `AbyssButton`; nie 2–5 widoków w miejscu (to `AbyssSwitcher`) |
+| `AbyssSwitcher`    | 2–5 równorzędnych widoków w miejscu | `v-model`, `options` (`name`, `label`, opcjonalnie `icon`); wewnętrznie `AbyssButton flat` |
+| `AbyssDropdown`    | menu akcji wiersza tabeli      | dziecko aktywatora; pozycje: `AbyssButton` `flat` `full-width`                          |
 | `AbyssGrid`        | responsywna siatka             | `column-size`, `max-columns`, `column-gap`, `row-gap`, `align`, `content-rows`          |
-| `AbyssForm`        | wrapper formularza             | `v-model`, `sync`, `@update-form`, `@submit-form`                                       |
+| `AbyssForm`        | obowiązkowy wrapper formularza | `v-model`, `sync`, `@update-form`, `@submit-form` — nie natywny `<form>`, nie pola luzem |
 | `AbyssAppLock`     | panel PIN odblokowania         | `message`, `errorMessage`, klawiatura, opcjonalna biometria; pełny ekran w `AbyssCard` wewnątrz `AbyssTemplateLogin`; klawiatura na pełną szerokość treści karty; kropki PIN wyśrodkowane ze stałym `gap` (bez `space-between`); ustawianie PIN w `AbyssDialog` `abyss-dialog--compact` |
-| `AbyssPanel`       | panel z opcjonalnym nagłówkiem | `title`, `flush`, slot `title`                                                          |
+| `AbyssPanel`       | powierzchnia bez chrome karty  | `title`, `flush`, slot `title` — changelog / markdown; nie sekcja z nagłówkiem+ikoną (to `AbyssCard`) |
+| `AbyssTile`        | kafelek w siatce               | wyłącznie jako dziecko `AbyssGrid`; nie zamiast `AbyssCard`                             |
+| `AbyssChart`       | ciągła seria czasowa           | `data`, `labels` — nie koszyki / udział (to `AbyssHistogram`)                           |
+| `AbyssHistogram`   | koszyki / udział               | `data`, `labels` — nie seria ciągła (to `AbyssChart`)                                   |
+| `AbyssSlider`      | suwak — jedna wartość          | jeden kciuk; nie przedział (to `AbyssRange`)                                            |
+| `AbyssRange`       | zakres — dwa kciuki            | `{ min, max }`; nie pojedyncza wartość (to `AbyssSlider`)                               |
+| `AbyssNavigation`  | nawigacja główna aplikacji     | dzieci: `AbyssButton` `embedded`; aktywny route: `current`                              |
+| `AbyssProgress`    | pasek postępu                  | nie spinner w miejscu (**BRAK**)                                                        |
+| `AbyssGradientBadge` | badge subskrypcji            | warianty `gold` / `sakura` / `garden` — **nie** status semantyczny tabeli (**BRAK**)    |
 | `AbyssNavHeader`   | sticky nagłówek nawigacyjny    | `title`, `icon`, `backDisabled`, `backIcon`, `backLabel`, `sticky`, `backdrop`, `stickyTop`, slot `actions` (`AbyssButton` `size="medium"` `flat` `embedded`); bez marginesów — inset u góry z `AbyssTemplateMain`; przycisk wstecz zawsze widoczny |
 | `AbyssContent`     | typografia gotowego HTML       | `html`, `mode` (`html-note` \| `html-changelog`), `size`, `tone`                        |
 | `AbyssMarkdown`    | podgląd Markdown + kod źródłowy | `source`, `v-model` (`preview` \| `code`), `content-mode`, `embedded`                  |
 | `AbyssCode`        | kolorowany kod (JSON)          | `value`, `language` (`json` \| `abyss-json`), `colorTheme` (domyślnie `one-dark`)       |
-| `AbyssDebug`       | karta debugowania danych       | `data` — cienki wrapper nad `AbyssCode language="abyss-json"`                           |
-| `AbyssTemplateRoot`    | szkielet aplikacji (nav + host treści) | `device`, `orientation`, `screenRadius`, `overlayId`; slot `#content` **tylko** inny szablon strony (`AbyssTemplateMain` domyślnie, `AbyssTemplateSidebar`, albo `AbyssTemplateLogin`) — nie karty/formularze bezpośrednio; puste sloty `navigation-start` i `navigation-end` ukrywają sidebar (`<aside>`), inner shadow contentu (inset 8px) chowa się za viewportem po prawej i na dole (bez nawigacji także po lewej); slot `content` bez scrollu i paddingu; slot `overlay` w `overflow-wrapper` (prawy górny róg, `padding: 12px 8px`, `max-height: 100%`, `overflow: auto` tylko gdy zmierzona wysokość przekracza limit) + host `#abyss-template-overlay` na `AbyssNotify` (Teleport; odstęp kolejki z `::after` toasta) |
+| `AbyssDebug`       | karta debugowania DS           | `data` — cienki wrapper nad `AbyssCode language="abyss-json"`; nie renderer JSON na stronie produktowej |
+| `AbyssTemplateRoot`    | szkielet aplikacji (nav + host treści) | `device`, `orientation`, `screenRadius`, `overlayId`; w aplikacji slot `#content` = `router-view` (strona trasy montuje Main/Sidebar/Login); nie karty/formularze bezpośrednio; puste sloty `navigation-start` i `navigation-end` ukrywają sidebar (`<aside>`), inner shadow contentu (inset 8px) chowa się za viewportem po prawej i na dole (bez nawigacji także po lewej); slot `content` bez scrollu i paddingu; slot `overlay` w `overflow-wrapper` (prawy górny róg, `padding: 12px 8px`, `max-height: 100%`, `overflow: auto` tylko gdy zmierzona wysokość przekracza limit) + host `#abyss-template-overlay` na kolejkę `AbyssNotify` (implementacja hosta, nie wzorzec strony) |
 | `AbyssTemplateMain`  | przewijany obszar strony       | `device`, `safeArea`, opcjonalny reload; slot `top-bar` (poza scrollowym viewportem); padding treści w SCSS per `device` |
 | `AbyssTemplateSidebar`  | układ sidebar + detail (nawigacja zakładek) | własny scroll paneli z mixin scrollbara na urządzeniach z myszką; nie wymaga `AbyssTemplateMain` na poziomie strony |
 | `AbyssTemplateLogin`  | widok auth (logowanie)         | `device`; wewnętrzny kontener o stałej `max-width` (`ABYSS_TEMPLATE_LOGIN_MAX_WIDTH`); **wymaga `AbyssCard`** w slocie (tytuł + ikona w `#header-prepend`); przykładowa treść karty to formularz logowania (`AbyssForm`); viewport centruje treść w pionie i przewija, gdy formularz jest wyższy; padding per `device` (+ safe-area na mobile) |
@@ -111,11 +199,11 @@ Nie stosuj tej reguły do kart i paneli w normalnym przepływie dokumentu, któr
 
 Podział odpowiedzialności między komponentami layoutu:
 
-Komponenty layoutu znajdują się w [`src/components/templates`](../../src/components/templates). Stare nazwy (`AbyssTemplate`, `AbyssScrollView`, `AbyssSidebarNav`) pozostają jako shadow-wrappery w `src/components/ui` — importuj kanoniczne nazwy z `templates/`.
+Komponenty layoutu znajdują się w [`src/components/templates`](../../src/components/templates). **Zakaz importu** shadow-wrapperów `AbyssTemplate`, `AbyssScrollView`, `AbyssSidebarNav` — nawet jeśli glob pakietu je nadal wystawia. Kanoniczne nazwy: `AbyssTemplateRoot`, `AbyssTemplateMain`, `AbyssTemplateSidebar`, `AbyssTemplateLogin`.
 
 | Komponent | Scroll | Padding treści |
 | --------- | ------ | -------------- |
-| `AbyssTemplateRoot` → slot `content` | **Nie** — `overflow: hidden` | **Nie** — dziecko to szablon strony |
+| `AbyssTemplateRoot` → slot `content` | **Nie** — `overflow: hidden` | **Nie** — w aplikacji dziecko to `router-view`; strona trasy montuje szablon |
 | `AbyssTemplateMain` | **Tak** — viewport przewija treść | **Tak** — góra, boki i dół per `device`; opcjonalnie `safeArea` (mobile) |
 | `AbyssTemplateSidebar` | **Tak** — wewnętrznie w sidebarze i panelu treści (mixin scrollbara na urządzeniach z myszką) | Własne insety paneli |
 | `AbyssTemplateLogin` | **Tak** — viewport przewija i centruje kontener (`margin-block: auto`) | **Tak** — desktop/web `24px`, mobile `8px` + `env(safe-area-inset-*)` |
@@ -123,53 +211,55 @@ Komponenty layoutu znajdują się w [`src/components/templates`](../../src/compo
 
 ### Kompozycja `AbyssTemplateRoot`
 
-Slot `#content` przyjmuje **wyłącznie inny szablon strony**:
+W aplikacji:
 
-- **Domyślnie** `AbyssTemplateMain` — przewijane widoki (start, archiwum, analiza).
-- `AbyssTemplateSidebar` — ustawienia i nawigacja zakładek.
-- `AbyssTemplateLogin` — logowanie i podobne widoki auth (zwykle bez nawigacji); wyśrodkowany kontener o stałej `max-width`; **slot wymaga `AbyssCard`** (w karcie formularz logowania; odblokowanie PIN — `AbyssAppLock` w karcie, patrz jego stories).
-- ewentualnie przyszły szablon full-bleed / edytor.
+1. Layout (`MainLayout`) montuje `AbyssTemplateRoot`.
+2. Slot `#content` layoutu zawiera `router-view` (ew. wrapper `div` bez paddingu i scrollu). Wyjątek: pełnoekranowy lock PIN zamienia `#content` na `AbyssTemplateLogin` + `AbyssCard` + `AbyssAppLock`.
+3. Każda trasa montuje we własnej stronie **dokładnie jeden** szablon: `AbyssTemplateMain` (strony merytoryczne), `AbyssTemplateSidebar` (ustawienia / zakładki) albo `AbyssTemplateLogin` (pełnoekranowy auth).
 
-**Zakaz:** karty, formularze, listy ani inny content strony bezpośrednio w `#content`. Root jest szkieletem (nav, chrome, overlay) — treść strony żyje w szablonie-dziecku.
+**Zakaz:** karty, formularze, listy ani inny content strony bezpośrednio w `#content` (omijając szablon strony). Root jest szkieletem (nav, chrome, overlay) — treść strony żyje w szablonie na trasie.
+
+**Zakaz:** `AbyssTemplateMain` jako pełnoekranowy login — to `AbyssTemplateLogin` (AdminWeb `LoginPage` jest długiem względem kanonu).
+
+Login **nad** działającą aplikacją (modal reauth / logowanie bez opuszczania sesji) to wyłącznie `AbyssDialog` + `AbyssForm`, nie `AbyssTemplateLogin`.
+
+W Storybooku izolowane demo może zagnieździć szablon strony w `#content` Root — to nie jest wzorzec aplikacji.
 
 ```vue
-<!-- DO — domyślna kompozycja -->
+<!-- DO — layout aplikacji: Root + router-view -->
 <AbyssTemplateRoot :device="device">
   <template #content>
-    <AbyssTemplateMain :device="device" safe-area safe-area-in-template>
-      <AbyssCard title="Aktywny plan">…</AbyssCard>
-    </AbyssTemplateMain>
+    <div class="main-layout__route">
+      <router-view />
+    </div>
   </template>
 </AbyssTemplateRoot>
 
-<!-- DO — ustawienia -->
-<AbyssTemplateRoot :device="device">
-  <template #content>
-    <AbyssTemplateSidebar :device="device" :tabs="tabs">…</AbyssTemplateSidebar>
-  </template>
-</AbyssTemplateRoot>
+<!-- DO — strona merytoryczna (trasa) -->
+<AbyssTemplateMain :device="device" safe-area safe-area-in-template>
+  <AbyssCard title="Aktywny plan">…</AbyssCard>
+</AbyssTemplateMain>
 
-<!-- DO — logowanie (bez nawigacji) -->
-<AbyssTemplateRoot :device="device">
-  <template #content>
-    <AbyssTemplateLogin :device="device">
-      <AbyssCard title="Logowanie">
-        <template #header-prepend>
-          <q-icon name="sym_r_login" size="20px" />
-        </template>
-        <template #content>
-          <AbyssForm v-model="form" :sync="false" @submit-form="handleLogin">
-            <AbyssInput v-model="form.email" type="email" label="E-mail" />
-            <AbyssInput v-model="form.password" type="password" label="Hasło" />
-            <AbyssGrid align="right" :column-size="INPUT_COLUMN_SIZE" :max-columns="INPUT_GRID_MAX_COLUMNS">
-              <AbyssButton type="submit" size="big" label="Zaloguj się" full-width />
-            </AbyssGrid>
-          </AbyssForm>
-        </template>
-      </AbyssCard>
-    </AbyssTemplateLogin>
-  </template>
-</AbyssTemplateRoot>
+<!-- DO — ustawienia (trasa) -->
+<AbyssTemplateSidebar :device="device" :tabs="tabs">…</AbyssTemplateSidebar>
+
+<!-- DO — pełnoekranowy login (trasa) -->
+<AbyssTemplateLogin :device="device">
+  <AbyssCard title="Logowanie">
+    <template #header-prepend>
+      <q-icon name="sym_r_login" size="20px" />
+    </template>
+    <template #content>
+      <AbyssForm v-model="form" :sync="false" @submit-form="handleLogin">
+        <AbyssInput v-model="form.email" type="email" label="E-mail" />
+        <AbyssInput v-model="form.password" type="password" label="Hasło" />
+        <AbyssGrid align="right" :column-size="INPUT_COLUMN_SIZE" :max-columns="INPUT_GRID_MAX_COLUMNS">
+          <AbyssButton type="submit" size="big" label="Zaloguj się" full-width />
+        </AbyssGrid>
+      </AbyssForm>
+    </template>
+  </AbyssCard>
+</AbyssTemplateLogin>
 
 <!-- DON'T — content bezpośrednio w Root -->
 <AbyssTemplateRoot :device="device">
@@ -214,7 +304,7 @@ Slot `#content` przyjmuje **wyłącznie inny szablon strony**:
 - **desktop / web:** padding viewportu `24px`.
 - **mobile:** padding viewportu `8px`, nie mniejszy niż `env(safe-area-inset-*)`.
 - Wewnętrzny `__container`: `width: 100%`, `max-width` = `ABYSS_TEMPLATE_LOGIN_MAX_WIDTH` (`360px`), `margin-block: auto` — centruje krótki formularz, a przy przepełnieniu pozwala przewinąć od góry.
-- **Wymagany `AbyssCard`** w slocie domyślnym: `title` oraz ikona w `#header-prepend`; treść karty to formularz logowania (`AbyssForm`) albo inna treść auth (np. `AbyssAppLock`). Nie wkładaj paneli ani formularzy bezpośrednio do szablonu.
+- **Wymagany `AbyssCard`** w slocie domyślnym: `title` oraz ikona w `#header-prepend`; treść karty to `AbyssForm` (login / rejestracja) albo `AbyssAppLock` (odblokowanie PIN). Nie wkładaj paneli ani pól bezpośrednio do szablonu. Nie używaj `AbyssTemplateMain` jako ekranu auth.
 - Zazwyczaj w Root **bez** slotów nawigacji. Nie owijaj w `AbyssTemplateMain`.
 
 ### Slot `top-bar` (`AbyssTemplateMain`)
@@ -259,9 +349,11 @@ Kontekst aktywnego widoku niesie **nawigacja** (`AbyssNavigation` + `AbyssButton
 
 **Dozwolone**
 
-- Tytuły **wyłącznie na kartach** — `AbyssCard` z `title` (i ikoną w `header-prepend`) albo `AbyssTitle` **wewnątrz** karty / dialogu / panelu.
+- Tytuł sekcji — wyłącznie `AbyssCard` z `title` (i ikoną w `header-prepend`).
 - `AbyssNavHeader` w `#top-bar` tylko gdy jest to toolbar kontekstowy (np. detal z wstecz), a nie duplikat etykiety głównej zakładki.
-- Pełnoekranowe strony **informacyjne poza nawigacją główną** (polityka prywatności, regulamin, pomoc) — tam `AbyssTitle` jako tytuł dokumentu jest dozwolony.
+- Pełnoekranowe strony **informacyjne poza nawigacją główną** (polityka prywatności, regulamin, pomoc) — tam `AbyssTitle` (`type`, `icon`, `label`) jako tytuł dokumentu.
+
+Nie używaj `AbyssTitle` wewnątrz karty, dialogu ani panelu — tytuł tych powierzchni to `AbyssCard title` albo nagłówek `AbyssDialog`.
 
 ```vue
 <!-- DON'T — główna podstrona z tytułem zakładki -->
@@ -301,20 +393,13 @@ Kontekst aktywnego widoku niesie **nawigacja** (`AbyssNavigation` + `AbyssButton
 
 ### Hierarchia `AbyssTitle`
 
-Na **głównych podstronach** (trasy z `AbyssNavigation` / zakładki sidebara) nie umieszczaj samodzielnego `AbyssTitle` nad treścią — patrz [Tytuły stron i zakładek](#tytuły-stron-i-zakładek). Poniższa hierarchia dotyczy kart, dialogów i stron informacyjnych poza nawigacją główną.
+Na **głównych podstronach** (trasy z `AbyssNavigation` / zakładki sidebara) nie umieszczaj samodzielnego `AbyssTitle` nad treścią — patrz [Tytuły stron i zakładek](#tytuły-stron-i-zakładek). Poniższa hierarchia dotyczy wyłącznie stron informacyjnych i prawnych poza nawigacją główną. Publiczne API to `type`, `icon`, `label` — **nie ma** propsów `level` ani `size`.
 
-| `level` | Rola                       | Typowe miejsce                              |
-| ------- | -------------------------- | ------------------------------------------- |
-| `h1`    | tytuł dokumentu informacyjnego | polityka prywatności, regulamin, pomoc (poza głównymi zakładkami) |
-| `h2`    | tytuł powierzchni          | karta, dialog                               |
-| `h3`    | podtytuł pierwszego poziomu| sekcja w karcie lub dialogu                 |
-| `h4`–`h6` | nagłówki pomocnicze      | wyodrębnienie podsekcji                     |
-
-| `size` | Rola                         |
-| ------ | ---------------------------- |
-| `lg`   | tytuł dokumentu informacyjnego / rzadki hero poza nawigacją |
-| `md`   | standardowy tytuł sekcji (karta, dialog) |
-| `sm`   | podsekcja, mikro-nagłówek    |
+| `type` | Rola | Typowe miejsce |
+| ------ | ---- | -------------- |
+| `h1` | tytuł dokumentu informacyjnego | polityka prywatności, regulamin, pomoc (poza głównymi zakładkami) |
+| `h2` | nagłówek pierwszego poziomu w dokumencie | sekcja na stronie prawnej |
+| `h3`–`h6` | nagłówki pomocnicze | wyodrębnienie podsekcji dokumentu |
 
 ### Reguły `AbyssCard`
 
@@ -322,7 +407,7 @@ Na **głównych podstronach** (trasy z `AbyssNavigation` / zakładki sidebara) n
 - Akcje kontekstowe (odświeżenie, filtr) w `header-append` jako `AbyssButton` z `flat` i ewentualnie `size="small"`.
 - Stopka (`footer`, `footer-prepend`, `footer-append`) tylko w specyficznych sytuacjach (np. niezapisane zmiany) — nie w standardowym układzie.
 - `AbyssInfo` stosuj tylko, gdy komunikat ma tytuł lub status semantyczny **i jest częścią stałego układu ekranu** (np. pusty stan tabeli, ostrzeżenie przed usunięciem konta).
-- Nie używaj `AbyssInfo` do pokazywania wyniku akcji użytkownika (sukces/błąd po API) — do tego służy `AbyssNotify`.
+- Nie używaj `AbyssInfo` do pokazywania wyniku akcji użytkownika (sukces/błąd po API) — do tego służy helper kolejki `notify()`.
 
 ### AbyssInfo — typy i gradienty
 
@@ -356,13 +441,13 @@ Przykład podpowiedzi / pustego stanu:
 
 ## Feedback po akcjach użytkownika
 
-Po wykonaniu akcji przez użytkownika (zapis formularza, usunięcie rekordu, ponowienie zadania, błąd sieci) informacja zwrotna musi być **toastem `AbyssNotify`**, nie komponentem `AbyssInfo` i nie surowym `$q.notify` / `Notify.create`.
+Po wykonaniu akcji przez użytkownika (zapis formularza, usunięcie rekordu, ponowienie zadania, błąd sieci) informacja zwrotna musi iść przez **helper kolejki `notify()` w aplikacji**. Host `AbyssNotify` żyje w overlayu `AbyssTemplateRoot` — to implementacja hosta, nie wzorzec strony. Nie `AbyssInfo` i nie surowy `$q.notify` / `Notify.create`. Ścieżka importu helpera jest lokalna dla aplikacji (nie hard-coded `notify.store`).
 
 | Sytuacja | Mechanizm | Przykład |
 | -------- | --------- | -------- |
-| Akcja zakończyła się sukcesem | `AbyssNotify` `type="success"` | „Zadanie zostało usunięte.” |
-| Akcja zakończyła się błędem | `AbyssNotify` `type="danger"` | „Nie udało się usunąć zadania.” |
-| Ostrzeżenie po akcji (np. pominięta synchronizacja) | `AbyssNotify` `type="warning"` | „Synchronizacja wymaga logowania.” |
+| Akcja zakończyła się sukcesem | `notify({ type: 'success', … })` | „Zadanie zostało usunięte.” |
+| Akcja zakończyła się błędem | `notify({ type: 'danger', … })` | „Nie udało się usunąć zadania.” |
+| Ostrzeżenie po akcji (np. pominięta synchronizacja) | `notify({ type: 'warning', … })` | „Synchronizacja wymaga logowania.” |
 | Trwały komunikat na stronie (pusty stan, ostrzeżenie przed destrukcją) | `AbyssInfo` | „Brak zadań w kolejce.” |
 | Błąd walidacji w formularzu | `AbyssInput` (`error`, `errorMessage`) lub `AbyssInfo` w dialogu | pole z błędnym hasłem |
 
@@ -371,10 +456,16 @@ Reguły:
 - **Nie** przełączaj widoczności `AbyssInfo` reaktywnie po `@success` / `@click` / odpowiedzi API — to antywzorzec; użytkownik traci kontekst, a layout „skacze”.
 - `AbyssNotify` jest **efemeryczny** — znika po zamknięciu (X) albo po `v-model="false"`; wejście (z góry) i zejście (w dół) trwają 0,2 s. Wysokość slotu (toast + 8px odstęp jako `::after`) zwija się razem z animacją, `overflow: visible` — toast wystaje ze slotu (`translateY`). **Ostatni** toast w kolejce przy zejściu nie zwija `grid-template-rows` — zostaje pełna wysokość, tylko zsuwa się i gaśnie. Host kolejki ma `padding: 12px 8px` i **stałą szerokość** `min(100%, 420px + 16px)`, żeby toast nie rósł z treścią — tytuł dostaje ellipsis. `overflow: auto` na hoście to **przełącznik po ciszy 0,2 s** (czas animacji): dodawanie albo usuwanie toastów, akordeon i `window.resize` tylko resetują timer — stan `auto`/`visible` nie zmienia się w trakcie serii. Po ciszy JS mierzy sumę wysokości i ustawia `auto` albo `visible`. Widoczność steruj `v-model` (jak w `AbyssTemplateRoot`), nie demontażem z `v-for` w `@close`. Nowo zamontowany toast też wchodzi (`appear`). W kolejce instancję zdejmij dopiero w `@after-leave`.
 - Overlay `AbyssNotify` (`rgba(black, 0.5)`, zaokrąglony, 1px od krawędzi toasta) obejmuje lewą ikonę i treść; przycisk zamknięcia (40×46px, ripple od press) zostaje poza overlayem, na gradiencie. Tytuł ma ellipsis. `description` jest opcjonalny i domyślnie zwinięty; przy niepustym opisie po prawej tytułu jest chevron. Kliknięcie paska tytułu (ripple od press) otwiera akordeon (0,2 s) na opisie i na tytule — od jednego wiersza z ellipsisem do pełnego zawinięcia, ze stałym odstępem pierwszego wiersza od góry. Opcjonalny `count` (≥ 2) pokazuje badge z liczbą powtórzeń tego samego toasta, na prawo od tytułu, przed chevronem; przy zmianie liczby badge puszcza rozszerzający się, zanikający ripple (0,4 s). Opcjonalny `autoClose` (ms) zamyka toast sam; wokół X widać circular progress; hover i `:focus-within` wstrzymują timer i dają pierścieniowi opacity 0,5, zmiana `count` resetuje go. Ikony (lewa, chevron, X) siedzą w kontenerach 46px wyrównanych do góry. Tekst i ikony są zawsze białe.
-- W aplikacji z `AbyssTemplateRoot` teleportuj toast do hosta overlay w `overflow-wrapper` (`Teleport to="#abyss-template-overlay"` albo slot `#overlay`) — kotwica w prawym górnym rogu obszaru treści; nie wstawiaj `AbyssNotify` w przewijaną treść strony. Host overlay ma `gap: 0` — odstęp między toastami (8px) pochodzi z `::after` na shellu, nie z flex `gap`. Nie ustawiaj `top`/`right` 16px — inset to `padding: 12px 8px`, szerokość `min(100%, 420px + 16px)`, `max-height: 100%`. `overflow: auto` to przełącznik po ciszy 0,2 s (czas animacji): JS mierzy sumę wysokości i ustawia `auto` albo `visible`, bez zdejmowania `auto` w trakcie dodawania. Toasty: `width: 100%`, `min-width: 0` (ellipsis tytułu), `flex-shrink: 0` w pionie. Poza szablonem owiń `v-for` klasą `abyss-notify-queue`.
+- W aplikacji strony wywołują helper kolejki `notify()` — nie montują `AbyssNotify` i nie robią `Teleport` ze strony. Host kolejki w `AbyssTemplateRoot` (`#abyss-template-overlay` albo slot `#overlay`) to implementacja hosta: kotwica w prawym górnym rogu obszaru treści; nie wstawiaj toasta w przewijaną treść strony. Host overlay ma `gap: 0` — odstęp między toastami (8px) pochodzi z `::after` na shellu, nie z flex `gap`. Nie ustawiaj `top`/`right` 16px — inset to `padding: 12px 8px`, szerokość `min(100%, 420px + 16px)`, `max-height: 100%`. `overflow: auto` to przełącznik po ciszy 0,2 s (czas animacji): JS mierzy sumę wysokości i ustawia `auto` albo `visible`, bez zdejmowania `auto` w trakcie dodawania. Toasty: `width: 100%`, `min-width: 0` (ellipsis tytułu), `flex-shrink: 0` w pionie. Poza szablonem owiń `v-for` klasą `abyss-notify-queue`.
 - `AbyssInfo` pozostaje w miejscu, gdzie komunikat ma być **zawsze widoczny**, dopóki zmieni się stan ekranu (np. pojawią się dane, użytkownik zamknie dialog).
 
-Przykład notify po sukcesie (teleport do szablonu):
+Przykład ze strony (helper kolejki):
+
+```ts
+notify({ type: 'success', message: 'Zadanie zostało usunięte.' })
+```
+
+Implementacja hosta w overlayu Root (nie kopiuj na stronę):
 
 ```html
 <Teleport defer to="#abyss-template-overlay">
@@ -384,10 +475,6 @@ Przykład notify po sukcesie (teleport do szablonu):
     message="Zadanie zostało usunięte."
   />
 </Teleport>
-```
-
-```ts
-savedVisible.value = true
 ```
 
 Przykład dozwolonego `AbyssInfo` (statyczny):
@@ -407,7 +494,7 @@ Przykład niedozwolonego użycia (dynamiczny feedback):
 </AbyssInfo>
 ```
 
-Zamiast tego: `AbyssNotify` z `v-model` i brak reaktywnego `AbyssInfo` na stronie.
+Zamiast tego: `notify()` z helpera kolejki w aplikacji i brak reaktywnego `AbyssInfo` na stronie.
 
 ---
 
@@ -432,14 +519,14 @@ Reguły:
 - Kolory `success`, `info`, `warning`, `danger` i `hint` są kontekstowe — w dialogu z potwierdzeniem i anulowaniem przycisk operacyjny dostaje kolor zależny od wykonywanej akcji.
 - `warning` ma priorytet nad `info`, gdy chodzi o zapis lub potwierdzenie czegoś istotnego.
 - Nie używaj `gradient`, jeśli akcja jest jedyna na liście poza kartą/dialogiem.
-- W nagłówku i stopce `AbyssCard` oraz w `AbyssDialog` **wszystkie** przyciski używają `flat`. Akcja operacyjna łączy `flat` + `gradient` + `gradient-colors`.
+- W nagłówku i stopce `AbyssCard` oraz w `AbyssDialog` **wszystkie** przyciski używają `flat`. Akcja operacyjna łączy `flat` + `gradient` + `gradient-colors`. Ta sama lista miejsc `flat`: header/stopka karty, dialog, sloty Input, akcje `AbyssNavHeader`, wnętrze `AbyssSwitcher`.
 
 ### Warianty semantyczne
 
 | Wariant    | Kiedy używać                                                                 | Nie używaj gdy                                                         |
 | ---------- | ---------------------------------------------------------------------------- | ---------------------------------------------------------------------- |
 | domyślny   | jedyna akcja na liście albo akcja pomocnicza bez gradientu                   | główna akcja operacyjna w parze decyzyjnej                            |
-| `flat`     | każdy przycisk w nagłówku/stopce karty i dialogu; ikony w `#prepend`/`#append` `AbyssInput` | poza kartą, dialogiem i slotami `AbyssInput`                         |
+| `flat`     | header/stopka `AbyssCard`, `AbyssDialog`, `#prepend`/`#append` `AbyssInput`, akcje `AbyssNavHeader`, wnętrze `AbyssSwitcher` | poza tą listą (w tym wiersz listy — **BRAK** prymitywu) |
 | `current`  | aktualnie aktywny kontekst (nawigacja, wybrany rekord)                       | stan przełączalny toggle; tymczasowy filtr                             |
 | `toggled`  | włączony stan nadal klikalny (toolbar, filtry)                               | nawigacja, aktywny route                                               |
 | `gradient` | akcja operacyjna ze znaczeniem semantycznym                                   | bez `flat` w headerze/stopce karty i dialogu                         |
@@ -559,15 +646,18 @@ Przykład dialogu z tabami i treścią bez zagnieżdżonego scrolla:
 
 ### 4. Toolbar lub segment
 
-- `AbyssButtonGroup` z `AbyssButton` (`size="small"`, opcjonalnie `icon-only`).
+- Zestaw **akcji** (toolbar, w tym pionowy): `AbyssButtonGroup` z `AbyssButton` (`size="small"`, opcjonalnie `icon-only`).
 - Dla listy akcji w kolumnie (np. menu kontekstowe, wybór opcji) użyj `vertical` — przyciski układają się pionowo z pełną szerokością kontenera i wysokością dopasowaną do treści.
 - Aktywny stan narzędzia: `toggled`, nie `current`.
 - Grupuj tylko semantycznie równorzędne akcje.
+- **2–5 równorzędnych widoków w miejscu** (taby dialogu, przełącznik wykresu): `AbyssSwitcher`, nie `AbyssButtonGroup`.
 
 ### 5. Sekcje na stronie
 
-- Każda sekcja w osobnej `AbyssCard` (lub `AbyssGrid` z kafelkami `AbyssTile` dla list równorzędnych elementów).
-- Nie buduj własnych kontenerów sekcji — używaj komponentów powierzchni.
+- Sekcja z nagłówkiem i ikoną: `AbyssCard`.
+- Powierzchnia bez chrome karty (changelog, markdown): `AbyssPanel`.
+- Kafelek w siatce równorzędnych elementów: `AbyssTile` w `AbyssGrid`.
+- Nie buduj własnych kontenerów sekcji.
 
 ### 6. Markdown i kod
 
@@ -662,57 +752,64 @@ Prop `expandable` lub obecność slotu `row-expand` aktywuje kolumnę +/- i wier
 
 - Używaj ikony w `header-prepend` przy każdym tytule `AbyssCard`.
 - Umieszczaj kontekstowe akcje karty w `header-append` jako `AbyssButton flat`.
-- Traktuj `flat` jako obowiązkowy wariant każdego przycisku w nagłówku/stopce `AbyssCard` i w `AbyssDialog`; akcje operacyjne łącz z `gradient`.
+- Traktuj `flat` jako obowiązkowy wariant w: headerze/stopce `AbyssCard`, `AbyssDialog`, slotach `#prepend`/`#append` `AbyssInput`, akcjach `AbyssNavHeader`, wnętrzu `AbyssSwitcher`; akcje operacyjne w karcie/dialogu łącz z `gradient`.
 - Używaj wyłącznie kluczy semantycznych w `gradient-colors`.
 - Traktuj `current` jako aktualny kontekst, a `toggled` jako aktywny, nadal klikalny stan.
 - Buduj ryzyko przez `AbyssInfo` + `gradient-colors="danger"` na przycisku operacyjnym.
-- Potwierdzaj powodzenie lub niepowodzenie akcji użytkownika przez `AbyssNotify` (`type="success"` / `"danger"`).
+- Potwierdzaj powodzenie lub niepowodzenie akcji użytkownika helperem kolejki `notify()` w aplikacji (host `AbyssNotify` w overlayu Root).
 - Overlay `AbyssNotify` obejmuje lewą ikonę i treść (`rgba(black, 0.5)`, zaokrąglenia, 1px od krawędzi); X zostaje na gradiencie. Tytuł z ellipsis; `description` opcjonalny i zwinięty — chevron oraz akordeon tytułu i opisu (0,2 s). Opcjonalny `count` (≥ 2) to badge powtórzeń na prawo od tytułu; zmiana liczby puszcza rozszerzający się ripple (0,4 s). Opcjonalny `autoClose` (ms) zamyka toast z circular progress wokół X; hover i `:focus-within` wstrzymują timer i ściszają pierścień do opacity 0,5. Tekst i ikony zawsze białe. Wejście/zejście: `v-model`; w kolejce zdejmuj instancję w `@after-leave`.
-- Teleportuj `AbyssNotify` do `#abyss-template-overlay` w `overflow-wrapper` `AbyssTemplateRoot` (prawy górny róg; albo slot `#overlay`) — nie osadzaj toasta w scrollowanej treści. Host overlay ma `padding: 12px 8px`, `max-height: 100%` i `overflow: auto` wyłącznie gdy zmierzona wysokość kolejki przekracza `max-height`; odstęp kolejki (8px) to `::after` na shellu toasta. Poza szablonem klasa `abyss-notify-queue`.
+- Montuj host `AbyssNotify` wyłącznie w overlayu `AbyssTemplateRoot` (`#abyss-template-overlay` albo slot `#overlay`) — implementacja hosta, nie wzorzec strony. Ze strony wołaj `notify()`. Host overlay ma `padding: 12px 8px`, `max-height: 100%` i `overflow: auto` wyłącznie gdy zmierzona wysokość kolejki przekracza `max-height`; odstęp kolejki (8px) to `::after` na shellu toasta. Poza szablonem klasa `abyss-notify-queue`.
 - Używaj `AbyssInfo` wyłącznie do statycznych komunikatów kontekstowych (pusty stan, ostrzeżenie, trwała wskazówka).
-- Używaj `AbyssDate` / `AbyssTime` (lub `AbyssInput` z odpowiednim `type`) jako jedynego sposobu wyboru daty i czasu.
+- W formularzu używaj `AbyssInput` z `type="date"`, `"time"` lub `"datetime-local"`; samodzielny `AbyssDate` / `AbyssTime` tylko w popupie lub toolbarze.
+- Owijaj pola formularza w `AbyssForm`.
 - Używaj `AbyssInput` z `type="copy"` dla wartości tylko do odczytu z kopiowaniem do schowka — pole jest `readonly`, przycisk jest wbudowany w `#append`, klik/focus zaznacza całą treść, a feedback po kopiowaniu realizuje wbudowany Quasar Notify.
 - Ustawiaj i zmieniaj hasło wyłącznie w dedykowanym `AbyssDialog`.
 - Używaj `AbyssMarkdown` dla generycznego podglądu Markdown; logikę changelogu trzymaj w komponencie aplikacji (`ChangeLog`).
 - Używaj `AbyssTemplateMain` dla przewijanych widoków strony — nie polegaj na scrollu slotu `content` w `AbyssTemplateRoot`.
-- W slocie `#content` `AbyssTemplateRoot` umieszczaj **szablon strony**: domyślnie `AbyssTemplateMain`, albo `AbyssTemplateSidebar`, albo `AbyssTemplateLogin`.
+- W layoucie w slocie `#content` `AbyssTemplateRoot` umieszczaj `router-view`; strona trasy montuje `AbyssTemplateMain`, `AbyssTemplateSidebar` albo `AbyssTemplateLogin`.
 - Gdy strona nie ma nawigacji, zostaw sloty `navigation-start` i `navigation-end` puste — `AbyssTemplateRoot` ukryje sidebar; inner shadow contentu chowa się 8px za viewportem (prawo i dół, bez nawigacji także lewa).
 - Ustawiaj `device` na `AbyssTemplateMain` / `AbyssTemplateLogin` zgodnie z kontekstem aplikacji (`mobile` / `desktop` / `web`).
-- Używaj `AbyssTemplateLogin` dla logowania i analogicznych widoków auth — stała szerokość kontenera (`ABYSS_TEMPLATE_LOGIN_MAX_WIDTH`), centrowanie w pionie, własny scroll. Slot **wymaga `AbyssCard`** (tytuł + ikona w `#header-prepend`); przykładowa treść karty: formularz logowania (`AbyssForm`).
+- Używaj `AbyssTemplateLogin` wyłącznie na pełnoekranowy login / rejestrację / lock PIN — stała szerokość kontenera (`ABYSS_TEMPLATE_LOGIN_MAX_WIDTH`), centrowanie w pionie, własny scroll. Slot **wymaga `AbyssCard`** (tytuł + ikona w `#header-prepend`); treść karty: `AbyssForm` albo `AbyssAppLock`. Login nad aplikacją: `AbyssDialog`.
 - Ustawiaj i zmieniaj PIN w `AbyssDialog` z `abyss-dialog--compact` — nie w `AbyssTemplateLogin`.
-- Na głównych podstronach zaczynaj treść od kart / paneli; tytuły dawaj tylko kartom (`AbyssCard` `title` lub `AbyssTitle` wewnątrz karty).
+- Na głównych podstronach zaczynaj treść od kart / paneli / kafelków zgodnie z tabelą wyboru; tytuł sekcji dawaj tylko przez `AbyssCard` `title`.
 - Na warstwie nachodzącej na treść z przezroczystym tłem ustawiaj `-webkit-backdrop-filter` i `backdrop-filter: blur(20px)` — dialog, picker daty/czasu, menu, sticky nagłówek, pływający przycisk.
 
 ### Don't
 
 - Nie dodawaj własnych klas CSS, stylów inline ani nadpisań SCSS na prymitywach Abyss **w formularzach i standardowych kartach** — tam wystarczają propsy.
-- Nie używaj `flat` poza nagłówkiem/stopką `AbyssCard`, `AbyssDialog` i slotami `#prepend` / `#append` w `AbyssInput`.
+- Nie używaj `flat` poza headerem/stopką `AbyssCard`, `AbyssDialog`, slotami `#prepend` / `#append` w `AbyssInput`, akcjami `AbyssNavHeader` i wnętrzem `AbyssSwitcher`.
 - Nie używaj footera `AbyssCard` w standardowym układzie.
 - Nie używaj `gradient`, gdy akcja jest jedyna na liście poza kartą/dialogiem.
 - Nie używaj `theme` dla lokalnej głównej akcji w bloku.
 - Nie przekazuj własnych tablic kolorów do `gradient-colors`.
 - Nie używaj `current` do aktywnych filtrów wielokrotnego wyboru — użyj `toggled`.
 - Nie używaj `icon-only` dla akcji o niejasnej lub nieodwracalnej konsekwencji.
-- Nie buduj pseudo-grup przycisków ręcznie — użyj `AbyssButtonGroup`.
+- Nie buduj pseudo-grup przycisków ręcznie — użyj `AbyssButtonGroup`. Nie używaj `AbyssButtonGroup` na 2–5 widoków w miejscu — to `AbyssSwitcher`.
 - Nie owijaj `AbyssInput` ani `AbyssSelect` w dodatkowy `AbyssGrid`.
+- Nie zostawiaj pól formularza poza `AbyssForm` i nie używaj natywnego `<form>`.
 - Nie duplikuj pola `readonly` i osobnego przycisku „Kopiuj” — użyj `AbyssInput` z `type="copy"`.
-- Nie używaj natywnych selektorów daty/czasu systemowych.
-- Nie używaj `AbyssInfo` z `v-if` / `v-show` do pokazywania sukcesu lub błędu po akcji użytkownika — użyj `AbyssNotify`.
-- Nie wywołuj `$q.notify` / `Notify.create` w nowym UI — użyj `AbyssNotify` (wyjątek: wbudowany feedback `AbyssInput` `type="copy"`).
-- Nie osadzaj `AbyssNotify` w przewijanej treści strony — teleportuj do `#abyss-template-overlay` albo użyj slotu `#overlay` w `AbyssTemplateRoot`.
+- Nie używaj natywnych selektorów daty/czasu systemowych. Nie wstawiaj samodzielnego `AbyssDate` / `AbyssTime` w formularzu.
+- Nie używaj `AbyssInfo` z `v-if` / `v-show` do pokazywania sukcesu lub błędu po akcji użytkownika — użyj `notify()`.
+- Nie wywołuj `$q.notify` / `Notify.create` w nowym UI — użyj `notify()` (wyjątek: wbudowany feedback `AbyssInput` `type="copy"`).
+- Nie montuj `AbyssNotify` ani `Teleport` ze strony — wołaj `notify()`; host kolejki zostaje w overlayu Root.
 - Nie zdejmuj `AbyssNotify` z `v-for` w `@close` — animacja zejścia się nie zagra. Zostaw instancję do `@after-leave`.
 - Nie dodawaj zagnieżdżonych pionowych scrollbarów w treści `AbyssDialog` — przewijaj wyłącznie body dialogu.
 - Nie dodawaj paddingu ani `overflow: auto` na wrapperze contentu `AbyssTemplateRoot` — to odpowiedzialność `AbyssTemplateMain`, `AbyssTemplateSidebar` albo `AbyssTemplateLogin`.
-- Nie wkładaj kart, formularzy ani innego contentu strony bezpośrednio do `#content` `AbyssTemplateRoot` — wymagany jest szablon (`AbyssTemplateMain` / `AbyssTemplateSidebar` / `AbyssTemplateLogin`).
+- Nie wkładaj kart, formularzy ani innego contentu strony bezpośrednio do `#content` `AbyssTemplateRoot` — w layoucie `router-view`, na trasie szablon (`AbyssTemplateMain` / `AbyssTemplateSidebar` / `AbyssTemplateLogin`).
+- Nie importuj `AbyssTemplate`, `AbyssScrollView` ani `AbyssSidebarNav`.
 - Nie owijaj `AbyssTemplateLogin` w `AbyssTemplateMain` — Login sam zapewnia scroll, padding i ograniczenie szerokości.
+- Nie używaj `AbyssTemplateMain` jako pełnoekranowego auth (AdminWeb `LoginPage` jest długiem).
 - Nie wkładaj `AbyssAppLock` ani formularza bezpośrednio do `AbyssTemplateLogin` — wymagany jest `AbyssCard`.
+- Nie dobieraj `AbyssPinInput` / `AbyssNumericKeypad` poza `AbyssAppLock`.
 - Nie rozciągaj kropek `AbyssPinInput` przez `justify-content: space-between` — rząd jest wyśrodkowany ze stałym `gap`.
 - Nie ustawiaj własnej `max-width` na treści logowania — szerokość jest stałą szablonu (`ABYSS_TEMPLATE_LOGIN_MAX_WIDTH`).
-- Nie pokazuj pełnoekranowego odblokowania (`AbyssAppLock`) w `AbyssDialog` — użyj `AbyssTemplateLogin` + `AbyssCard` w `#content` Root (bez nawigacji).
+- Nie pokazuj pełnoekranowego odblokowania (`AbyssAppLock`) w `AbyssDialog` — użyj `AbyssTemplateLogin` + `AbyssCard` (layout może wstawić Login w `#content` zamiast `router-view`).
 - Nie zostawiaj pustego panelu nawigacji w `AbyssTemplateRoot` — puste sloty `navigation-start` i `navigation-end` ukrywają sidebar; inner shadow contentu ma chować się 8px za viewportem (prawo i dół).
 - Nie uzależniaj scrollu strony od ujemnych marginesów kompensujących padding szablonu.
-- Nie umieszczaj na głównej podstronie `AbyssTitle` (ani innego nagłówka) powielającego etykietę aktywnej zakładki nawigacji — kontekst niesie nawigacja; tytuły mają wyłącznie karty / dialogi.
+- Nie umieszczaj na głównej podstronie `AbyssTitle` (ani innego nagłówka) powielającego etykietę aktywnej zakładki nawigacji — kontekst niesie nawigacja; tytuł sekcji to wyłącznie `AbyssCard` `title`.
+- Nie używaj `AbyssTitle` wewnątrz karty, dialogu ani panelu.
 - Nie buduj przezroczystego overlayu (dialog, picker, menu, pływający przycisk nad treścią) bez `backdrop-filter: blur(20px)` — wyjątek: powierzchnie gradientowe (`AbyssBackground`, `AbyssGradientBox`, `AbyssButton` z `gradient`).
+- Nie używaj Quasara spoza tabeli [Quasar dozwolony](#quasar-dozwolony) — w tym `q-spinner`, `q-badge`, `q-btn`.
 
 ---
 

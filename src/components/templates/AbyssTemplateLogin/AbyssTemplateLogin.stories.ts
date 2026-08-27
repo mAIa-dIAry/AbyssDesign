@@ -60,7 +60,7 @@ const meta: Meta<typeof AbyssTemplateLogin> = {
         component:
           'Szablon strony logowania z wyśrodkowanym kontenerem o stałej `max-width` (`ABYSS_TEMPLATE_LOGIN_MAX_WIDTH` = ' +
           ABYSS_TEMPLATE_LOGIN_MAX_WIDTH +
-          '). **Wymaga `AbyssCard`** w slocie domyślnym (tytuł + ikona w `#header-prepend`); przykładowa treść karty to formularz logowania (`AbyssForm`). Wypełnia slot `#content` `AbyssTemplateRoot` — zwykle **bez nawigacji**. Viewport przewija treść i centruje kontener w pionie, gdy jest niższy niż obszar; przy dłuższym formularzu pozwala przewinąć od góry. Padding per `device` (desktop/web `24px`, mobile `8px` + safe-area). Nie owijaj w `AbyssTemplateMain`. Odblokowanie PIN (`AbyssAppLock`) też idzie w kartę w tym szablonie — patrz stories `AbyssAppLock`.',
+          '). **Wymaga `AbyssCard`** w slocie domyślnym (tytuł + ikona w `#header-prepend`). Treść karty: `AbyssForm` (login / rejestracja) albo `AbyssAppLock` (odblokowanie PIN) — to dwie osobne potrzeby, nie warianty do wyboru na ten sam ekran. W aplikacji montuj ten szablon na trasie (layout ma `router-view` w `#content` Root), zwykle **bez nawigacji**; lock PIN może zastąpić `router-view` w layoucie. Viewport przewija treść i centruje kontener w pionie, gdy jest niższy niż obszar; przy dłuższym formularzu pozwala przewinąć od góry. Padding per `device` (desktop/web `24px`, mobile `8px` + safe-area). Nie owijaj w `AbyssTemplateMain`. Nie używaj `AbyssTemplateMain` jako pełnoekranowego auth (AdminWeb `LoginPage` jest długiem). Login nad działającą aplikacją to `AbyssDialog`.',
       },
     },
   },
@@ -94,7 +94,7 @@ const meta: Meta<typeof AbyssTemplateLogin> = {
     },
     default: {
       description:
-        'Treść strony — **wymagany `AbyssCard`** (tytuł + ikona w `#header-prepend`). W karcie formularz logowania (`AbyssForm`) albo inna treść auth. Szerokość ogranicza wewnętrzny kontener — nie ustawiaj własnej `max-width` na slocie.',
+        'Treść strony — **wymagany `AbyssCard`** (tytuł + ikona w `#header-prepend`). W karcie: `AbyssForm` (login / rejestracja) albo `AbyssAppLock` (PIN). Szerokość ogranicza wewnętrzny kontener — nie ustawiaj własnej `max-width` na slocie.',
       table: {
         category: 'slots',
         type: { summary: 'slot' },

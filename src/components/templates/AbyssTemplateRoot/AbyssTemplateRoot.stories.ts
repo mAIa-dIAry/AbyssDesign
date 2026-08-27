@@ -21,9 +21,10 @@ const meta: Meta<typeof AbyssTemplateRoot> = {
       description: {
         component:
           'Główny komponent aplikacji definiujący strukturę layoutu. Obsługuje warianty: `desktop` (Electron z paskiem tytułu), `web` (panel webowy bez paska tytułu) oraz `mobile` z poziomą nawigacją na dole ekranu. ' +
-          'Slot `#content` przyjmuje **wyłącznie inny szablon strony**: domyślnie `AbyssTemplateMain`, `AbyssTemplateSidebar` (ustawienia) albo `AbyssTemplateLogin` (auth). Nie wkładaj kart, formularzy ani innego contentu bezpośrednio do Root. ' +
+          'W aplikacji layout wkłada `router-view` w slot `#content`; strona trasy montuje `AbyssTemplateMain`, `AbyssTemplateSidebar` albo `AbyssTemplateLogin`. Nie wkładaj kart, formularzy ani list bezpośrednio do Root. W Storybooku izolowane demo może zagnieździć szablon w `#content`. ' +
+          'Nie importuj shadow-wrapperów `AbyssTemplate` / `AbyssScrollView` / `AbyssSidebarNav`. ' +
           'Gdy sloty `navigation-start` i `navigation-end` są puste, `<aside>` nie jest renderowany — treść zajmuje całą szerokość, a inner shadow (inset 8px) chowa się za viewportem po prawej i na dole (bez nawigacji także po lewej). ' +
-          '`AbyssNotify` teleportuj do hosta overlay w `overflow-wrapper` (`#abyss-template-overlay` albo `overlay-id`) — toast kotwiczy się w prawym górnym rogu obszaru treści. Host ma `gap: 0` (odstęp 8px z `::after` toasta), `padding: 12px 8px` i `max-height: 100%`. `overflow: auto` tylko gdy zmierzona wysokość kolejki przekracza limit (debounce 0,2 s = animacja wejścia, zejścia i akordeonu).',
+          'Strony wywołują helper kolejki `notify()`; host `AbyssNotify` w overlayu (`#abyss-template-overlay` albo `overlay-id`) to implementacja hosta, nie wzorzec strony. Host ma `gap: 0` (odstęp 8px z `::after` toasta), `padding: 12px 8px` i `max-height: 100%`. `overflow: auto` tylko gdy zmierzona wysokość kolejki przekracza limit (debounce 0,2 s = animacja wejścia, zejścia i akordeonu).',
       },
     },
   },
@@ -106,7 +107,7 @@ const meta: Meta<typeof AbyssTemplateRoot> = {
     },
     content: {
       description:
-        'Główny obszar treści aplikacji. **Nie wkładaj tu contentu strony.** Jedynym dozwolonym dzieckiem jest inny szablon: domyślnie `AbyssTemplateMain`, `AbyssTemplateSidebar` albo `AbyssTemplateLogin`. Slot nie ma własnego scrollu ani paddingu — to odpowiedzialność szablonu strony. Dostępny na **obu platformach**.',
+        'Główny obszar treści aplikacji. W aplikacji: `router-view` (strona trasy montuje szablon). Nie wkładaj tu kart, formularzy ani list. W Storybooku demo może zagnieździć `AbyssTemplateMain`, `AbyssTemplateSidebar` albo `AbyssTemplateLogin`. Slot nie ma własnego scrollu ani paddingu. Dostępny na **obu platformach**.',
       table: {
         category: 'slots',
         type: { summary: 'slot' },

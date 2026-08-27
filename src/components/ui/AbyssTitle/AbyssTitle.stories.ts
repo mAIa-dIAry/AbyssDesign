@@ -12,7 +12,7 @@ const meta: Meta<typeof AbyssTitle> = {
     docs: {
       description: {
         component:
-          'Semantyczny nagłówek UI z opcjonalną ikoną. Sześć poziomów (`h1`–`h6`) określa hierarchię i styl: `h1` — tytuł strony informacyjnej; `h2` — tytuł karty, dialogu lub modala; `h3` — podtytuł w karcie, modalu lub contencie; `h4` — podtytuł drugiego poziomu w karcie lub modalu; `h5` i `h6` — nagłówki specjalne do wyróżnienia konkretnych sekcji. Domyślnie renderuje `h2`.',
+          'Tytuł strony informacyjnej lub prawnej poza nawigacją główną. Publiczne API: `type` (`h1`–`h6`), `icon`, `label` — **brak** `level` i `size`. Nie używaj jako tytułu sekcji w karcie, dialogu ani panelu (to `AbyssCard` `title`). Nie na głównej podstronie z nawigacją. Domyślnie renderuje `h2`.',
       },
     },
   },
@@ -21,7 +21,7 @@ const meta: Meta<typeof AbyssTitle> = {
       control: 'radio',
       options: ['h1', 'h2', 'h3', 'h4', 'h5', 'h6'],
       description:
-        'Poziom nagłówka — determinuje font-size, font-weight, kolor i przeznaczenie: `h1` strona informacyjna, `h2` karta/dialog/modal, `h3` podtytuł, `h4` podtytuł II poziomu, `h5`/`h6` sekcja specjalna.',
+        'Poziom nagłówka dokumentu informacyjnego / prawnego (`h1`–`h6`). Nie tytuł karty. Brak osobnego propu `size`.',
       table: {
         defaultValue: { summary: 'h2' },
         type: { summary: "'h1' | 'h2' | 'h3' | 'h4' | 'h5' | 'h6'" },
@@ -71,17 +71,17 @@ export const Heading1: Story = {
 export const Heading2: Story = {
   name: 'h2 (20 px, domyślny)',
   args: {
-    label: 'Przykładowa karta',
+    label: 'Rozdział dokumentu',
     icon: 'sym_r_article',
   },
   parameters: {
     docs: {
       description: {
         story:
-          'Tytuł karty, dialogu lub modala. Domyślny poziom — 20 px, bez `text-transform`. Używany m.in. w `AbyssCard` i `AbyssDialog`.',
+          'Nagłówek pierwszego poziomu na stronie informacyjnej / prawnej poza nawigacją. Domyślny poziom — 20 px, bez `text-transform`. Nie tytuł `AbyssCard` ani `AbyssDialog`.',
       },
       source: {
-        code: `<AbyssTitle icon="sym_r_article">Przykładowa karta</AbyssTitle>`,
+        code: `<AbyssTitle icon="sym_r_article">Rozdział dokumentu</AbyssTitle>`,
       },
     },
   },
@@ -103,7 +103,7 @@ export const Heading3: Story = {
     docs: {
       description: {
         story:
-          'Podtytuł w karcie, modalu lub contencie. 18 px, line-height 22 px. Separator po prawej wyrównany pionowo do środka wiersza tytułu.',
+          'Podtytuł na stronie informacyjnej / prawnej. 18 px, line-height 22 px. Separator po prawej wyrównany pionowo do środka wiersza tytułu. Nie podtytuł w karcie ustawień.',
       },
       source: {
         code: `<AbyssTitle type="h3" icon="sym_r_info">Szczegóły wpisu</AbyssTitle>`,
@@ -123,7 +123,7 @@ export const Heading4: Story = {
     docs: {
       description: {
         story:
-          'Podtytuł drugiego poziomu w karcie lub modalu. 16 px, uppercase, font-weight 500.',
+          'Podtytuł drugiego poziomu na stronie informacyjnej / prawnej. 16 px, uppercase, font-weight 500. Nie nagłówek w karcie ani modalu.',
       },
       source: {
         code: `<AbyssTitle type="h4" icon="sym_r_label">Metadane</AbyssTitle>`,

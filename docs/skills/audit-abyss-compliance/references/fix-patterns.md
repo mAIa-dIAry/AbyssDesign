@@ -15,7 +15,7 @@ Mapowanie typowych naruszeń na poprawki. Przed każdą zmianą sprawdź story k
 | `q-table` (główna tabela strony)   | `AbyssTable as-card`                |
 | `<pre>{{ json }}</pre>`            | `AbyssCode`                         |
 
-Quasar **zostaw** tam, gdzie story Abyss to dokumentuje: `q-icon` w `#header-prepend`, `q-popup-proxy` daty z `class="abyss-date-menu"`.
+Quasar **zostaw** wyłącznie z tabeli „Quasar dozwolony” w `abyss-design.md`: `q-icon` w slotach Abyss, `q-popup-proxy` daty/czasu z `class="abyss-date-menu"` / `"abyss-time-menu"`, `q-chip` w search, sloty `q-td` / `q-tr` w `AbyssTable`. Wszystko inne (`q-spinner`, `q-badge`, `q-btn`, natywny `<form>`) = naruszenie. Wiersze **BRAK** (spinner, list-row, badge statusu) → zatrzymaj się, nie zamieniaj na Quasar.
 
 ---
 
@@ -40,10 +40,10 @@ Quasar **zostaw** tam, gdzie story Abyss to dokumentuje: `q-icon` w `#header-pre
 **Dynamiczny AbyssInfo po akcji → Notify:**
 
 ```ts
-import { notify } from '@/stores/notify.store';
-
 notify({ type: 'success', message: t('...') });
 ```
+
+Import: helper kolejki w aplikacji (nie hard-coded `notify.store`).
 
 ---
 
@@ -74,7 +74,7 @@ notify({ type: 'success', message: t('...') });
 <AbyssButton flat gradient gradient-colors="danger" label="Usuń" full-width />
 ```
 
-**Usuń `flat` poza kartą/dialogiem** — tylko gdy naruszenie dotyczyło niewłaściwego użycia `flat` na liście głównej.
+**Usuń `flat` poza listą miejsc** (header/stopka Card, Dialog, Input prepend/append, NavHeader actions, wnętrze Switcher). Wiersz listy z `flat` to **BRAK** prymitywu — nie „naprawiaj” Quasarem ani nie legalizuj `flat` na liście.
 
 ---
 
@@ -102,6 +102,10 @@ import {
 **Usuń owijający AbyssGrid wokół pojedynczego pola** — zostaw samo `AbyssInput` / `AbyssSelect`.
 
 **Hasło inline w karcie** → trigger + `AbyssDialog` z polami hasła.
+
+**Pola poza `AbyssForm` / natywny `<form>`** → owiń w `AbyssForm`.
+
+**Data w formularzu** → `AbyssInput` z `type="date"` / `"time"` / `"datetime-local"`, nie samodzielny `AbyssDate` / `AbyssTime`.
 
 ---
 

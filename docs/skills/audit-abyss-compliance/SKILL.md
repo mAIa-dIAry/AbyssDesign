@@ -140,7 +140,7 @@ Podaj:
 - **Nie** aktualizuj `abyss-design.md` — to robi `sync-abyss-design-rules`
 - **Nie** traktuj istniejącego długu technicznego jako nowej normy — popraw do dokumentacji
 - **Nie** rozlewaj stylowania z komponentu złożonego na strony formularzowe
-- Przy sprzeczności docs vs story — **story + `abyss-design.md`**; przy wątpliwości zapytaj
+- Przy sprzeczności docs vs story — **wygrywa tabela „Potrzeba → jeden komponent”** w `abyss-design.md`
 
 ## Powiązane skille
 

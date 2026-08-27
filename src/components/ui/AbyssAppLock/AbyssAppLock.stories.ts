@@ -17,7 +17,7 @@ const meta = {
     docs: {
       description: {
         component:
-          'Panel odblokowania aplikacji z klawiaturą numeryczną do wprowadzania kodu PIN. Pełnoekranowe odblokowanie osadzaj w `AbyssCard` wewnątrz `AbyssTemplateLogin` (slot `#content` Root, bez nawigacji). Klawiatura wypełnia szerokość treści karty; kropki PIN są wyśrodkowane ze stałym `gap`. Ustawianie lub zmiana PIN — w `AbyssDialog` z `abyss-dialog--compact`.',
+          'Panel odblokowania aplikacji z klawiaturą numeryczną do wprowadzania kodu PIN. Pełnoekranowe odblokowanie osadzaj w `AbyssCard` wewnątrz `AbyssTemplateLogin`. `AbyssPinInput` i `AbyssNumericKeypad` są wewnętrzne — nie dobieraj ich z mapy potrzeb. Klawiatura wypełnia szerokość treści karty; kropki PIN są wyśrodkowane ze stałym `gap`. Ustawianie lub zmiana PIN — w `AbyssDialog` z `abyss-dialog--compact`.',
       },
     },
   },

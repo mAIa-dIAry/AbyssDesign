@@ -14,7 +14,7 @@ const meta: Meta<typeof AbyssSlider> = {
     docs: {
       description: {
         component:
-          'Suwak Abyss do wyboru wartości liczbowej z określonego zakresu. Obsługuje etykiety, znaczniki (`markerLabels`), ograniczenia wewnętrzne, orientację pionową i tryb tylko do odczytu.',
+          'Suwak Abyss — **jeden kciuk**, jedna wartość liczbowa. Nie przedział (to `AbyssRange`). Obsługuje etykiety, znaczniki (`markerLabels`), ograniczenia wewnętrzne, orientację pionową i tryb tylko do odczytu.',
       },
     },
   },

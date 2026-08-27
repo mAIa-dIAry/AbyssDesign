@@ -22,7 +22,7 @@ alwaysApply: false
 
 - Prezentuj komponenty UI na tle `withAbyssBackground`.
 - Kontenery przewijane w stories (listy, panele ze scrollem) oznaczaj klasą **`story-scroll-container`** — mixin `scrollbar` jest zdefiniowany w `src/scss/helpers/mixins.scss`, stosowany globalnie w Storybooku i pokazuje scrollbar tylko na urządzeniach z myszką.
-- W stories `AbyssTemplateRoot` slot `#content` zawiera `AbyssTemplateMain`, `AbyssTemplateSidebar` albo `AbyssTemplateLogin`, nie surową treść strony.
+- W stories `AbyssTemplateRoot` slot `#content` w izolowanym demie zawiera `AbyssTemplateMain`, `AbyssTemplateSidebar` albo `AbyssTemplateLogin`, nie surową treść strony. W aplikacji layout wkłada `router-view`; strona trasy montuje szablon.
 - W stories `AbyssTemplateLogin` slot domyślny zawiera `AbyssCard` z formularzem logowania (tytuł + ikona w `#header-prepend`), nie `AbyssAppLock` ani surową treść.
 - W `play()` używaj `canvas.getByRole()` zamiast `querySelector`.
 - Importuj `expect` z `storybook/test`, nie z Vitest.

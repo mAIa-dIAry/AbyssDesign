@@ -10,11 +10,15 @@ Legenda kontekstu: **F** = formularz/karta/dialog, **Z** = komponent złożony, 
 
 | #   | Sprawdź                                                    | F   | Z   | S   | Wyszukiwanie / sygnał                                                         |
 | --- | ---------------------------------------------------------- | --- | --- | --- | ----------------------------------------------------------------------------- |
-| 1.1 | Quasar zamiast Abyss tam, gdzie istnieje odpowiednik       | ✓   | ○   | ○   | `q-btn`, `q-card`, `q-input`, `q-dialog`, `q-table` w widokach formularzowych |
-| 1.2 | Własne kontenery sekcji zamiast `AbyssCard` / `AbyssPanel` | ✓   | ○   | ○   | `<div class="*section*">` jako główny kontener ustawień                       |
+| 1.1 | Quasar zamiast Abyss tam, gdzie istnieje odpowiednik; Quasar spoza tabeli „Quasar dozwolony” | ✓   | ○   | ○   | `q-btn`, `q-card`, `q-input`, `q-dialog`, `q-table`, `q-spinner`, `q-badge`, natywny `<form>` |
+| 1.2 | Własny kontener sekcji zamiast przepisanego: `AbyssCard` (nagłówek+ikona), `AbyssPanel` (bez chrome), `AbyssTile` w `AbyssGrid` (kafelek) | ✓   | ○   | ○   | `<div class="*section*">` jako główny kontener ustawień |
 | 1.3 | Własne overlaye zamiast `AbyssDialog`                      | ✓   | ○   | ○   | `q-dialog` bez `AbyssDialog`, fixed overlay                                   |
 | 1.4 | `<pre>` / własny renderer zamiast `AbyssCode`              | ✓   | ✓   | ○   | `<pre>`, `JSON.stringify` w template                                          |
 | 1.5 | Własny Markdown renderer zamiast `AbyssMarkdown`           | ○   | ✓   | ○   | `marked`, `v-html` na surowym MD (poza `AbyssContent`)                        |
+| 1.6 | Pola formularza poza `AbyssForm` / natywny `<form>`        | ✓   | ○   | ○   | `<form`, brak `AbyssForm` wokół pól                                           |
+| 1.7 | Import shadow-wrappera szablonu                            | ✓   | ✓   | ○   | `AbyssTemplate`, `AbyssScrollView`, `AbyssSidebarNav`                         |
+| 1.8 | `AbyssTitle` jako tytuł sekcji (karta / dialog / panel)    | ✓   | ○   | ○   | `AbyssTitle` wewnątrz karty; `level` / `size` na Title                        |
+| 1.9 | Pełnoekranowy auth przez `AbyssTemplateMain`               | ✓   | ○   | ○   | `LoginPage` + Main zamiast `AbyssTemplateLogin`                               |
 
 ○ = sprawdź gdy dotyczy; ✓ = zawsze w tym kontekście.
 
@@ -53,7 +57,7 @@ W **F**: każde `class=` / `style=` na tagu `Abyss*` to naruszenie (🔴).
 | 4.3  | Anulowanie z `gradient`                                                | 🟡       |
 | 4.4  | `gradient-colors` jako tablica kolorów zamiast klucza semantycznego    | 🔴       |
 | 4.5  | `theme` na lokalnej akcji w bloku (nie globalne CTA)                   | 🟡       |
-| 4.6  | `flat` poza kartą/dialogiem/slotami `AbyssInput`                       | 🟡       |
+| 4.6  | `flat` poza listą: header/stopka Card, Dialog, Input prepend/append, NavHeader actions, wnętrze Switcher | 🟡       |
 | 4.7  | `current` na filtrach wielokrotnego wyboru (powinno być `toggled`)     | 🟡       |
 | 4.8  | Ręczne grupowanie przycisków zamiast `AbyssButtonGroup`                | 🟡       |
 | 4.9  | `gradient` gdy akcja jedyna na liście poza kartą/dialogiem             | 🟡       |
@@ -71,7 +75,8 @@ Dozwolone klucze `gradient-colors`: `theme`, `success`, `info`, `warning`, `dang
 | 5.2 | Przyciski akcji poza `AbyssGrid` z `INPUT_COLUMN_SIZE` + `INPUT_GRID_MAX_COLUMNS` | 🟡       |
 | 5.3 | Brak importu stałych siatki z `AbyssGrid.constants`                               | 🟢       |
 | 5.4 | Zmiana hasła inline w karcie (poza loginem)                                       | 🔴       |
-| 5.5 | Natywny picker daty/czasu (`type="date"` bez Abyss, systemowy input)              | 🔴       |
+| 5.5 | Natywny picker daty/czasu (systemowy `<input type="date">` bez `AbyssInput`) — `AbyssInput type="date"` w formularzu jest kanoniczny | 🔴       |
+| 5.6 | Samodzielny `AbyssDate` / `AbyssTime` w formularzu ustawień (powinien być `AbyssInput` z `type`) | 🟡       |
 
 ---
 
@@ -102,7 +107,7 @@ Dozwolone klucze `gradient-colors`: `theme`, `success`, `info`, `warning`, `dang
 
 | #   | Reguła                                                                    | Severity |
 | --- | ------------------------------------------------------------------------- | -------- |
-| 8.1 | Sukces/błąd po akcji przez `AbyssInfo` zamiast `notify()` / `AbyssNotify` | 🔴       |
+| 8.1 | Sukces/błąd po akcji przez `AbyssInfo` zamiast helpera `notify()` / hosta `AbyssNotify` | 🔴       |
 | 8.2 | Brak notify po operacji zapisu/usunięcia gdy UX tego wymaga               | 🟡       |
 | 8.3 | Operacja destrukcyjna bez `AbyssInfo` + `gradient-colors="danger"`        | 🟡       |
 

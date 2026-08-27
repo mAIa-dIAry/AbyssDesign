@@ -8,7 +8,8 @@ import { withAbyssBackground } from '@/stories/AbyssBackgroundDecorator';
 
 const nativePickerWarning =
   '**Nigdy nie używaj systemowych selektorów daty** (`<input type="date">`, `<input type="datetime-local">` z natywnym UI przeglądarki/OS). ' +
-  'Zawsze uruchamiaj dokładnie `AbyssDate` — bezpośrednio lub przez `AbyssInput` z `type="date"` / `type="datetime-local"`, który osadza ten komponent w popupie.';
+  'W formularzu używaj wyłącznie `AbyssInput` z `type="date"` / `"datetime-local"` (osadza ten picker w popupie). ' +
+  'Samodzielny `AbyssDate` tylko w popupie lub toolbarze (wzorzec archiwum) — nie jako pole formularza ustawień.';
 
 const meta: Meta<typeof AbyssDate> = {
   title: 'UI/AbyssDate',
@@ -19,7 +20,7 @@ const meta: Meta<typeof AbyssDate> = {
     docs: {
       description: {
         component:
-          'Jedyny dopuszczalny picker daty w Abyss. Układ jak `AbyssDialog`: kalendarz w body, separator i stopka z Anuluj (`flat`) oraz Potwierdź (`flat` + `gradient` + `success`).\n\n' +
+          'Picker daty w Abyss. W formularzu nie osadzaj go samodzielnie — użyj `AbyssInput` z `type="date"` / `"datetime-local"`. Samodzielnie tylko w popupie / toolbarze. Układ jak `AbyssDialog`: kalendarz w body, separator i stopka z Anuluj (`flat`) oraz Potwierdź (`flat` + `gradient` + `success`).\n\n' +
           'Obsługuje tryb przedziału dat Quasar `QDate` przez prop `range` (przekazywany do `q-date` przez `$attrs`). Model: obiekt `{ from, to }` w formacie `mask`.\n\n' +
           `${nativePickerWarning}\n\n` +
           'Przy osadzaniu w `q-popup-proxy` ustaw wymaganą klasę integracyjną `class="abyss-date-menu"` na elemencie popup oraz `:breakpoint="0"`, żeby Quasar nie przełączał pickera na modal `QDialog` na małych viewportach.\n\n' +

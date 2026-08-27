@@ -14,7 +14,7 @@ const meta: Meta<typeof AbyssRange> = {
     docs: {
       description: {
         component:
-          'Zakres Abyss do wyboru przedziału wartości `{ min, max }`. Obsługuje etykiety, znaczniki, ograniczenia wewnętrzne, przeciąganie zakresu i orientację pionową.',
+          'Zakres Abyss — **dwa kciuki**, model `{ min, max }`. Nie pojedyncza wartość (to `AbyssSlider`). Obsługuje etykiety, znaczniki, ograniczenia wewnętrzne, przeciąganie zakresu i orientację pionową.',
       },
     },
   },

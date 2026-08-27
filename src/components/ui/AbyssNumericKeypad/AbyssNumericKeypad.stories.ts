@@ -13,7 +13,7 @@ const meta = {
     docs: {
       description: {
         component:
-          'Klawiatura numeryczna z cyframi 0–9 i przyciskiem cofania. Wypełnia szerokość rodzica (w `AbyssAppLock` — szerokość treści karty / body dialogu).',
+          'Wewnętrzny prymityw `AbyssAppLock` — klawiatura numeryczna z cyframi 0–9 i przyciskiem cofania. **Nie dobieraj z mapy „Potrzeba → jeden komponent”**; nie używaj poza `AbyssAppLock`. Wypełnia szerokość rodzica (w `AbyssAppLock` — szerokość treści karty / body dialogu).',
       },
     },
   },

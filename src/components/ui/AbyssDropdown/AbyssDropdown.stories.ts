@@ -14,7 +14,7 @@ const meta = {
     docs: {
       description: {
         component:
-          'Stylizowany panel rozwijany oparty na `QMenu` — ten sam wygląd co lista opcji w `AbyssSelect`, z pełną obwódką (bez clip-path selecta). Pozycje menu to `AbyssButton` (`flat`, `full-width`). Umieszczany jako bezpośrednie dziecko elementu-aktywatora.',
+          'Menu akcji wiersza tabeli — stylizowany panel rozwijany oparty na `QMenu` (ten sam wygląd co lista opcji w `AbyssSelect`, z pełną obwódką). Pozycje menu to `AbyssButton` (`flat`, `full-width`). Umieszczany jako bezpośrednie dziecko elementu-aktywatora. Trigger: `icon-only` `more_vert`.',
       },
     },
   },

@@ -13,7 +13,7 @@ const meta = {
     docs: {
       description: {
         component:
-          'Wizualizacja postępu wprowadzania kodu PIN jako wypełnianych kropek. Rząd kropek jest wyśrodkowany ze stałym `gap` — bez `space-between`.',
+          'Wewnętrzny prymityw `AbyssAppLock` — wizualizacja postępu wprowadzania kodu PIN jako wypełnianych kropek. **Nie dobieraj z mapy „Potrzeba → jeden komponent”**; nie używaj poza `AbyssAppLock`. Rząd kropek jest wyśrodkowany ze stałym `gap` — bez `space-between`.',
       },
     },
   },
