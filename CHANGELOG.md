@@ -1,5 +1,19 @@
 # Changelog
 
+## [0.2.1] - 2026-08-27
+
+Jedna mapa wyboru UI: każda potrzeba ma dokładnie jeden przepisany komponent.
+
+### Zmiany
+
+- Kanon `docs/architecture/abyss-design.md`: tabela **Potrzeba → jeden komponent** (w tym wiersze **BRAK** i **Quasar dozwolony**). Skill `implement-abyss-ui` Krok 2 jest kopią 1:1; landing Storybook linkuje tabelę zamiast drugiej listy nazw.
+- Formularz zawsze w `AbyssForm`; pełnoekranowy auth to `AbyssTemplateLogin`; tytuł sekcji wyłącznie `title` na `AbyssCard`; data w formularzu wyłącznie `AbyssInput` `type="date|time|datetime-local"`.
+
+### Techniczne
+
+- Stories i checklisty audytu zsynchronizowane z tabelą (m.in. `flat`, Card / Panel / Tile, Chart vs Histogram, shadow-wrappery).
+- Raport diagnostyczny: `docs/raports/2026-08-26-abyss-jedna-potrzeba-jedno-rozwiazanie.md`
+
 ## [0.2.0] - 2026-08-24
 
 Wspólna nazwa `size` dla pól i przycisków: `normal` zastąpione przez `big`.
