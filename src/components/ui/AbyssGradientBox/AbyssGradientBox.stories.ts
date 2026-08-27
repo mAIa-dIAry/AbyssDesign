@@ -4,7 +4,7 @@ import { ref } from 'vue';
 import AbyssGradientBox from '@/components/ui/AbyssGradientBox/AbyssGradientBox.vue';
 import AbyssButton from '@/components/ui/AbyssButton/AbyssButton.vue';
 import { withAbyssBackground } from '@/stories/AbyssBackgroundDecorator';
-import { GRADIENT_PRESETS } from 'src/defines/gradient-presets';
+import { GRADIENT_PRESETS } from '@/defines/gradient-presets';
 
 const meta: Meta<typeof AbyssGradientBox> = {
   title: 'UI/AbyssGradientBox',

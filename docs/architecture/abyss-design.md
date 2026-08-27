@@ -29,7 +29,7 @@ Najważniejsze zasady interpretacji:
 - **zakres tego dokumentu to pełny zestaw publicznych komponentów Abyss** — mapa wyboru jest tabelą [Potrzeba → jeden komponent](#potrzeba--jeden-komponent); każda potrzeba UI ma dokładnie jeden przepisany komponent,
 - w formularzach, standardowych kartach i dialogach obowiązują restrykcyjne reguły bez custom styli,
 - komponenty wyższego rzędu w aplikacji (np. edytor notatek) mogą używać `class` i `style` na prymitywach Abyss — patrz sekcja [Formularze i karty vs komponenty złożone](#formularze-i-karty-vs-komponenty-złożone),
-- jeżeli aktualny kod odbiega od tego dokumentu, traktuj to jako świadomy dług techniczny, a nie nową normę (m.in. AdminWeb `LoginPage` bez `AbyssTemplateLogin`, natywny `<form>` zamiast `AbyssForm`, `class="settings-card"` na kartach ustawień).
+- jeżeli aktualny kod odbiega od tego dokumentu, traktuj to jako świadomy dług techniczny, a nie nową normę (m.in. `q-spinner` / `q-badge` / wiersz listy z `flat` — wiersze **BRAK** w tabeli poniżej).
 
 ---
 
@@ -64,7 +64,7 @@ Nie importuj shadow-wrapperów `AbyssTemplate`, `AbyssScrollView`, `AbyssSidebar
 | Host routingu w layoucie | `router-view` w `#content` Root; strona trasy montuje szablon | Nie wkładaj kart, formularzy ani list bezpośrednio do `#content`. Wyjątek lock PIN: layout może wstawić `AbyssTemplateLogin` zamiast `router-view`. W Storybooku izolowane demo może zagnieździć szablon w Root. |
 | Przewijana strona merytoryczna | `AbyssTemplateMain` | Nie na pełnoekranowy auth. Nie importuj `AbyssScrollView`. |
 | Ustawienia / nawigacja zakładek | `AbyssTemplateSidebar` | Nie importuj `AbyssSidebarNav`. Nie owijaj dodatkowo w `AbyssTemplateMain`. |
-| Pełnoekranowy login / rejestracja | `AbyssTemplateLogin` + `AbyssCard` + `AbyssForm` | Nie `AbyssTemplateMain` ani custom panel auth. Nie `AbyssDialog` (to login nad aplikacją). AdminWeb `LoginPage` jest długiem względem kanonu. |
+| Pełnoekranowy login / rejestracja | `AbyssTemplateLogin` + `AbyssCard` + `AbyssForm` | Nie `AbyssTemplateMain` ani custom panel auth. Nie `AbyssDialog` (to login nad aplikacją). |
 | Pełnoekranowe odblokowanie PIN | `AbyssTemplateLogin` + `AbyssCard` + `AbyssAppLock` | Nie `AbyssDialog` na pełny lock. Ustawianie PIN: `AbyssDialog` `abyss-dialog--compact`, nie Login. Nie dobieraj `AbyssPinInput` / `AbyssNumericKeypad`. |
 | Login / reauth nad działającą aplikacją | `AbyssDialog` + `AbyssForm` | Nie `AbyssTemplateLogin`. Nie natywny `<form>`. |
 | Decyzja, potwierdzenie, skupione wprowadzanie (hasło, PIN set) | `AbyssDialog` | Nie własny overlay decyzji. Nie pełnoekranowy auth. |
@@ -219,7 +219,7 @@ W aplikacji:
 
 **Zakaz:** karty, formularze, listy ani inny content strony bezpośrednio w `#content` (omijając szablon strony). Root jest szkieletem (nav, chrome, overlay) — treść strony żyje w szablonie na trasie.
 
-**Zakaz:** `AbyssTemplateMain` jako pełnoekranowy login — to `AbyssTemplateLogin` (AdminWeb `LoginPage` jest długiem względem kanonu).
+**Zakaz:** `AbyssTemplateMain` jako pełnoekranowy login — to `AbyssTemplateLogin`.
 
 Login **nad** działającą aplikacją (modal reauth / logowanie bez opuszczania sesji) to wyłącznie `AbyssDialog` + `AbyssForm`, nie `AbyssTemplateLogin`.
 
@@ -798,7 +798,7 @@ Prop `expandable` lub obecność slotu `row-expand` aktywuje kolumnę +/- i wier
 - Nie wkładaj kart, formularzy ani innego contentu strony bezpośrednio do `#content` `AbyssTemplateRoot` — w layoucie `router-view`, na trasie szablon (`AbyssTemplateMain` / `AbyssTemplateSidebar` / `AbyssTemplateLogin`).
 - Nie importuj `AbyssTemplate`, `AbyssScrollView` ani `AbyssSidebarNav`.
 - Nie owijaj `AbyssTemplateLogin` w `AbyssTemplateMain` — Login sam zapewnia scroll, padding i ograniczenie szerokości.
-- Nie używaj `AbyssTemplateMain` jako pełnoekranowego auth (AdminWeb `LoginPage` jest długiem).
+- Nie używaj `AbyssTemplateMain` jako pełnoekranowego auth.
 - Nie wkładaj `AbyssAppLock` ani formularza bezpośrednio do `AbyssTemplateLogin` — wymagany jest `AbyssCard`.
 - Nie dobieraj `AbyssPinInput` / `AbyssNumericKeypad` poza `AbyssAppLock`.
 - Nie rozciągaj kropek `AbyssPinInput` przez `justify-content: space-between` — rząd jest wyśrodkowany ze stałym `gap`.

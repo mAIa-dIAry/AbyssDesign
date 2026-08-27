@@ -57,7 +57,7 @@ Nie importuj shadow-wrapperów `AbyssTemplate`, `AbyssScrollView`, `AbyssSidebar
 | Host routingu w layoucie | `router-view` w `#content` Root; strona trasy montuje szablon | Nie wkładaj kart, formularzy ani list bezpośrednio do `#content`. Wyjątek lock PIN: layout może wstawić `AbyssTemplateLogin` zamiast `router-view`. W Storybooku izolowane demo może zagnieździć szablon w Root. |
 | Przewijana strona merytoryczna | `AbyssTemplateMain` | Nie na pełnoekranowy auth. Nie importuj `AbyssScrollView`. |
 | Ustawienia / nawigacja zakładek | `AbyssTemplateSidebar` | Nie importuj `AbyssSidebarNav`. Nie owijaj dodatkowo w `AbyssTemplateMain`. |
-| Pełnoekranowy login / rejestracja | `AbyssTemplateLogin` + `AbyssCard` + `AbyssForm` | Nie `AbyssTemplateMain` ani custom panel auth. Nie `AbyssDialog` (to login nad aplikacją). AdminWeb `LoginPage` jest długiem względem kanonu. |
+| Pełnoekranowy login / rejestracja | `AbyssTemplateLogin` + `AbyssCard` + `AbyssForm` | Nie `AbyssTemplateMain` ani custom panel auth. Nie `AbyssDialog` (to login nad aplikacją). |
 | Pełnoekranowe odblokowanie PIN | `AbyssTemplateLogin` + `AbyssCard` + `AbyssAppLock` | Nie `AbyssDialog` na pełny lock. Ustawianie PIN: `AbyssDialog` `abyss-dialog--compact`, nie Login. Nie dobieraj `AbyssPinInput` / `AbyssNumericKeypad`. |
 | Login / reauth nad działającą aplikacją | `AbyssDialog` + `AbyssForm` | Nie `AbyssTemplateLogin`. Nie natywny `<form>`. |
 | Decyzja, potwierdzenie, skupione wprowadzanie (hasło, PIN set) | `AbyssDialog` | Nie własny overlay decyzji. Nie pełnoekranowy auth. |
