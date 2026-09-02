@@ -1,5 +1,14 @@
 # Changelog
 
+## [0.2.2] - 2026-09-02
+
+Poprawka scrolla w `AbyssTemplateMain`: restore po bottom-loaderze nie walczy z użytkownikiem.
+
+### Poprawki
+
+- `restoreScrollAfterBottomLoading` nic nie robi, gdy viewport nie jest już w strefie dolnego loadera.
+- W cooldownie restore działa tylko przy scrollu w dół; scroll w górę anuluje programowy skok zamiast przyciągać z powrotem do dołu.
+
 ## [0.2.1] - 2026-08-27
 
 Jedna mapa wyboru UI: każda potrzeba ma dokładnie jeden przepisany komponent.
