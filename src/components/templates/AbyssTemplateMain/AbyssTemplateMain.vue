@@ -401,6 +401,11 @@ function restoreScrollAfterBottomLoading(
     return;
   }
 
+  if (!isInBottomLoaderZone(container, container.scrollTop)) {
+    programmaticScrollTarget = null;
+    return;
+  }
+
   const targetScroll = getContentMaxScrollTop(container);
 
   if (Math.abs(container.scrollTop - targetScroll) < 1) {
@@ -1022,7 +1027,9 @@ function handleScroll(): void {
         (programmaticScrollTarget < scrollTop && scrollTop > lastScrollTop);
 
       if (userOpposesProgrammaticScroll) {
-        if (isBottomRefreshCooldownActive()) {
+        const userScrollingUp = scrollTop < lastScrollTop;
+
+        if (isBottomRefreshCooldownActive() && !userScrollingUp) {
           restoreScrollAfterBottomLoading("smooth");
         } else {
           cancelProgrammaticScroll("user-scroll");
