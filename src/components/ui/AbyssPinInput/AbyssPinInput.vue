@@ -26,7 +26,7 @@
 
 <script setup lang="ts">
 import { computed } from 'vue';
-import { PIN_LENGTH } from '@/utils/pinCode';
+import { PIN_LENGTH } from '../../../utils/pinCode';
 
 export interface AbyssPinInputProps {
   modelValue?: string;

@@ -14,7 +14,7 @@
 <script setup lang="ts">
 import { onBeforeUnmount, ref, toRaw, watch } from 'vue';
 import type { QForm } from 'quasar';
-import { debounce } from '@/utils/debounce';
+import { debounce } from '../../../utils/debounce';
 
 /** Snapshot stanu formularza przekazywany w zdarzeniach. */
 export type AbyssFormModel = Record<string, unknown>;

@@ -38,7 +38,7 @@ import { computed, ref, watch } from 'vue';
 import AbyssButton from '@/components/ui/AbyssButton/AbyssButton.vue';
 import AbyssNumericKeypad from '@/components/ui/AbyssNumericKeypad/AbyssNumericKeypad.vue';
 import AbyssPinInput from '@/components/ui/AbyssPinInput/AbyssPinInput.vue';
-import { PIN_LENGTH } from '@/utils/pinCode';
+import { PIN_LENGTH } from '../../../utils/pinCode';
 
 export interface AbyssAppLockProps {
   message?: string;

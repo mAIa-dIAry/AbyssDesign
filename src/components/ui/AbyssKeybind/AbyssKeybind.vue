@@ -67,7 +67,7 @@
 
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue';
-import { resolveDesktopShortcutFromKeyboardInput } from '@/utils/desktopShortcut';
+import { resolveDesktopShortcutFromKeyboardInput } from '../../../utils/desktopShortcut';
 
 const EMPTY_OPTIONS: string[] = [];
 
