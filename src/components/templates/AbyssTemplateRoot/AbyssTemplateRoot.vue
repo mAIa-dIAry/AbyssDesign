@@ -330,7 +330,7 @@ const hasNavigation = computed(
     width: min(100%, calc(420px + 16px));
     max-height: 100%;
     min-width: 0;
-    padding: 12px 8px;
+    padding: calc(12px + env(safe-area-inset-top, 0px)) 8px 12px;
     overflow: visible;
     overscroll-behavior: contain;
     -webkit-overflow-scrolling: touch;

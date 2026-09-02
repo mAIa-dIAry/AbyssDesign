@@ -24,7 +24,7 @@ const meta: Meta<typeof AbyssTemplateRoot> = {
           'W aplikacji layout wkłada `router-view` w slot `#content`; strona trasy montuje `AbyssTemplateMain`, `AbyssTemplateSidebar` albo `AbyssTemplateLogin`. Nie wkładaj kart, formularzy ani list bezpośrednio do Root. W Storybooku izolowane demo może zagnieździć szablon w `#content`. ' +
           'Nie importuj shadow-wrapperów `AbyssTemplate` / `AbyssScrollView` / `AbyssSidebarNav`. ' +
           'Gdy sloty `navigation-start` i `navigation-end` są puste, `<aside>` nie jest renderowany — treść zajmuje całą szerokość, a inner shadow (inset 8px) chowa się za viewportem po prawej i na dole (bez nawigacji także po lewej). ' +
-          'Strony wywołują helper kolejki `notify()`; `AbyssNotifyHost` montuj w slocie `#overlay` (nie `Teleport` ze strony). Overlay ma `gap: 0` (odstęp 8px z `::after` toasta), `padding: 12px 8px` i `max-height: 100%`. `overflow: auto` tylko gdy zmierzona wysokość kolejki przekracza limit (debounce 0,2 s = animacja wejścia, zejścia i akordeonu).',
+          'Strony wywołują helper kolejki `notify()`; `AbyssNotifyHost` montuj w slocie `#overlay` (nie `Teleport` ze strony). Overlay ma `gap: 0` (odstęp 8px z `::after` toasta), `padding: calc(12px + env(safe-area-inset-top, 0px)) 8px 12px` i `max-height: 100%`. `overflow: auto` tylko gdy zmierzona wysokość kolejki przekracza limit (debounce 0,2 s = animacja wejścia, zejścia i akordeonu).',
       },
     },
   },
@@ -115,7 +115,7 @@ const meta: Meta<typeof AbyssTemplateRoot> = {
     },
     overlay: {
       description:
-        'Warstwa nad obszarem treści (`overflow-wrapper`), kotwica w prawym górnym rogu. Montuj tu `AbyssNotifyHost`. Overlay ma `gap: 0` (odstęp kolejki z `::after` toasta), `padding: 12px 8px` i `max-height: 100%`; `overflow: auto` tylko gdy zmierzona wysokość przekracza limit (debounce 0,2 s = animacja wejścia, zejścia i akordeonu). Dostępny na **obu platformach**.',
+        'Warstwa nad obszarem treści (`overflow-wrapper`), kotwica w prawym górnym rogu. Montuj tu `AbyssNotifyHost`. Overlay ma `gap: 0` (odstęp kolejki z `::after` toasta), `padding: calc(12px + env(safe-area-inset-top, 0px)) 8px 12px` i `max-height: 100%`; `overflow: auto` tylko gdy zmierzona wysokość przekracza limit (debounce 0,2 s = animacja wejścia, zejścia i akordeonu). Dostępny na **obu platformach**.',
       table: {
         category: 'slots',
         type: { summary: 'slot' },
@@ -779,7 +779,7 @@ export const NotifyDesktop: Story = {
     docs: {
       description: {
         story:
-          'Zestaw przycisków dokładających toasty do `AbyssNotifyHost` w slocie `#overlay` (prawy górny róg obszaru treści). Overlay ma `padding: 12px 8px`; `overflow: auto` tylko gdy zmierzona wysokość przekracza limit (debounce 0,2 s = animacja wejścia, zejścia i akordeonu). Ten sam szablon pod rząd podbija `count`.',
+          'Zestaw przycisków dokładających toasty do `AbyssNotifyHost` w slocie `#overlay` (prawy górny róg obszaru treści). Overlay ma `padding: calc(12px + env(safe-area-inset-top, 0px)) 8px 12px`; `overflow: auto` tylko gdy zmierzona wysokość przekracza limit (debounce 0,2 s = animacja wejścia, zejścia i akordeonu). Ten sam szablon pod rząd podbija `count`.',
       },
       source: {
         code: notifyStorySource,

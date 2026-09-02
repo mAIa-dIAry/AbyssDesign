@@ -1,5 +1,11 @@
 # Changelog
 
+## [Unreleased]
+
+### Poprawki
+
+- Overlay `#overlay` w `AbyssTemplateRoot` dodaje `env(safe-area-inset-top)` do `padding-top`, żeby kolejka toastów nie nachodziła na pasek systemowy na mobile.
+
 ## [0.2.3] - 2026-09-02
 
 Host kolejki toastów jest komponentem Abyss: `AbyssNotifyHost` w slocie `#overlay` Root.
