@@ -151,7 +151,7 @@ import {
 } from 'vue';
 import {
   attachNotifyQueueOverflow,
-  isNotifyQueueHost,
+  findNotifyQueueHost,
   scheduleNotifyQueueOverflow,
 } from '@/components/ui/AbyssNotify/abyssNotifyQueueOverflow';
 import AbyssBackground from '@/components/ui/AbyssBackground/AbyssBackground.vue';
@@ -386,9 +386,9 @@ function onShellRef(
   detachQueueOverflow = undefined;
   shellEl.value = next;
 
-  const host = next?.parentElement;
+  const host = findNotifyQueueHost(next?.parentElement);
 
-  if (!isNotifyQueueHost(host)) {
+  if (!host) {
     return;
   }
 
@@ -396,9 +396,9 @@ function onShellRef(
 }
 
 watch(isExpanded, () => {
-  const host = shellEl.value?.parentElement;
+  const host = findNotifyQueueHost(shellEl.value?.parentElement);
 
-  if (isNotifyQueueHost(host)) {
+  if (host) {
     scheduleNotifyQueueOverflow(host);
   }
 });

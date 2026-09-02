@@ -13,6 +13,7 @@ export type NotifyDemoQueueItem = NotifyDemoTemplate & {
   instanceId: number;
   count: number;
   visible: boolean;
+  autoClose?: number;
 };
 
 export const NOTIFY_DEMO_TEMPLATES: NotifyDemoTemplate[] = [
@@ -57,6 +58,7 @@ export function enqueueNotifyDemo(
   queue: { value: NotifyDemoQueueItem[] },
   template: NotifyDemoTemplate,
   nextId: { value: number },
+  autoClose?: number,
 ): void {
   const newest = queue.value[0];
   if (newest?.id === template.id) {
@@ -70,6 +72,7 @@ export function enqueueNotifyDemo(
     instanceId: nextId.value,
     count: 1,
     visible: true,
+    ...(autoClose !== undefined ? { autoClose } : {}),
   });
   nextId.value += 1;
 }
@@ -78,11 +81,19 @@ export function createNotifyDemoQueue() {
   const queue = ref<NotifyDemoQueueItem[]>([]);
   const nextId = { value: 1 };
 
-  function enqueue(template: NotifyDemoTemplate): void {
-    enqueueNotifyDemo(queue, template, nextId);
+  function enqueue(template: NotifyDemoTemplate, autoClose?: number): void {
+    enqueueNotifyDemo(queue, template, nextId, autoClose);
   }
 
-  function remove(instanceId: number): void {
+  function setVisible(instanceId: number | string, visible: boolean): void {
+    const item = queue.value.find((entry) => entry.instanceId === instanceId);
+
+    if (item) {
+      item.visible = visible;
+    }
+  }
+
+  function remove(instanceId: number | string): void {
     queue.value = queue.value.filter((item) => item.instanceId !== instanceId);
   }
 
@@ -90,6 +101,7 @@ export function createNotifyDemoQueue() {
     templates: NOTIFY_DEMO_TEMPLATES,
     queue,
     enqueue,
+    setVisible,
     remove,
   };
 }

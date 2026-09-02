@@ -1,5 +1,15 @@
 # Changelog
 
+## [Unreleased]
+
+### Nowości
+
+- `AbyssNotifyHost` — host kolejki toastów w slocie `#overlay` `AbyssTemplateRoot` (`items`, `closeLabel`, `standalone`). Aplikacje nie trzymają `AppNotifyHost` w `shared` i nie robią `Teleport` ze strony.
+
+### Poprawki
+
+- Overflow kolejki toastów szuka hosta (`abyss-template__overlay` / `abyss-notify-queue`) w przodkach — `display: contents` na `AbyssNotifyHost` nie łamie pomiaru wysokości.
+
 ## [0.2.2] - 2026-09-02
 
 Poprawka scrolla w `AbyssTemplateMain`: restore po bottom-loaderze nie walczy z użytkownikiem.

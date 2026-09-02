@@ -107,7 +107,7 @@ Dozwolone klucze `gradient-colors`: `theme`, `success`, `info`, `warning`, `dang
 
 | #   | Reguła                                                                    | Severity |
 | --- | ------------------------------------------------------------------------- | -------- |
-| 8.1 | Sukces/błąd po akcji przez `AbyssInfo` zamiast helpera `notify()` / hosta `AbyssNotify` | 🔴       |
+| 8.1 | Sukces/błąd po akcji przez `AbyssInfo` zamiast helpera `notify()` / `AbyssNotifyHost` | 🔴       |
 | 8.2 | Brak notify po operacji zapisu/usunięcia gdy UX tego wymaga               | 🟡       |
 | 8.3 | Operacja destrukcyjna bez `AbyssInfo` + `gradient-colors="danger"`        | 🟡       |
 

@@ -30,23 +30,43 @@ function unbindWindowResize(): void {
   }
 }
 
-export function isNotifyQueueHost(
-  el: HTMLElement | null | undefined,
-): el is HTMLElement {
+export function isNotifyQueueHost(el: HTMLElement): boolean {
   return (
-    !!el &&
-    (el.classList.contains('abyss-notify-queue') ||
-      el.classList.contains('abyss-template__overlay'))
+    el.classList.contains('abyss-notify-queue') ||
+    el.classList.contains('abyss-template__overlay')
   );
+}
+
+export function findNotifyQueueHost(
+  el: HTMLElement | null | undefined,
+): HTMLElement | null {
+  let current: HTMLElement | null | undefined = el;
+
+  while (current) {
+    if (isNotifyQueueHost(current)) {
+      return current;
+    }
+
+    current = current.parentElement;
+  }
+
+  return null;
 }
 
 function layoutHeight(host: HTMLElement): number {
   let height = 0;
 
   for (const child of host.children) {
-    if (child instanceof HTMLElement) {
-      height += child.offsetHeight;
+    if (!(child instanceof HTMLElement)) {
+      continue;
     }
+
+    if (getComputedStyle(child).display === 'contents') {
+      height += layoutHeight(child);
+      continue;
+    }
+
+    height += child.offsetHeight;
   }
 
   return height;
@@ -191,7 +211,7 @@ export function attachNotifyQueueOverflow(host: HTMLElement): () => void {
   });
   activeHosts.add(host);
   bindWindowResize();
-  mutationObserver.observe(host, { childList: true });
+  mutationObserver.observe(host, { childList: true, subtree: true });
   scheduleNotifyQueueOverflow(host);
 
   return () => {

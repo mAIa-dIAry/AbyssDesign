@@ -92,7 +92,7 @@ Nie importuj shadow-wrapperów `AbyssTemplate`, `AbyssScrollView`, `AbyssSidebar
 | JSON / kolorowany kod | `AbyssCode` | Nie `AbyssDebug` poza kartą debug DS. Nie `<pre>`. |
 | Karta debug design systemu | `AbyssDebug` | Nie jako renderer JSON na stronie produktowej (to `AbyssCode`). |
 | Statyczny komunikat kontekstowy | `AbyssInfo` | Nie feedback po akcji (to `notify()`). |
-| Feedback po akcji (toast) | helper kolejki `notify()` w aplikacji; host `AbyssNotify` w overlayu Root | Nie `Teleport` `AbyssNotify` ze strony. Nie `$q.notify`. Nie reaktywny `AbyssInfo`. Nie hard-coded `notify.store`. |
+| Feedback po akcji (toast) | helper kolejki `notify()` w aplikacji; `AbyssNotifyHost` w slocie `#overlay` Root | Nie `Teleport` / `AppNotifyHost`. Nie montuj `AbyssNotify` ze strony. Nie `$q.notify`. Nie reaktywny `AbyssInfo`. Nie hard-coded `notify.store`. |
 | Pasek postępu | `AbyssProgress` | Nie spinner w miejscu (**BRAK**). Nie `AbyssTemplateMainIndicator` poza szablonem Main. |
 | Spinner / loader w miejscu (Suspense, widget) | **BRAK** | Nie `q-spinner` / `q-spinner-dots`. Nie `AbyssProgress` jako spinner. Zgłoś `make-component`. |
 | Badge statusu semantycznego (`success` / `warning` / `danger`) | **BRAK** | Nie `q-badge`. Nie `AbyssGradientBadge` (to subskrypcja gold / sakura / garden). Zgłoś `make-component`. |

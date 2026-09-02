@@ -44,7 +44,7 @@ Najważniejsze zasady interpretacji:
 7. **Operacje destrukcyjne:** `AbyssButton` z `gradient` + `gradient-colors="danger"` oraz kontekst ryzyka przez `AbyssInfo`, ikonografię i copy w `AbyssCard`.
 8. **Formularze:** zawsze owijaj pola w `AbyssForm`. Pola (`AbyssInput`, `AbyssSelect`, `AbyssToggle` itd.) mają wewnętrzny układ — nie owijaj ich dodatkowym `AbyssGrid`. Przyciski akcji pod polami układaj w `AbyssGrid` ze stałymi `INPUT_COLUMN_SIZE` i `INPUT_GRID_MAX_COLUMNS` (patrz `AbyssForm` w Storybooku). Nie używaj natywnego `<form>`.
 9. **Daty i czas:** w formularzu wyłącznie `AbyssInput` z `type="date"`, `type="time"` lub `type="datetime-local"`. Samodzielny `AbyssDate` / `AbyssTime` tylko w popupie lub toolbarze (wzorzec archiwum). Nie używaj natywnych pickerów systemowych.
-10. **Feedback po akcjach:** powodzenie lub niepowodzenie operacji (zapis, usunięcie, ponowienie itd.) komunikuj helperem kolejki `notify()` w aplikacji; host `AbyssNotify` żyje w overlayu `AbyssTemplateRoot`. Nie `AbyssInfo` i nie surowy `$q.notify`. `AbyssInfo` służy wyłącznie do **statycznych** komunikatów kontekstowych osadzonych w układzie strony.
+10. **Feedback po akcjach:** powodzenie lub niepowodzenie operacji (zapis, usunięcie, ponowienie itd.) komunikuj helperem kolejki `notify()` w aplikacji; `AbyssNotifyHost` żyje w slocie `#overlay` `AbyssTemplateRoot`. Nie `AbyssInfo` i nie surowy `$q.notify`. `AbyssInfo` służy wyłącznie do **statycznych** komunikatów kontekstowych osadzonych w układzie strony.
 11. **Główne podstrony bez tytułu strony.** Nie powielaj etykiety aktywnej zakładki nawigacji (`AbyssNavigation`) nagłówkiem w treści (np. Dashboard → zakaz `AbyssTitle` „Dashboard”). Tytuł sekcji to wyłącznie `title` na `AbyssCard`. `AbyssTitle` tylko na stronach informacyjnych i prawnych poza nawigacją — patrz [Tytuły stron i zakładek](#tytuły-stron-i-zakładek).
 12. **Warstwa nachodząca na treść z przezroczystym tłem ma `backdrop-filter`.** Każdy element, który może wizualnie nakładać się na inną treść i nie jest powierzchnią gradientową (`AbyssBackground`, `AbyssGradientBox`, `AbyssButton` z `gradient`), musi mieć `-webkit-backdrop-filter` i `backdrop-filter` — kanon to `blur(20px)`. Dotyczy dialogów, pickerów daty/czasu, menu, sticky nagłówków i własnych overlayów w komponentach złożonych (np. przycisk dyktowania nad polem edytora). Szczegóły: [Warstwy nachodzące na treść](#warstwy-nachodzące-na-treść).
 
@@ -99,7 +99,7 @@ Nie importuj shadow-wrapperów `AbyssTemplate`, `AbyssScrollView`, `AbyssSidebar
 | JSON / kolorowany kod | `AbyssCode` | Nie `AbyssDebug` poza kartą debug DS. Nie `<pre>`. |
 | Karta debug design systemu | `AbyssDebug` | Nie jako renderer JSON na stronie produktowej (to `AbyssCode`). |
 | Statyczny komunikat kontekstowy | `AbyssInfo` | Nie feedback po akcji (to `notify()`). |
-| Feedback po akcji (toast) | helper kolejki `notify()` w aplikacji; host `AbyssNotify` w overlayu Root | Nie `Teleport` `AbyssNotify` ze strony. Nie `$q.notify`. Nie reaktywny `AbyssInfo`. Nie hard-coded `notify.store`. |
+| Feedback po akcji (toast) | helper kolejki `notify()` w aplikacji; `AbyssNotifyHost` w slocie `#overlay` Root | Nie `Teleport` / `AppNotifyHost`. Nie montuj `AbyssNotify` ze strony. Nie `$q.notify`. Nie reaktywny `AbyssInfo`. Nie hard-coded `notify.store`. |
 | Pasek postępu | `AbyssProgress` | Nie spinner w miejscu (**BRAK**). Nie `AbyssTemplateMainIndicator` poza szablonem Main. |
 | Spinner / loader w miejscu (Suspense, widget) | **BRAK** | Nie `q-spinner` / `q-spinner-dots`. Nie `AbyssProgress` jako spinner. Zgłoś `make-component`. |
 | Badge statusu semantycznego (`success` / `warning` / `danger`) | **BRAK** | Nie `q-badge`. Nie `AbyssGradientBadge` (to subskrypcja gold / sakura / garden). Zgłoś `make-component`. |
@@ -151,7 +151,8 @@ Przykład niedozwolonego użycia: karta „Konto” w ustawieniach z `class="set
 | `AbyssDialog`      | warstwa tymczasowa nad treścią | `model-value`, sloty `header`, `navigation` (taby poza scrollowym body), domyślny content, `actions`; przyciski w stopce zawsze `flat`   |
 | `AbyssTitle`       | tytuł strony informacyjnej / prawnej poza nawigacją | tylko `type` (`h1`–`h6`), `icon`, `label` — **brak** `level` i `size`; nie jako tytuł karty |
 | `AbyssInfo`        | statyczny komunikat kontekstowy | `type`, `title`, `icon` — pusty stan, ostrzeżenie przed akcją, trwała wskazówka; **nie** feedback po akcji |
-| `AbyssNotify`      | toast po akcji użytkownika     | `type`, `message`, `description` (opcjonalny, domyślnie zwinięty), `count` (badge powtórzeń od 2, na prawo od tytułu), `autoClose` (ms, circular progress wokół X), `icon`, `closeable`, `v-model`, `@after-leave` — sukces/błąd operacji; **nie** stały komunikat w układzie strony |
+| `AbyssNotify`      | toast po akcji użytkownika     | `type`, `message`, `description` (opcjonalny, domyślnie zwinięty), `count` (badge powtórzeń od 2, na prawo od tytułu), `autoClose` (ms, circular progress wokół X), `icon`, `closeable`, `v-model`, `@after-leave` — sukces/błąd operacji; **nie** stały komunikat w układzie strony; w aplikacji nie montuj bezpośrednio — to `AbyssNotifyHost` |
+| `AbyssNotifyHost`  | kolejka toastów w overlayu Root | `items`, `closeLabel`, `standalone`, `@update:visible`, `@after-leave` — slot `#overlay`; poza szablonem `standalone` (klasa `abyss-notify-queue`); nie `Teleport` ze strony |
 | `AbyssButtonGroup` | zestaw akcji (toolbar, w tym pionowy) | `vertical` (lista pionowa, domyślnie 100% szerokości); dzieci: wyłącznie `AbyssButton`; nie 2–5 widoków w miejscu (to `AbyssSwitcher`) |
 | `AbyssSwitcher`    | 2–5 równorzędnych widoków w miejscu | `v-model`, `options` (`name`, `label`, opcjonalnie `icon`); wewnętrznie `AbyssButton flat` |
 | `AbyssDropdown`    | menu akcji wiersza tabeli      | dziecko aktywatora; pozycje: `AbyssButton` `flat` `full-width`                          |
@@ -172,7 +173,7 @@ Przykład niedozwolonego użycia: karta „Konto” w ustawieniach z `class="set
 | `AbyssMarkdown`    | podgląd Markdown + kod źródłowy | `source`, `v-model` (`preview` \| `code`), `content-mode`, `embedded`                  |
 | `AbyssCode`        | kolorowany kod (JSON)          | `value`, `language` (`json` \| `abyss-json`), `colorTheme` (domyślnie `one-dark`)       |
 | `AbyssDebug`       | karta debugowania DS           | `data` — cienki wrapper nad `AbyssCode language="abyss-json"`; nie renderer JSON na stronie produktowej |
-| `AbyssTemplateRoot`    | szkielet aplikacji (nav + host treści) | `device`, `orientation`, `screenRadius`, `overlayId`; w aplikacji slot `#content` = `router-view` (strona trasy montuje Main/Sidebar/Login); nie karty/formularze bezpośrednio; puste sloty `navigation-start` i `navigation-end` ukrywają sidebar (`<aside>`), inner shadow contentu (inset 8px) chowa się za viewportem po prawej i na dole (bez nawigacji także po lewej); slot `content` bez scrollu i paddingu; slot `overlay` w `overflow-wrapper` (prawy górny róg, `padding: 12px 8px`, `max-height: 100%`, `overflow: auto` tylko gdy zmierzona wysokość przekracza limit) + host `#abyss-template-overlay` na kolejkę `AbyssNotify` (implementacja hosta, nie wzorzec strony) |
+| `AbyssTemplateRoot`    | szkielet aplikacji (nav + host treści) | `device`, `orientation`, `screenRadius`, `overlayId`; w aplikacji slot `#content` = `router-view` (strona trasy montuje Main/Sidebar/Login); nie karty/formularze bezpośrednio; puste sloty `navigation-start` i `navigation-end` ukrywają sidebar (`<aside>`), inner shadow contentu (inset 8px) chowa się za viewportem po prawej i na dole (bez nawigacji także po lewej); slot `content` bez scrollu i paddingu; slot `#overlay` w `overflow-wrapper` (prawy górny róg, `padding: 12px 8px`, `max-height: 100%`, `overflow: auto` tylko gdy zmierzona wysokość przekracza limit) — tu `AbyssNotifyHost` |
 | `AbyssTemplateMain`  | przewijany obszar strony       | `device`, `safeArea`, opcjonalny reload; slot `top-bar` (poza scrollowym viewportem); padding treści w SCSS per `device` |
 | `AbyssTemplateSidebar`  | układ sidebar + detail (nawigacja zakładek) | własny scroll paneli z mixin scrollbara na urządzeniach z myszką; nie wymaga `AbyssTemplateMain` na poziomie strony |
 | `AbyssTemplateLogin`  | widok auth (logowanie)         | `device`; wewnętrzny kontener o stałej `max-width` (`ABYSS_TEMPLATE_LOGIN_MAX_WIDTH`); **wymaga `AbyssCard`** w slocie (tytuł + ikona w `#header-prepend`); przykładowa treść karty to formularz logowania (`AbyssForm`); viewport centruje treść w pionie i przewija, gdy formularz jest wyższy; padding per `device` (+ safe-area na mobile) |
@@ -441,7 +442,7 @@ Przykład podpowiedzi / pustego stanu:
 
 ## Feedback po akcjach użytkownika
 
-Po wykonaniu akcji przez użytkownika (zapis formularza, usunięcie rekordu, ponowienie zadania, błąd sieci) informacja zwrotna musi iść przez **helper kolejki `notify()` w aplikacji**. Host `AbyssNotify` żyje w overlayu `AbyssTemplateRoot` — to implementacja hosta, nie wzorzec strony. Nie `AbyssInfo` i nie surowy `$q.notify` / `Notify.create`. Ścieżka importu helpera jest lokalna dla aplikacji (nie hard-coded `notify.store`).
+Po wykonaniu akcji przez użytkownika (zapis formularza, usunięcie rekordu, ponowienie zadania, błąd sieci) informacja zwrotna musi iść przez **helper kolejki `notify()` w aplikacji**. `AbyssNotifyHost` żyje w slocie `#overlay` `AbyssTemplateRoot`. Nie `AbyssInfo` i nie surowy `$q.notify` / `Notify.create`. Ścieżka importu helpera jest lokalna dla aplikacji (nie hard-coded `notify.store`).
 
 | Sytuacja | Mechanizm | Przykład |
 | -------- | --------- | -------- |
@@ -456,7 +457,7 @@ Reguły:
 - **Nie** przełączaj widoczności `AbyssInfo` reaktywnie po `@success` / `@click` / odpowiedzi API — to antywzorzec; użytkownik traci kontekst, a layout „skacze”.
 - `AbyssNotify` jest **efemeryczny** — znika po zamknięciu (X) albo po `v-model="false"`; wejście (z góry) i zejście (w dół) trwają 0,2 s. Wysokość slotu (toast + 8px odstęp jako `::after`) zwija się razem z animacją, `overflow: visible` — toast wystaje ze slotu (`translateY`). **Ostatni** toast w kolejce przy zejściu nie zwija `grid-template-rows` — zostaje pełna wysokość, tylko zsuwa się i gaśnie. Host kolejki ma `padding: 12px 8px` i **stałą szerokość** `min(100%, 420px + 16px)`, żeby toast nie rósł z treścią — tytuł dostaje ellipsis. `overflow: auto` na hoście to **przełącznik po ciszy 0,2 s** (czas animacji): dodawanie albo usuwanie toastów, akordeon i `window.resize` tylko resetują timer — stan `auto`/`visible` nie zmienia się w trakcie serii. Po ciszy JS mierzy sumę wysokości i ustawia `auto` albo `visible`. Widoczność steruj `v-model` (jak w `AbyssTemplateRoot`), nie demontażem z `v-for` w `@close`. Nowo zamontowany toast też wchodzi (`appear`). W kolejce instancję zdejmij dopiero w `@after-leave`.
 - Overlay `AbyssNotify` (`rgba(black, 0.5)`, zaokrąglony, 1px od krawędzi toasta) obejmuje lewą ikonę i treść; przycisk zamknięcia (40×46px, ripple od press) zostaje poza overlayem, na gradiencie. Tytuł ma ellipsis. `description` jest opcjonalny i domyślnie zwinięty; przy niepustym opisie po prawej tytułu jest chevron. Kliknięcie paska tytułu (ripple od press) otwiera akordeon (0,2 s) na opisie i na tytule — od jednego wiersza z ellipsisem do pełnego zawinięcia, ze stałym odstępem pierwszego wiersza od góry. Opcjonalny `count` (≥ 2) pokazuje badge z liczbą powtórzeń tego samego toasta, na prawo od tytułu, przed chevronem; przy zmianie liczby badge puszcza rozszerzający się, zanikający ripple (0,4 s). Opcjonalny `autoClose` (ms) zamyka toast sam; wokół X widać circular progress; hover i `:focus-within` wstrzymują timer i dają pierścieniowi opacity 0,5, zmiana `count` resetuje go. Ikony (lewa, chevron, X) siedzą w kontenerach 46px wyrównanych do góry. Tekst i ikony są zawsze białe.
-- W aplikacji strony wywołują helper kolejki `notify()` — nie montują `AbyssNotify` i nie robią `Teleport` ze strony. Host kolejki w `AbyssTemplateRoot` (`#abyss-template-overlay` albo slot `#overlay`) to implementacja hosta: kotwica w prawym górnym rogu obszaru treści; nie wstawiaj toasta w przewijaną treść strony. Host overlay ma `gap: 0` — odstęp między toastami (8px) pochodzi z `::after` na shellu, nie z flex `gap`. Nie ustawiaj `top`/`right` 16px — inset to `padding: 12px 8px`, szerokość `min(100%, 420px + 16px)`, `max-height: 100%`. `overflow: auto` to przełącznik po ciszy 0,2 s (czas animacji): JS mierzy sumę wysokości i ustawia `auto` albo `visible`, bez zdejmowania `auto` w trakcie dodawania. Toasty: `width: 100%`, `min-width: 0` (ellipsis tytułu), `flex-shrink: 0` w pionie. Poza szablonem owiń `v-for` klasą `abyss-notify-queue`.
+- W aplikacji strony wywołują helper kolejki `notify()` — nie montują `AbyssNotify` i nie robią `Teleport` ze strony. `AbyssNotifyHost` montuj w slocie `#overlay` `AbyssTemplateRoot`: kotwica w prawym górnym rogu obszaru treści; nie wstawiaj toasta w przewijaną treść strony. Overlay ma `gap: 0` — odstęp między toastami (8px) pochodzi z `::after` na shellu, nie z flex `gap`. Nie ustawiaj `top`/`right` 16px — inset to `padding: 12px 8px`, szerokość `min(100%, 420px + 16px)`, `max-height: 100%`. `overflow: auto` to przełącznik po ciszy 0,2 s (czas animacji): dodawanie albo usuwanie toastów, akordeon i `window.resize` tylko resetują timer — stan `auto`/`visible` nie zmienia się w trakcie serii. Po ciszy JS mierzy sumę wysokości i ustawia `auto` albo `visible`. Toasty: `width: 100%`, `min-width: 0` (ellipsis tytułu), `flex-shrink: 0` w pionie. Poza szablonem `AbyssNotifyHost` z `standalone` (klasa `abyss-notify-queue`).
 - `AbyssInfo` pozostaje w miejscu, gdzie komunikat ma być **zawsze widoczny**, dopóki zmieni się stan ekranu (np. pojawią się dane, użytkownik zamknie dialog).
 
 Przykład ze strony (helper kolejki):
@@ -465,16 +466,17 @@ Przykład ze strony (helper kolejki):
 notify({ type: 'success', message: 'Zadanie zostało usunięte.' })
 ```
 
-Implementacja hosta w overlayu Root (nie kopiuj na stronę):
+Implementacja hosta w overlayu Root (nie kopiuj `v-for` `AbyssNotify` na stronę):
 
 ```html
-<Teleport defer to="#abyss-template-overlay">
-  <AbyssNotify
-    v-model="savedVisible"
-    type="success"
-    message="Zadanie zostało usunięte."
+<template #overlay>
+  <AbyssNotifyHost
+    :items="queue"
+    :close-label="t('common.actions.close')"
+    @update:visible="setVisible"
+    @after-leave="remove"
   />
-</Teleport>
+</template>
 ```
 
 Przykład dozwolonego `AbyssInfo` (statyczny):
@@ -756,9 +758,9 @@ Prop `expandable` lub obecność slotu `row-expand` aktywuje kolumnę +/- i wier
 - Używaj wyłącznie kluczy semantycznych w `gradient-colors`.
 - Traktuj `current` jako aktualny kontekst, a `toggled` jako aktywny, nadal klikalny stan.
 - Buduj ryzyko przez `AbyssInfo` + `gradient-colors="danger"` na przycisku operacyjnym.
-- Potwierdzaj powodzenie lub niepowodzenie akcji użytkownika helperem kolejki `notify()` w aplikacji (host `AbyssNotify` w overlayu Root).
+- Potwierdzaj powodzenie lub niepowodzenie akcji użytkownika helperem kolejki `notify()` w aplikacji (`AbyssNotifyHost` w slocie `#overlay` Root).
 - Overlay `AbyssNotify` obejmuje lewą ikonę i treść (`rgba(black, 0.5)`, zaokrąglenia, 1px od krawędzi); X zostaje na gradiencie. Tytuł z ellipsis; `description` opcjonalny i zwinięty — chevron oraz akordeon tytułu i opisu (0,2 s). Opcjonalny `count` (≥ 2) to badge powtórzeń na prawo od tytułu; zmiana liczby puszcza rozszerzający się ripple (0,4 s). Opcjonalny `autoClose` (ms) zamyka toast z circular progress wokół X; hover i `:focus-within` wstrzymują timer i ściszają pierścień do opacity 0,5. Tekst i ikony zawsze białe. Wejście/zejście: `v-model`; w kolejce zdejmuj instancję w `@after-leave`.
-- Montuj host `AbyssNotify` wyłącznie w overlayu `AbyssTemplateRoot` (`#abyss-template-overlay` albo slot `#overlay`) — implementacja hosta, nie wzorzec strony. Ze strony wołaj `notify()`. Host overlay ma `padding: 12px 8px`, `max-height: 100%` i `overflow: auto` wyłącznie gdy zmierzona wysokość kolejki przekracza `max-height`; odstęp kolejki (8px) to `::after` na shellu toasta. Poza szablonem klasa `abyss-notify-queue`.
+- Montuj `AbyssNotifyHost` wyłącznie w slocie `#overlay` `AbyssTemplateRoot`. Ze strony wołaj `notify()`. Overlay ma `padding: 12px 8px`, `max-height: 100%` i `overflow: auto` wyłącznie gdy zmierzona wysokość kolejki przekracza `max-height`; odstęp kolejki (8px) to `::after` na shellu toasta. Poza szablonem `AbyssNotifyHost` z `standalone`.
 - Używaj `AbyssInfo` wyłącznie do statycznych komunikatów kontekstowych (pusty stan, ostrzeżenie, trwała wskazówka).
 - W formularzu używaj `AbyssInput` z `type="date"`, `"time"` lub `"datetime-local"`; samodzielny `AbyssDate` / `AbyssTime` tylko w popupie lub toolbarze.
 - Owijaj pola formularza w `AbyssForm`.
@@ -791,7 +793,7 @@ Prop `expandable` lub obecność slotu `row-expand` aktywuje kolumnę +/- i wier
 - Nie używaj natywnych selektorów daty/czasu systemowych. Nie wstawiaj samodzielnego `AbyssDate` / `AbyssTime` w formularzu.
 - Nie używaj `AbyssInfo` z `v-if` / `v-show` do pokazywania sukcesu lub błędu po akcji użytkownika — użyj `notify()`.
 - Nie wywołuj `$q.notify` / `Notify.create` w nowym UI — użyj `notify()` (wyjątek: wbudowany feedback `AbyssInput` `type="copy"`).
-- Nie montuj `AbyssNotify` ani `Teleport` ze strony — wołaj `notify()`; host kolejki zostaje w overlayu Root.
+- Nie montuj `AbyssNotify` ani `Teleport` ze strony — wołaj `notify()`; `AbyssNotifyHost` zostaje w slocie `#overlay` Root. Nie trzymaj hosta kolejki w `shared` aplikacji.
 - Nie zdejmuj `AbyssNotify` z `v-for` w `@close` — animacja zejścia się nie zagra. Zostaw instancję do `@after-leave`.
 - Nie dodawaj zagnieżdżonych pionowych scrollbarów w treści `AbyssDialog` — przewijaj wyłącznie body dialogu.
 - Nie dodawaj paddingu ani `overflow: auto` na wrapperze contentu `AbyssTemplateRoot` — to odpowiedzialność `AbyssTemplateMain`, `AbyssTemplateSidebar` albo `AbyssTemplateLogin`.

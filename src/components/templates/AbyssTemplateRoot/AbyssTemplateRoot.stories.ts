@@ -8,7 +8,7 @@ import AbyssNavigation from '@/components/ui/AbyssNavigation/AbyssNavigation.vue
 import AbyssButton from '@/components/ui/AbyssButton/AbyssButton.vue';
 import AbyssButtonGroup from '@/components/ui/AbyssButtonGroup/AbyssButtonGroup.vue';
 import AbyssBackground from '@/components/ui/AbyssBackground/AbyssBackground.vue';
-import AbyssNotify from '@/components/ui/AbyssNotify/AbyssNotify.vue';
+import AbyssNotifyHost from '@/components/ui/AbyssNotifyHost/AbyssNotifyHost.vue';
 import { createNotifyDemoQueue } from '@/components/ui/AbyssNotify/AbyssNotify.demo';
 
 const meta: Meta<typeof AbyssTemplateRoot> = {
@@ -24,7 +24,7 @@ const meta: Meta<typeof AbyssTemplateRoot> = {
           'W aplikacji layout wkłada `router-view` w slot `#content`; strona trasy montuje `AbyssTemplateMain`, `AbyssTemplateSidebar` albo `AbyssTemplateLogin`. Nie wkładaj kart, formularzy ani list bezpośrednio do Root. W Storybooku izolowane demo może zagnieździć szablon w `#content`. ' +
           'Nie importuj shadow-wrapperów `AbyssTemplate` / `AbyssScrollView` / `AbyssSidebarNav`. ' +
           'Gdy sloty `navigation-start` i `navigation-end` są puste, `<aside>` nie jest renderowany — treść zajmuje całą szerokość, a inner shadow (inset 8px) chowa się za viewportem po prawej i na dole (bez nawigacji także po lewej). ' +
-          'Strony wywołują helper kolejki `notify()`; host `AbyssNotify` w overlayu (`#abyss-template-overlay` albo `overlay-id`) to implementacja hosta, nie wzorzec strony. Host ma `gap: 0` (odstęp 8px z `::after` toasta), `padding: 12px 8px` i `max-height: 100%`. `overflow: auto` tylko gdy zmierzona wysokość kolejki przekracza limit (debounce 0,2 s = animacja wejścia, zejścia i akordeonu).',
+          'Strony wywołują helper kolejki `notify()`; `AbyssNotifyHost` montuj w slocie `#overlay` (nie `Teleport` ze strony). Overlay ma `gap: 0` (odstęp 8px z `::after` toasta), `padding: 12px 8px` i `max-height: 100%`. `overflow: auto` tylko gdy zmierzona wysokość kolejki przekracza limit (debounce 0,2 s = animacja wejścia, zejścia i akordeonu).',
       },
     },
   },
@@ -99,7 +99,7 @@ const meta: Meta<typeof AbyssTemplateRoot> = {
     overlayId: {
       control: 'text',
       description:
-        'Identyfikator hosta overlay. `Teleport to="#abyss-template-overlay"` trafia tutaj. W Storybooku Docs podawaj unikalną wartość, bo na stronie jest wiele instancji szablonu',
+        'Identyfikator hosta overlay. W Storybooku Docs podawaj unikalną wartość, bo na stronie jest wiele instancji szablonu',
       table: {
         type: { summary: 'string' },
         defaultValue: { summary: `'${ABYSS_TEMPLATE_OVERLAY_ID}'` },
@@ -115,7 +115,7 @@ const meta: Meta<typeof AbyssTemplateRoot> = {
     },
     overlay: {
       description:
-        'Warstwa nad obszarem treści (`overflow-wrapper`), kotwica w prawym górnym rogu. `AbyssNotify` wstawiaj tu slotem albo `Teleport`em do `#abyss-template-overlay`. Host ma `gap: 0` (odstęp kolejki z `::after` toasta), `padding: 12px 8px` i `max-height: 100%`; `overflow: auto` tylko gdy zmierzona wysokość przekracza limit (debounce 0,2 s = animacja wejścia, zejścia i akordeonu). Dostępny na **obu platformach**.',
+        'Warstwa nad obszarem treści (`overflow-wrapper`), kotwica w prawym górnym rogu. Montuj tu `AbyssNotifyHost`. Overlay ma `gap: 0` (odstęp kolejki z `::after` toasta), `padding: 12px 8px` i `max-height: 100%`; `overflow: auto` tylko gdy zmierzona wysokość przekracza limit (debounce 0,2 s = animacja wejścia, zejścia i akordeonu). Dostępny na **obu platformach**.',
       table: {
         category: 'slots',
         type: { summary: 'slot' },
@@ -646,6 +646,11 @@ function enqueue(template) {
   queue.value.unshift({ ...template, instanceId: Date.now(), count: 1, visible: true });
 }
 
+function setVisible(instanceId, visible) {
+  const item = queue.value.find((entry) => entry.instanceId === instanceId);
+  if (item) item.visible = visible;
+}
+
 function remove(instanceId) {
   queue.value = queue.value.filter((item) => item.instanceId !== instanceId);
 }
@@ -661,6 +666,13 @@ function remove(instanceId) {
         <AbyssButton label="Start" icon="sym_r_home" route="index" />
       </AbyssNavigation>
     </template>
+    <template #overlay>
+      <AbyssNotifyHost
+        :items="queue"
+        @update:visible="setVisible"
+        @after-leave="remove"
+      />
+    </template>
     <template #content>
       <AbyssTemplateMain device="desktop">
         <AbyssButtonGroup vertical>
@@ -672,18 +684,6 @@ function remove(instanceId) {
           />
         </AbyssButtonGroup>
       </AbyssTemplateMain>
-      <Teleport defer to="#${ABYSS_TEMPLATE_OVERLAY_ID}">
-        <AbyssNotify
-          v-for="item in queue"
-          :key="item.instanceId"
-          v-model="item.visible"
-          :type="item.type"
-          :message="item.message"
-          :description="item.description"
-          :count="item.count"
-          @after-leave="remove(item.instanceId)"
-        />
-      </Teleport>
     </template>
   </AbyssTemplateRoot>
 </template>`;
@@ -714,18 +714,16 @@ const notifyQueueContent = `
               />
             </AbyssButtonGroup>
           </AbyssTemplateMain>
-          <Teleport defer :to="'#' + overlayId">
-            <AbyssNotify
-              v-for="item in queue"
-              :key="item.instanceId"
-              v-model="item.visible"
-              :type="item.type"
-              :message="item.message"
-              :description="item.description"
-              :count="item.count"
-              @after-leave="remove(item.instanceId)"
-            />
-          </Teleport>
+`;
+
+const notifyQueueOverlay = `
+        <template #overlay>
+          <AbyssNotifyHost
+            :items="queue"
+            @update:visible="setVisible"
+            @after-leave="remove"
+          />
+        </template>
 `;
 
 export const NotifyDesktop: Story = {
@@ -741,7 +739,7 @@ export const NotifyDesktop: Story = {
       AbyssButton,
       AbyssButtonGroup,
       AbyssBackground,
-      AbyssNotify,
+      AbyssNotifyHost,
     },
     setup() {
       const currentRoute = ref('index');
@@ -772,6 +770,7 @@ export const NotifyDesktop: Story = {
         <template #content>
           ${notifyQueueContent}
         </template>
+        ${notifyQueueOverlay}
       </AbyssTemplateRoot>
     `,
   }),
@@ -780,7 +779,7 @@ export const NotifyDesktop: Story = {
     docs: {
       description: {
         story:
-          'Zestaw przycisków dokładających `AbyssNotify` do kolejki w hoście overlay (`#abyss-template-overlay`) w prawym górnym rogu obszaru treści. Host ma `padding: 12px 8px`; `overflow: auto` tylko gdy zmierzona wysokość przekracza limit (debounce 0,2 s = animacja wejścia, zejścia i akordeonu). Ten sam szablon pod rząd podbija `count`.',
+          'Zestaw przycisków dokładających toasty do `AbyssNotifyHost` w slocie `#overlay` (prawy górny róg obszaru treści). Overlay ma `padding: 12px 8px`; `overflow: auto` tylko gdy zmierzona wysokość przekracza limit (debounce 0,2 s = animacja wejścia, zejścia i akordeonu). Ten sam szablon pod rząd podbija `count`.',
       },
       source: {
         code: notifyStorySource,
@@ -803,7 +802,7 @@ export const NotifyWeb: Story = {
       AbyssButton,
       AbyssButtonGroup,
       AbyssBackground,
-      AbyssNotify,
+      AbyssNotifyHost,
     },
     setup() {
       const currentRoute = ref('index');
@@ -831,6 +830,7 @@ export const NotifyWeb: Story = {
         <template #content>
           ${notifyQueueContent}
         </template>
+        ${notifyQueueOverlay}
       </AbyssTemplateRoot>
     `,
   }),
@@ -864,7 +864,7 @@ export const NotifyMobile: Story = {
       AbyssButton,
       AbyssButtonGroup,
       AbyssBackground,
-      AbyssNotify,
+      AbyssNotifyHost,
     },
     setup() {
       const currentRoute = ref('index');
@@ -887,19 +887,8 @@ export const NotifyMobile: Story = {
               />
             </AbyssButtonGroup>
           </AbyssTemplateMain>
-          <Teleport defer :to="'#' + overlayId">
-            <AbyssNotify
-              v-for="item in queue"
-              :key="item.instanceId"
-              v-model="item.visible"
-              :type="item.type"
-              :message="item.message"
-              :description="item.description"
-              :count="item.count"
-              @after-leave="remove(item.instanceId)"
-            />
-          </Teleport>
         </template>
+        ${notifyQueueOverlay}
         <template #navigation-start>
           <AbyssNavigation device="mobile" :current-route="currentRoute">
             <AbyssButton
