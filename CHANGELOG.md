@@ -1,6 +1,8 @@
 # Changelog
 
-## [Unreleased]
+## [0.2.4] - 2026-09-02
+
+Toast na mobile nie nachodzi na pasek systemowy.
 
 ### Poprawki
 
