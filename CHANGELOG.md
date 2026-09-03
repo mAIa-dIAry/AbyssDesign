@@ -1,5 +1,23 @@
 # Changelog
 
+## [0.2.5] - 2026-09-03
+
+Akcje w tabeli, pełna szerokość pól i wewnętrzne etykiety z warstwy `ui.*`.
+
+### Nowości
+
+- `full-width` na `AbyssInput` i `AbyssSelect` — etykieta zostaje widoczna nad polem na całą szerokość kontenera.
+- Domyślne etykiety zamykania i pozostałe zaszyte teksty UI pochodzą z `ui.dialog.close`, `ui.notify.close`, `ui.keypad.*`, `ui.pinInput.*`, `ui.keybind.*`, `ui.appLock.*`.
+
+### Zmiany
+
+- Komórka `AbyssTable` jest dozwolonym miejscem `AbyssButton flat` (`size="small"`); szczegóły rekordu tylko w `AbyssDialog` albo na osobnej trasie.
+- Ikonowe akcje nagłówków `AbyssCard`, `AbyssTable` i `AbyssDialog` mają ten sam promień ze skali `size="medium"` — karta i dialog nie nadpisują `--border-radius`.
+
+### Poprawki
+
+- `AbyssDialog` ustawia `aria-label` z `title`, żeby `role="dialog"` miał dostępną nazwę.
+
 ## [0.2.4] - 2026-09-02
 
 Toast na mobile nie nachodzi na pasek systemowy.
