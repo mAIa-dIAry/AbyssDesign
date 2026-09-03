@@ -67,6 +67,7 @@
 
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { resolveDesktopShortcutFromKeyboardInput } from '../../../utils/desktopShortcut';
 
 const EMPTY_OPTIONS: string[] = [];
@@ -74,6 +75,7 @@ const EMPTY_OPTIONS: string[] = [];
 export interface AbyssKeybindProps {
   modelValue?: string;
   label?: string;
+  /** Nadpisuje domyślny placeholder z `ui.keybind.placeholder`. */
   placeholder?: string;
   hint?: string;
   capturingHint?: string;
@@ -92,7 +94,7 @@ export interface AbyssKeybindProps {
 const props = withDefaults(defineProps<AbyssKeybindProps>(), {
   modelValue: '',
   label: '',
-  placeholder: 'Naciśnij kombinację klawiszy',
+  placeholder: '',
   hint: '',
   capturingHint: '',
   disable: false,
@@ -111,6 +113,8 @@ const emit = defineEmits<{
   capture: [value: string];
 }>();
 
+const { t } = useI18n();
+
 const isCapturing = ref(false);
 const selectRef = ref<{ hidePopup: () => void } | null>(null);
 const localModelParts = ref(resolveKeybindParts(props.modelValue));
@@ -127,7 +131,11 @@ const hasBottomContent = computed(() => {
 });
 
 const resolvedPlaceholder = computed(() => {
-  return localModelParts.value.length === 0 ? props.placeholder : '';
+  if (localModelParts.value.length > 0) {
+    return '';
+  }
+
+  return props.placeholder || t('ui.keybind.placeholder');
 });
 
 const resolvedHint = computed(() => {

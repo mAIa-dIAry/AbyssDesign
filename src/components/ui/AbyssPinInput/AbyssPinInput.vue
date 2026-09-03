@@ -3,7 +3,7 @@
     <div
       class="abyss-pin-input__dots"
       role="status"
-      :aria-label="ariaLabel"
+      :aria-label="resolvedAriaLabel"
       :tabindex="resolvedTabindex"
       :aria-disabled="disable || undefined"
     >
@@ -26,12 +26,14 @@
 
 <script setup lang="ts">
 import { computed } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { PIN_LENGTH } from '../../../utils/pinCode';
 
 export interface AbyssPinInputProps {
   modelValue?: string;
   pinLength?: number;
   errorMessage?: string;
+  /** Nadpisuje domyślną nazwę dostępną z `ui.pinInput.ariaLabel`. */
   ariaLabel?: string;
   tabindex?: number;
   disable?: boolean;
@@ -46,12 +48,18 @@ const props = withDefaults(defineProps<AbyssPinInputProps>(), {
   modelValue: '',
   pinLength: PIN_LENGTH,
   errorMessage: '',
-  ariaLabel: 'Wprowadzony kod PIN',
+  ariaLabel: '',
   tabindex: 0,
   disable: false,
   style: '',
   class: '',
 });
+
+const { t } = useI18n();
+
+const resolvedAriaLabel = computed(
+  () => props.ariaLabel || t('ui.pinInput.ariaLabel'),
+);
 
 const filledLength = computed(() => props.modelValue.length);
 const activeDotIndex = computed(() => {

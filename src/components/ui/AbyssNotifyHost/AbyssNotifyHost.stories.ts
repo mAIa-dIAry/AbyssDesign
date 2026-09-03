@@ -40,8 +40,9 @@ const meta: Meta<typeof AbyssNotifyHost> = {
     },
     closeLabel: {
       control: 'text',
-      description: 'Etykieta aria przycisku zamknięcia na każdym toaście',
-      table: { defaultValue: { summary: 'Zamknij' } },
+      description:
+        'Nadpisuje nazwę dostępną przycisku zamknięcia na toastach. Domyślnie z warstwy i18n Abyss (`ui.notify.close`)',
+      table: { defaultValue: { summary: "t('ui.notify.close')" } },
     },
     standalone: {
       control: 'boolean',
@@ -63,7 +64,7 @@ const meta: Meta<typeof AbyssNotifyHost> = {
     },
   },
   args: {
-    closeLabel: 'Zamknij',
+    closeLabel: '',
     standalone: true,
     'onUpdate:visible': fn(),
     'onAfter-leave': fn(),
@@ -85,7 +86,6 @@ export const Default: Story = {
         code: `<AbyssNotifyHost
   standalone
   :items="queue"
-  close-label="Zamknij"
   @update:visible="setVisible"
   @after-leave="remove"
 />`,

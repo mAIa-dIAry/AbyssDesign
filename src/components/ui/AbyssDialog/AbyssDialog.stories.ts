@@ -100,7 +100,8 @@ const meta: Meta<AbyssDialogStoryArgs> = {
     },
     title: {
       control: 'text',
-      description: 'Tekst wyświetlany w nagłówku dialogu.',
+      description:
+        'Tekst wyświetlany w nagłówku dialogu. Jest też nazwą dostępną powierzchni (`aria-label` na `role="dialog"`).',
       table: {
         defaultValue: { summary: '""' },
         type: { summary: 'string' },
@@ -132,9 +133,10 @@ const meta: Meta<AbyssDialogStoryArgs> = {
     },
     closeButtonAriaLabel: {
       control: 'text',
-      description: 'Etykieta dostępności przycisku zamknięcia.',
+      description:
+        'Nadpisuje nazwę dostępną przycisku zamknięcia. Domyślnie komponent bierze ją z warstwy i18n Abyss (`ui.dialog.close`) — aplikacja nie musi tłumaczyć elementu wewnętrznego design systemu.',
       table: {
-        defaultValue: { summary: 'Zamknij dialog' },
+        defaultValue: { summary: "t('ui.dialog.close')" },
         type: { summary: 'string' },
       },
     },
@@ -178,7 +180,7 @@ const meta: Meta<AbyssDialogStoryArgs> = {
     icon: 'sym_r_warning',
     closeButton: true,
     closeButtonIcon: 'sym_r_close',
-    closeButtonAriaLabel: 'Zamknij dialog',
+    closeButtonAriaLabel: '',
     actions: baseActions,
     class: '',
     style: '',

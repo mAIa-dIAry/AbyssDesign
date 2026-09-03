@@ -49,7 +49,7 @@ const meta: Meta<AbyssButtonStoryArgs> = {
           '- `danger` — operacje nieodwracalne (np. usunięcie danych).\n' +
           '- `hint` — akcje informacyjne lub prowadzące do pobocznego procesu.\n\n' +
           'Kolory `success`, `info`, `warning`, `danger` i `hint` są kontekstowe — w dialogu z potwierdzeniem i anulowaniem przycisk operacyjny dostaje kolor zależny od wykonywanej akcji. Nie używaj wariantu gradientowego, jeśli akcja jest jedyna na liście.\n\n' +
-          '**`flat`** — wyłącznie w nagłówku i stopce `AbyssCard` oraz w `AbyssDialog`. W tych miejscach **każdy** przycisk jest `flat`. Akcja operacyjna z kolorem semantycznym łączy `flat` + `gradient` + `gradientColors`; akcja pomocnicza (anulowanie, ikona kontekstowa) zostaje jako samo `flat`.\n\n' +
+          '**`flat`** — tylko w dozwolonych miejscach: nagłówek i stopka `AbyssCard`, `AbyssDialog`, sloty `#prepend` / `#append` `AbyssInput`, akcje `AbyssNavHeader`, wnętrze `AbyssSwitcher`, komórka `AbyssTable`. W nagłówku/stopce karty i w dialogu **każdy** przycisk jest `flat`. Akcja operacyjna z kolorem semantycznym łączy `flat` + `gradient` + `gradientColors`; akcja pomocnicza (anulowanie, ikona kontekstowa, akcja w komórce tabeli) zostaje jako samo `flat`.\n\n' +
           'Pełna matryca decyzyjna: `docs/architecture/abyss-design.md`.',
       },
     },
@@ -147,7 +147,7 @@ const meta: Meta<AbyssButtonStoryArgs> = {
     flat: {
       control: 'boolean',
       description:
-        'Płaski styl bez cienia i unoszenia. Obowiązkowy dla każdego przycisku w nagłówku/stopce `AbyssCard` i w `AbyssDialog`. Akcje operacyjne łącz z `gradient` + `gradientColors`.',
+        'Płaski styl bez cienia i unoszenia. Obowiązkowy w: header/stopka `AbyssCard`, `AbyssDialog`, sloty Input, akcje `AbyssNavHeader`, wnętrze `AbyssSwitcher`, komórka `AbyssTable`. W karcie i dialogu akcje operacyjne łącz z `gradient` + `gradientColors`.',
       table: {
         defaultValue: { summary: 'false' },
       },

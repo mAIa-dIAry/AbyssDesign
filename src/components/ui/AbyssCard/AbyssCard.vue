@@ -98,10 +98,6 @@ const hasFooter = computed(() => {
     &:empty {
       display: none;
     }
-
-    :deep(.abyss-button) {
-      --border-radius: 12px;
-    }
   }
 
   .abyss-card-prepend {

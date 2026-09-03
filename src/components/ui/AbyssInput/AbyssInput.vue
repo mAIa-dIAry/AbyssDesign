@@ -9,9 +9,12 @@
   >
     <AbyssGrid
       class="abyss-input-wrapper"
-      :class="{ 'abyss-input-wrapper--no-label': !hasLabel }"
-      :column-size="hasLabel ? INPUT_COLUMN_SIZE : '100%'"
-      :max-columns="hasLabel ? INPUT_GRID_MAX_COLUMNS : 0"
+      :class="{
+        'abyss-input-wrapper--no-label': !hasLabel,
+        'abyss-input-wrapper--full-width': fullWidth,
+      }"
+      :column-size="isSingleColumn ? '100%' : INPUT_COLUMN_SIZE"
+      :max-columns="isSingleColumn ? 0 : INPUT_GRID_MAX_COLUMNS"
       :rowGap="ABYSS_INPUT_ROW_GAP"
       content-rows
     >
@@ -239,6 +242,8 @@ export interface AbyssInputProps {
   collapsed?: boolean;
   /** Usuwa cień pola — wariant bez wypukłości, np. w nagłówku tabeli. */
   flat?: boolean;
+  /** Etykieta nad polem, pole na pełną szerokość kontenera (np. `textarea` odpowiedzi). */
+  fullWidth?: boolean;
   size?: 'small' | 'big';
   /** Quasar QDate `options` — np. ograniczenie wybieralnych dni (format daty: YYYY/MM/DD). */
   dateOptions?: (date: string) => boolean;
@@ -268,6 +273,7 @@ const props = withDefaults(defineProps<AbyssInputProps>(), {
   fillMask: false,
   collapsed: false,
   flat: false,
+  fullWidth: false,
   size: 'big',
 });
 
@@ -282,6 +288,8 @@ const hasBottomContent = computed(() => {
 });
 
 const hasLabel = computed(() => Boolean(props.label));
+
+const isSingleColumn = computed(() => !hasLabel.value || props.fullWidth);
 
 const effectivePlaceholder = computed(() => {
   const value = props.modelValue;
@@ -562,7 +570,8 @@ function handleInputBlur() {
   .abyss-input-wrapper {
     width: 100%;
 
-    &--no-label {
+    &--no-label,
+    &--full-width {
       grid-template-columns: 1fr;
     }
 

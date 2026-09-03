@@ -42,11 +42,13 @@ Najważniejsze zasady interpretacji:
 5. **Scroll w dialogu — tylko body.** W `AbyssDialog` jedynym pionowym kontenerem przewijania jest `abyss-dialog__body`. Taby i nawigacja idą do slotu `navigation` (poza body). Treść w body nie może mieć własnych pionowych scrollbarów — używaj `AbyssTable` bez `height`, `AbyssCode` z `scrollable={false}`, `AbyssMarkdown` w trybie osadzonym bez wewnętrznych paneli ze scrollem.
 6. **Jedna czytelna hierarchia akcji na blok.** Użytkownik ma od razu widzieć akcję główną, wspierającą i informacyjną. Realizuj to kombinacją `gradient`, `gradientColors`, `flat`, `embedded` i `full-width` na `AbyssButton`.
 7. **Operacje destrukcyjne:** `AbyssButton` z `gradient` + `gradient-colors="danger"` oraz kontekst ryzyka przez `AbyssInfo`, ikonografię i copy w `AbyssCard`.
-8. **Formularze:** zawsze owijaj pola w `AbyssForm`. Pola (`AbyssInput`, `AbyssSelect`, `AbyssToggle` itd.) mają wewnętrzny układ — nie owijaj ich dodatkowym `AbyssGrid`. Przyciski akcji pod polami układaj w `AbyssGrid` ze stałymi `INPUT_COLUMN_SIZE` i `INPUT_GRID_MAX_COLUMNS` (patrz `AbyssForm` w Storybooku). Nie używaj natywnego `<form>`.
+8. **Formularze:** zawsze owijaj pola w `AbyssForm`. Pola (`AbyssInput`, `AbyssSelect`, `AbyssToggle` itd.) mają wewnętrzny układ — nie owijaj ich dodatkowym `AbyssGrid`. Przyciski akcji pod polami układaj w `AbyssGrid` ze stałymi `INPUT_COLUMN_SIZE` i `INPUT_GRID_MAX_COLUMNS` (patrz `AbyssForm` w Storybooku). Nie używaj natywnego `<form>`. Pole na pełną szerokość z widoczną etykietą to prop `full-width` na `AbyssInput` / `AbyssSelect` — nie usuwanie `label` i nie nadpisywanie wewnętrznej siatki.
 9. **Daty i czas:** w formularzu wyłącznie `AbyssInput` z `type="date"`, `type="time"` lub `type="datetime-local"`. Samodzielny `AbyssDate` / `AbyssTime` tylko w popupie lub toolbarze (wzorzec archiwum). Nie używaj natywnych pickerów systemowych.
 10. **Feedback po akcjach:** powodzenie lub niepowodzenie operacji (zapis, usunięcie, ponowienie itd.) komunikuj helperem kolejki `notify()` w aplikacji; `AbyssNotifyHost` żyje w slocie `#overlay` `AbyssTemplateRoot`. Nie `AbyssInfo` i nie surowy `$q.notify`. `AbyssInfo` służy wyłącznie do **statycznych** komunikatów kontekstowych osadzonych w układzie strony.
 11. **Główne podstrony bez tytułu strony.** Nie powielaj etykiety aktywnej zakładki nawigacji (`AbyssNavigation`) nagłówkiem w treści (np. Dashboard → zakaz `AbyssTitle` „Dashboard”). Tytuł sekcji to wyłącznie `title` na `AbyssCard`. `AbyssTitle` tylko na stronach informacyjnych i prawnych poza nawigacją — patrz [Tytuły stron i zakładek](#tytuły-stron-i-zakładek).
-12. **Warstwa nachodząca na treść z przezroczystym tłem ma `backdrop-filter`.** Każdy element, który może wizualnie nakładać się na inną treść i nie jest powierzchnią gradientową (`AbyssBackground`, `AbyssGradientBox`, `AbyssButton` z `gradient`), musi mieć `-webkit-backdrop-filter` i `backdrop-filter` — kanon to `blur(20px)`. Dotyczy dialogów, pickerów daty/czasu, menu, sticky nagłówków i własnych overlayów w komponentach złożonych (np. przycisk dyktowania nad polem edytora). Szczegóły: [Warstwy nachodzące na treść](#warstwy-nachodzące-na-treść).
+12. **Szczegóły rekordu tylko w dialogu albo na osobnej trasie.** Treść, która pojawia się po kliknięciu rekordu (wiersz tabeli, karta tablicy, kafelek listy), idzie do `AbyssDialog` albo na osobną stronę — nigdy jako append, prepend czy rozwijany blok w bieżącej treści. Kryteria wyboru: [Szczegóły rekordu](#szczegóły-rekordu).
+13. **Etykiety wewnętrzne komponentów pochodzą z warstwy `ui.*`.** Nazwy dostępne i teksty elementów wewnętrznych Abyss (zamknięcie dialogu i toasta, kopiowanie, paginacja tabeli, klawiatura PIN, przechwytywanie skrótu) mają domyślne tłumaczenia w `src/i18n` pakietu: `ui.dialog.close`, `ui.notify.close`, `ui.input.*`, `ui.table.*`, `ui.keypad.*`, `ui.pinInput.*`, `ui.keybind.*`, `ui.appLock.*`. Aplikacja nie musi ich podawać; propsy tekstowe (`closeButtonAriaLabel`, `closeLabel`, `backspaceLabel`, `ariaLabel`, `placeholder` itd.) służą wyłącznie do nadpisania i domyślnie są puste.
+14. **Warstwa nachodząca na treść z przezroczystym tłem ma `backdrop-filter`.** Każdy element, który może wizualnie nakładać się na inną treść i nie jest powierzchnią gradientową (`AbyssBackground`, `AbyssGradientBox`, `AbyssButton` z `gradient`), musi mieć `-webkit-backdrop-filter` i `backdrop-filter` — kanon to `blur(20px)`. Dotyczy dialogów, pickerów daty/czasu, menu, sticky nagłówków i własnych overlayów w komponentach złożonych (np. przycisk dyktowania nad polem edytora). Szczegóły: [Warstwy nachodzące na treść](#warstwy-nachodzące-na-treść).
 
 ---
 
@@ -91,6 +93,9 @@ Nie importuj shadow-wrapperów `AbyssTemplate`, `AbyssScrollView`, `AbyssSidebar
 | Sticky nagłówek kontekstowy (detal, wstecz) | `AbyssNavHeader` | Nie duplikat etykiety głównej zakładki. Przyciski w `#actions`: `size="medium"` `flat` `embedded`. |
 | Menu akcji wiersza tabeli | `AbyssDropdown` | Nie lista przycisków poza Dropdown. Trigger: `icon-only` `more_vert`. |
 | Tabela danych | `AbyssTable` (`as-card` na stronie; bez `as-card` w dialogu / panelu) | Nie `q-table`. Dwa tryby to jeden komponent — kontekst ustawia prop, nie drugi kontener. |
+| Akcja w komórce tabeli (otwarcie rekordu, trigger menu) | `AbyssButton` `flat` `size="small"` w `q-td` | Nie przycisk bez `flat` (konkuruje z tabelą). Nie klikalny cały wiersz — to wiersz listy (**BRAK**). |
+| Szczegóły rekordu po kliknięciu | `AbyssDialog` albo osobna trasa — kryteria w [Szczegóły rekordu](#szczegóły-rekordu) | Nie blok dopięty pod listą / tabelą. Nie `row-expand` jako pełny widok szczegółów. |
+| Pole formularza na pełną szerokość z etykietą | `full-width` na `AbyssInput` / `AbyssSelect` | Nie usuwanie `label` (pole traci dostępną nazwę). Nie nadpisywanie wewnętrznej siatki pola. |
 | Ciągła seria czasowa | `AbyssChart` | Nie `AbyssHistogram` (koszyki / udział). |
 | Koszyki / udział | `AbyssHistogram` | Nie `AbyssChart` (seria ciągła). |
 | Oś czasu zdarzeń | `AbyssTimeline` + `AbyssTimelineItem` | Nie lista kart jako timeline. |
@@ -111,7 +116,9 @@ Nie importuj shadow-wrapperów `AbyssTemplate`, `AbyssScrollView`, `AbyssSidebar
 | Skrót klawiszowy | `AbyssKeybind` | — |
 | Strona 404 / błąd | `AbyssTemplateMain` + `AbyssButton` | Nie `q-btn` i surowy szablon Quasar `ErrorNotFound`. |
 
-**`flat` na `AbyssButton` — jedna lista miejsc:** header i stopka `AbyssCard`, `AbyssDialog`, sloty `#prepend` / `#append` w `AbyssInput`, akcje `AbyssNavHeader`, wnętrze `AbyssSwitcher`. Wszędzie indziej `flat` jest naruszeniem (w tym wiersz listy — patrz **BRAK** powyżej).
+**`flat` na `AbyssButton` — jedna lista miejsc:** header i stopka `AbyssCard`, `AbyssDialog`, sloty `#prepend` / `#append` w `AbyssInput`, akcje `AbyssNavHeader`, wnętrze `AbyssSwitcher`, komórka `AbyssTable` (akcja rekordu i trigger menu). Wszędzie indziej `flat` jest naruszeniem (w tym wiersz listy — patrz **BRAK** powyżej).
+
+Komórka tabeli a wiersz listy to dwie różne potrzeby: akcja **wewnątrz komórki** `AbyssTable` jest dozwolonym `flat` (patrz [Akcje w komórkach](#akcje-w-komórkach)), a klikalny **cały wiersz / list-row** nadal nie ma prymitywu (**BRAK**) — nie buduj go z `AbyssButton flat`.
 
 ### Quasar dozwolony
 
@@ -148,7 +155,7 @@ Przykład niedozwolonego użycia: karta „Konto” w ustawieniach z `class="set
 | Komponent          | Rola                           | Kluczowe propsy / sloty                                                                 |
 | ------------------ | ------------------------------ | --------------------------------------------------------------------------------------- |
 | `AbyssCard`        | kontener sekcji                | `title`, sloty `header-prepend`, `header-append`, `content`, `footer` (rzadko)           |
-| `AbyssDialog`      | warstwa tymczasowa nad treścią | `model-value`, sloty `header`, `navigation` (taby poza scrollowym body), domyślny content, `actions`; przyciski w stopce zawsze `flat`   |
+| `AbyssDialog`      | warstwa tymczasowa nad treścią | `model-value`, `title` (widoczny nagłówek i `aria-label` na `role="dialog"`), sloty `header`, `navigation` (taby poza scrollowym body), domyślny content, `actions`; przyciski w stopce zawsze `flat`   |
 | `AbyssTitle`       | tytuł strony informacyjnej / prawnej poza nawigacją | tylko `type` (`h1`–`h6`), `icon`, `label` — **brak** `level` i `size`; nie jako tytuł karty |
 | `AbyssInfo`        | statyczny komunikat kontekstowy | `type`, `title`, `icon` — pusty stan, ostrzeżenie przed akcją, trwała wskazówka; **nie** feedback po akcji |
 | `AbyssNotify`      | toast po akcji użytkownika     | `type`, `message`, `description` (opcjonalny, domyślnie zwinięty), `count` (badge powtórzeń od 2, na prawo od tytułu), `autoClose` (ms, circular progress wokół X), `icon`, `closeable`, `v-model`, `@after-leave` — sukces/błąd operacji; **nie** stały komunikat w układzie strony; w aplikacji nie montuj bezpośrednio — to `AbyssNotifyHost` |
@@ -405,7 +412,8 @@ Na **głównych podstronach** (trasy z `AbyssNavigation` / zakładki sidebara) n
 ### Reguły `AbyssCard`
 
 - Karta z tytułem **zawsze** ma ikonę w `header-prepend` odpowiadającą tematowi sekcji.
-- Akcje kontekstowe (odświeżenie, filtr) w `header-append` jako `AbyssButton` z `flat` i ewentualnie `size="small"`.
+- Akcje kontekstowe (odświeżenie, filtr, menu) w `header-append` jako `AbyssButton` `flat` z **`size="medium"`** — bez widocznego labela, dostępna nazwa z `aria-label`. `size="small"` w nagłówku jest nieprawidłowy: zmniejsza obszar interakcji i odstaje od pozostałych akcji nagłówkowych.
+- Ikonowe akcje nagłówków `AbyssCard`, `AbyssTable` i `AbyssDialog` mają **ten sam wygląd** — promień pochodzi ze skali `size` przycisku (`medium` → 6px). Nagłówek nie nadpisuje `--border-radius` przycisku, więc stany hover / focus / active są identyczne w karcie, tabeli i dialogu.
 - Stopka (`footer`, `footer-prepend`, `footer-append`) tylko w specyficznych sytuacjach (np. niezapisane zmiany) — nie w standardowym układzie.
 - `AbyssInfo` stosuj tylko, gdy komunikat ma tytuł lub status semantyczny **i jest częścią stałego układu ekranu** (np. pusty stan tabeli, ostrzeżenie przed usunięciem konta).
 - Nie używaj `AbyssInfo` do pokazywania wyniku akcji użytkownika (sukces/błąd po API) — do tego służy helper kolejki `notify()`.
@@ -521,14 +529,14 @@ Reguły:
 - Kolory `success`, `info`, `warning`, `danger` i `hint` są kontekstowe — w dialogu z potwierdzeniem i anulowaniem przycisk operacyjny dostaje kolor zależny od wykonywanej akcji.
 - `warning` ma priorytet nad `info`, gdy chodzi o zapis lub potwierdzenie czegoś istotnego.
 - Nie używaj `gradient`, jeśli akcja jest jedyna na liście poza kartą/dialogiem.
-- W nagłówku i stopce `AbyssCard` oraz w `AbyssDialog` **wszystkie** przyciski używają `flat`. Akcja operacyjna łączy `flat` + `gradient` + `gradient-colors`. Ta sama lista miejsc `flat`: header/stopka karty, dialog, sloty Input, akcje `AbyssNavHeader`, wnętrze `AbyssSwitcher`.
+- W nagłówku i stopce `AbyssCard` oraz w `AbyssDialog` **wszystkie** przyciski używają `flat`. Akcja operacyjna łączy `flat` + `gradient` + `gradient-colors`. Ta sama lista miejsc `flat`: header/stopka karty, dialog, sloty Input, akcje `AbyssNavHeader`, wnętrze `AbyssSwitcher`, komórki `AbyssTable`.
 
 ### Warianty semantyczne
 
 | Wariant    | Kiedy używać                                                                 | Nie używaj gdy                                                         |
 | ---------- | ---------------------------------------------------------------------------- | ---------------------------------------------------------------------- |
 | domyślny   | jedyna akcja na liście albo akcja pomocnicza bez gradientu                   | główna akcja operacyjna w parze decyzyjnej                            |
-| `flat`     | header/stopka `AbyssCard`, `AbyssDialog`, `#prepend`/`#append` `AbyssInput`, akcje `AbyssNavHeader`, wnętrze `AbyssSwitcher` | poza tą listą (w tym wiersz listy — **BRAK** prymitywu) |
+| `flat`     | header/stopka `AbyssCard`, `AbyssDialog`, `#prepend`/`#append` `AbyssInput`, akcje `AbyssNavHeader`, wnętrze `AbyssSwitcher`, komórka `AbyssTable` | poza tą listą (w tym wiersz listy — **BRAK** prymitywu) |
 | `current`  | aktualnie aktywny kontekst (nawigacja, wybrany rekord)                       | stan przełączalny toggle; tymczasowy filtr                             |
 | `toggled`  | włączony stan nadal klikalny (toolbar, filtry)                               | nawigacja, aktywny route                                               |
 | `gradient` | akcja operacyjna ze znaczeniem semantycznym                                   | bez `flat` w headerze/stopce karty i dialogu                         |
@@ -582,6 +590,7 @@ Przyciski wbudowane w `AbyssInput` (hasło, lupa, kopiuj, data): przy `size="sma
 ```
 
 - Pola bez dodatkowego `AbyssGrid` — wewnętrzna siatka jest w `AbyssInput` / `AbyssSelect`.
+- Domyślnie etykieta stoi obok pola (siatka `INPUT_COLUMN_SIZE` × 2 kolumny). Gdy pole ma zająć całą szerokość kontenera — np. długa odpowiedź w `type="textarea"` albo pole w wąskiej kolumnie — dodaj `full-width`: etykieta przechodzi nad pole i zostaje widoczna.
 - Przyciski akcji w `AbyssGrid` z `INPUT_COLUMN_SIZE`, `INPUT_GRID_MAX_COLUMNS`, `size="big"`, `full-width`.
 - Zmiana hasła: trigger w karcie → dedykowany `AbyssDialog` z polami hasła (wyjątek: logowanie).
 
@@ -726,6 +735,29 @@ Domyślnie **wyłączone**. Włącz tylko gdy wiersz ma dodatkową treść poza 
 
 Prop `expandable` lub obecność slotu `row-expand` aktywuje kolumnę +/- i wiersz rozwinięcia.
 
+#### Akcje w komórkach
+
+Komórka `AbyssTable` jest dozwolonym miejscem `flat` — akcja w wierszu nie może wyglądać jak wypełniony przycisk, bo konkuruje z tabelą i rozjeżdża układ wiersza.
+
+| Akcja w wierszu | Wariant |
+| --------------- | ------- |
+| Otwarcie szczegółów rekordu (tytuł, nazwa) | `AbyssButton` `flat` `size="small"` z etykietą rekordu, bez `gradient` |
+| Trigger menu akcji rekordu | `AbyssButton` `flat` `size="small"` `icon="sym_r_more_vert"` + `aria-label` |
+| Akcje wewnątrz menu | `AbyssButton` `flat` `full-width` `size="medium"` w `AbyssDropdown` |
+
+`size="small"` odpowiada gęstości tabeli — tej samej skali używają wbudowane przyciski rozwijania i paginacji. `size="medium"` jest zarezerwowany dla akcji **nagłówka** (`#header-append`), nie dla komórek.
+
+```html
+<q-td :props="cellProps">
+  <AbyssButton
+    flat
+    size="small"
+    :label="cellProps.row.title"
+    @click="openDetails(cellProps.row)"
+  />
+</q-td>
+```
+
 #### Kolumna akcji
 
 - Nagłówek kolumny może mieć etykietę (np. „Akcje”).
@@ -735,9 +767,8 @@ Prop `expandable` lub obecność slotu `row-expand` aktywuje kolumnę +/- i wier
 ```html
 <AbyssButton
   flat
-  size="medium"
+  size="small"
   icon="sym_r_more_vert"
-  class="icon-button"
   :aria-label="t('routes.workers.actions.menu')"
 >
   <AbyssDropdown anchor="bottom right" self="top right">
@@ -745,6 +776,17 @@ Prop `expandable` lub obecność slotu `row-expand` aktywuje kolumnę +/- i wier
   </AbyssDropdown>
 </AbyssButton>
 ```
+
+#### Szczegóły rekordu
+
+Kliknięcie rekordu (wiersz tabeli, karta tablicy, kafelek listy) prowadzi **wyłącznie** do jednego z dwóch miejsc:
+
+| Miejsce | Kiedy |
+| ------- | ----- |
+| `AbyssDialog` | krótkie, skupione zadanie lub podgląd; kontekst strony nadrzędnej ma zostać widoczny; szczegóły nie potrzebują własnego URL |
+| Osobna strona / trasa | widok ma wiele sekcji lub własną nawigację, musi obsługiwać odświeżenie i deep link, prowadzi dalej do kolejnych zasobów |
+
+Nie renderuj szczegółów jako append, prepend ani rozwijanego bloku w treści bieżącej strony — patrz [Don't](#do--dont).
 
 ---
 
@@ -754,7 +796,9 @@ Prop `expandable` lub obecność slotu `row-expand` aktywuje kolumnę +/- i wier
 
 - Używaj ikony w `header-prepend` przy każdym tytule `AbyssCard`.
 - Umieszczaj kontekstowe akcje karty w `header-append` jako `AbyssButton flat`.
-- Traktuj `flat` jako obowiązkowy wariant w: headerze/stopce `AbyssCard`, `AbyssDialog`, slotach `#prepend`/`#append` `AbyssInput`, akcjach `AbyssNavHeader`, wnętrzu `AbyssSwitcher`; akcje operacyjne w karcie/dialogu łącz z `gradient`.
+- Traktuj `flat` jako obowiązkowy wariant w: headerze/stopce `AbyssCard`, `AbyssDialog`, slotach `#prepend`/`#append` `AbyssInput`, akcjach `AbyssNavHeader`, wnętrzu `AbyssSwitcher`, komórkach `AbyssTable`; akcje operacyjne w karcie/dialogu łącz z `gradient`.
+- Akcję osadzoną w komórce `AbyssTable` buduj jako `AbyssButton` `flat` `size="small"` — tekstową z etykietą rekordu albo ikonową z `aria-label`; bez `gradient`, gdy akcja tylko otwiera szczegóły.
+- Szczegóły rekordu po kliknięciu pokazuj w `AbyssDialog` albo na osobnej trasie — nigdy jako blok dopięty do bieżącej strony.
 - Używaj wyłącznie kluczy semantycznych w `gradient-colors`.
 - Traktuj `current` jako aktualny kontekst, a `toggled` jako aktywny, nadal klikalny stan.
 - Buduj ryzyko przez `AbyssInfo` + `gradient-colors="danger"` na przycisku operacyjnym.
@@ -764,6 +808,10 @@ Prop `expandable` lub obecność slotu `row-expand` aktywuje kolumnę +/- i wier
 - Używaj `AbyssInfo` wyłącznie do statycznych komunikatów kontekstowych (pusty stan, ostrzeżenie, trwała wskazówka).
 - W formularzu używaj `AbyssInput` z `type="date"`, `"time"` lub `"datetime-local"`; samodzielny `AbyssDate` / `AbyssTime` tylko w popupie lub toolbarze.
 - Owijaj pola formularza w `AbyssForm`.
+- Rozciągaj pole na pełną szerokość propsem `full-width` na `AbyssInput` / `AbyssSelect` — etykieta zostaje widoczna nad polem.
+- Dawaj ikonowym akcjom nagłówków `AbyssCard`, `AbyssTable` i `AbyssDialog` `size="medium"` i zostaw promień ze skali przycisku.
+- Zostaw domyślne etykiety wewnętrzne z warstwy `ui.*` (m.in. `ui.dialog.close`, `ui.notify.close`, `ui.keypad.*`, `ui.keybind.placeholder`) — propsy tekstowe tylko do nadpisania.
+- Dawaj `AbyssDialog` niepusty `title` — Quasar stawia `role="dialog"` bez nazwy; komponent przepisuje `title` na `aria-label`.
 - Używaj `AbyssInput` z `type="copy"` dla wartości tylko do odczytu z kopiowaniem do schowka — pole jest `readonly`, przycisk jest wbudowany w `#append`, klik/focus zaznacza całą treść, a feedback po kopiowaniu realizuje wbudowany Quasar Notify.
 - Ustawiaj i zmieniaj hasło wyłącznie w dedykowanym `AbyssDialog`.
 - Używaj `AbyssMarkdown` dla generycznego podglądu Markdown; logikę changelogu trzymaj w komponencie aplikacji (`ChangeLog`).
@@ -779,7 +827,9 @@ Prop `expandable` lub obecność slotu `row-expand` aktywuje kolumnę +/- i wier
 ### Don't
 
 - Nie dodawaj własnych klas CSS, stylów inline ani nadpisań SCSS na prymitywach Abyss **w formularzach i standardowych kartach** — tam wystarczają propsy.
-- Nie używaj `flat` poza headerem/stopką `AbyssCard`, `AbyssDialog`, slotami `#prepend` / `#append` w `AbyssInput`, akcjami `AbyssNavHeader` i wnętrzem `AbyssSwitcher`.
+- Nie używaj `flat` poza headerem/stopką `AbyssCard`, `AbyssDialog`, slotami `#prepend` / `#append` w `AbyssInput`, akcjami `AbyssNavHeader`, wnętrzem `AbyssSwitcher` i komórkami `AbyssTable`.
+- Nie zdejmuj `flat` z akcji w komórce `AbyssTable` — wypełniony przycisk konkuruje z tabelą i rozjeżdża wiersz.
+- Nie dopinaj szczegółów rekordu pod listą, tabelą ani tablicą (`<Records /> <RecordDetails v-if="selectedId" />`) — to zmienia wysokość strony, przesuwa źródło kliknięcia i nie daje jednoznacznego zamknięcia ani deep linku. Rozwijanie techniczne udokumentowane w komponencie (np. `row-expand`) nie jest widokiem szczegółów rekordu.
 - Nie używaj footera `AbyssCard` w standardowym układzie.
 - Nie używaj `gradient`, gdy akcja jest jedyna na liście poza kartą/dialogiem.
 - Nie używaj `theme` dla lokalnej głównej akcji w bloku.
@@ -788,6 +838,10 @@ Prop `expandable` lub obecność slotu `row-expand` aktywuje kolumnę +/- i wier
 - Nie używaj `icon-only` dla akcji o niejasnej lub nieodwracalnej konsekwencji.
 - Nie buduj pseudo-grup przycisków ręcznie — użyj `AbyssButtonGroup`. Nie używaj `AbyssButtonGroup` na 2–5 widoków w miejscu — to `AbyssSwitcher`.
 - Nie owijaj `AbyssInput` ani `AbyssSelect` w dodatkowy `AbyssGrid`.
+- Nie usuwaj `label`, żeby pole zajęło pełną szerokość, i nie nadpisuj jego wewnętrznej siatki — użyj `full-width`.
+- Nie ustawiaj `size="small"` na ikonowej akcji nagłówka karty, tabeli ani dialogu — nagłówek ma `size="medium"`.
+- Nie tłumacz w aplikacji wewnętrznych etykiet Abyss (zamknięcie dialogu i toasta, klawiatura PIN, placeholder skrótu) — domyślne wartości pochodzą z warstwy `ui.*` pakietu.
+- Nie otwieraj `AbyssDialog` bez `title` — Quasar stawia `role="dialog"` bez nazwy; `title` jest `aria-label` powierzchni.
 - Nie zostawiaj pól formularza poza `AbyssForm` i nie używaj natywnego `<form>`.
 - Nie duplikuj pola `readonly` i osobnego przycisku „Kopiuj” — użyj `AbyssInput` z `type="copy"`.
 - Nie używaj natywnych selektorów daty/czasu systemowych. Nie wstawiaj samodzielnego `AbyssDate` / `AbyssTime` w formularzu.

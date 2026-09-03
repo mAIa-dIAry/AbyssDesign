@@ -1,7 +1,12 @@
 import type { Meta, StoryObj } from "@storybook/vue3";
-import { expect } from "storybook/test";
+import { expect, waitFor, within } from "storybook/test";
+import { ref } from "vue";
+import AbyssButton from "@/components/ui/AbyssButton/AbyssButton.vue";
+import AbyssDialog from "@/components/ui/AbyssDialog/AbyssDialog.vue";
+import AbyssDropdown from "@/components/ui/AbyssDropdown/AbyssDropdown.vue";
 import AbyssTable from "@/components/ui/AbyssTable/AbyssTable.vue";
 import { withAbyssBackground } from "@/stories/AbyssBackgroundDecorator";
+import { withAbyssBackgroundDialogScope } from "@/stories/StoryDialogScopeDecorator";
 
 const columns = [
   {
@@ -149,7 +154,12 @@ const meta: Meta<typeof AbyssTable> = {
   title: "UI/AbyssTable",
   component: AbyssTable,
   tags: ["autodocs"],
-  decorators: [withAbyssBackground],
+  decorators: [
+    (story, context) =>
+      context.parameters.abyssDialogScope
+        ? withAbyssBackgroundDialogScope(story, context)
+        : withAbyssBackground(story, context),
+  ],
   argTypes: {
     asCard: {
       control: "boolean",
@@ -411,6 +421,170 @@ export const AsCard: Story = {
   play: async ({ canvasElement }) => {
     const table = canvasElement.querySelector(".abyss-table");
     await expect(table).toHaveClass("abyss-table--as-card");
+  },
+};
+
+const recordColumns = [
+  {
+    name: "title",
+    label: "Plan",
+    field: "title",
+    align: "left" as const,
+    sortable: true,
+  },
+  {
+    name: "owner",
+    label: "Właściciel",
+    field: "owner",
+    align: "left" as const,
+  },
+  {
+    name: "actions",
+    label: "Akcje",
+    field: "id",
+    align: "right" as const,
+  },
+];
+
+const recordRows = [
+  { id: "onboarding", title: "Onboarding zespołu", owner: "Marta" },
+  { id: "migration", title: "Migracja bazy", owner: "Tomasz" },
+  { id: "audit", title: "Audyt bezpieczeństwa", owner: "Iga" },
+];
+
+export const CellActions: Story = {
+  name: "Akcje w komórkach",
+  parameters: {
+    abyssDialogScope: true,
+    docs: {
+      description: {
+        story:
+          "Akcja osadzona w komórce `AbyssTable` używa `AbyssButton` z `flat` i `size=\"small\"` — bez `flat` wiersz dostałby wizualną powierzchnię przycisku konkurującą z tabelą. " +
+          "Kolumna akcji rekordu ma ikonowy trigger `more_vert` (`flat`, `aria-label`) z `AbyssDropdown`; pełne etykiety akcji zostają w menu. " +
+          "Kliknięcie rekordu otwiera szczegóły w `AbyssDialog` albo na osobnej trasie — nigdy jako blok dopięty pod tabelą.",
+      },
+      source: {
+        code: `<q-td :props="cellProps">
+  <AbyssButton
+    :label="cellProps.row.title"
+    flat
+    size="small"
+    @click="openDetails(cellProps.row)"
+  />
+</q-td>
+
+<q-td :props="cellProps">
+  <AbyssButton
+    flat
+    size="small"
+    icon="sym_r_more_vert"
+    aria-label="Akcje rekordu"
+  >
+    <AbyssDropdown anchor="bottom right" self="top right" :min-width="200">
+      <AbyssButton v-close-popup flat full-width size="medium" icon="sym_r_edit" label="Edytuj" />
+      <AbyssButton v-close-popup flat full-width size="medium" icon="sym_r_delete" label="Usuń" />
+    </AbyssDropdown>
+  </AbyssButton>
+</q-td>`,
+      },
+    },
+  },
+  render: () => ({
+    components: { AbyssButton, AbyssDialog, AbyssDropdown, AbyssTable },
+    setup() {
+      const selected = ref<{ title: string; owner: string } | null>(null);
+      const isDetailsOpen = ref(false);
+
+      function openDetails(row: { title: string; owner: string }): void {
+        selected.value = row;
+        isDetailsOpen.value = true;
+      }
+
+      return {
+        recordColumns,
+        recordRows,
+        selected,
+        isDetailsOpen,
+        openDetails,
+      };
+    },
+    template: `
+      <AbyssTable
+        as-card
+        title="Plany"
+        hide-search
+        :rows="recordRows"
+        :columns="recordColumns"
+        row-key="id"
+      >
+        <template #body="bodyProps">
+          <q-tr :props="bodyProps">
+            <q-td key="title" :props="bodyProps">
+              <AbyssButton
+                flat
+                size="small"
+                :label="bodyProps.row.title"
+                @click="openDetails(bodyProps.row)"
+              />
+            </q-td>
+            <q-td key="owner" :props="bodyProps">
+              {{ bodyProps.row.owner }}
+            </q-td>
+            <q-td key="actions" :props="bodyProps">
+              <AbyssButton
+                flat
+                size="small"
+                icon="sym_r_more_vert"
+                aria-label="Akcje rekordu"
+              >
+                <AbyssDropdown anchor="bottom right" self="top right" :min-width="200">
+                  <AbyssButton
+                    v-close-popup
+                    flat
+                    full-width
+                    size="medium"
+                    icon="sym_r_edit"
+                    label="Edytuj"
+                  />
+                  <AbyssButton
+                    v-close-popup
+                    flat
+                    full-width
+                    size="medium"
+                    icon="sym_r_delete"
+                    label="Usuń"
+                  />
+                </AbyssDropdown>
+              </AbyssButton>
+            </q-td>
+          </q-tr>
+        </template>
+      </AbyssTable>
+
+      <AbyssDialog
+        v-model="isDetailsOpen"
+        close-button
+        icon="sym_r_assignment"
+        :title="selected?.title ?? ''"
+      >
+        Właściciel: {{ selected?.owner }}
+      </AbyssDialog>
+    `,
+  }),
+  play: async ({ canvas, canvasElement, userEvent }) => {
+    const recordAction = canvas.getByRole("button", {
+      name: "Onboarding zespołu",
+    });
+    await expect(recordAction).toBeVisible();
+    await userEvent.click(recordAction);
+
+    // Quasar teleportuje dialog do body; dekorator przenosi portal z opóźnieniem.
+    const page = within(canvasElement.ownerDocument.body);
+    await waitFor(() => {
+      const dialog = page.getByRole("dialog", { name: "Onboarding zespołu" });
+      expect(dialog).toBeInTheDocument();
+      expect(within(dialog).getByText(/Właściciel:\s*Marta/)).toBeInTheDocument();
+    });
   },
 };
 

@@ -103,7 +103,7 @@
         unelevated
         no-caps
         :ripple="{ early: true }"
-        :aria-label="closeLabel"
+        :aria-label="closeAriaLabel"
         :style="autoCloseStyle"
         @click="onClose"
       >
@@ -149,6 +149,7 @@ import {
   watch,
   type ComponentPublicInstance,
 } from 'vue';
+import { useI18n } from 'vue-i18n';
 import {
   attachNotifyQueueOverflow,
   findNotifyQueueHost,
@@ -175,6 +176,7 @@ export interface AbyssNotifyProps {
   count?: number;
   icon?: string;
   closeable?: boolean;
+  /** Nadpisuje domyślną nazwę dostępną z `ui.notify.close`. */
   closeLabel?: string;
   autoClose?: number;
   modelValue?: boolean;
@@ -193,7 +195,7 @@ const props = withDefaults(defineProps<AbyssNotifyProps>(), {
   description: '',
   icon: '',
   closeable: true,
-  closeLabel: 'Zamknij',
+  closeLabel: '',
   modelValue: true,
   style: '',
   class: '',
@@ -214,6 +216,10 @@ const isFocusWithin = ref(false);
 let autoCloseTimer: ReturnType<typeof setTimeout> | undefined;
 let autoCloseStartedAt = 0;
 let autoCloseRemaining = 0;
+
+const { t } = useI18n();
+
+const closeAriaLabel = computed(() => props.closeLabel || t('ui.notify.close'));
 
 const isVisible = computed(() => props.modelValue);
 

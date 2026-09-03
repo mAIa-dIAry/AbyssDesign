@@ -78,8 +78,9 @@ const meta: Meta<typeof AbyssNotify> = {
     },
     closeLabel: {
       control: 'text',
-      description: 'Etykieta dostępności przycisku zamknięcia',
-      table: { defaultValue: { summary: '"Zamknij"' } },
+      description:
+        'Nadpisuje nazwę dostępną przycisku zamknięcia. Domyślnie z warstwy i18n Abyss (`ui.notify.close`)',
+      table: { defaultValue: { summary: "t('ui.notify.close')" } },
     },
     autoClose: {
       control: 'number',

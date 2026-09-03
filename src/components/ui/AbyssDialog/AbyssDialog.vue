@@ -3,6 +3,7 @@
     :model-value="modelValue"
     transition-show="abyss-dialog-jump-down"
     transition-hide="abyss-dialog-jump-up"
+    :aria-label="title || undefined"
     v-bind="$attrs"
     @update:model-value="emit('update:modelValue', $event)"
     @hide="emit('close')"
@@ -27,7 +28,7 @@
               <AbyssButton
                 v-if="closeButton"
                 :icon="closeButtonIcon"
-                :aria-label="closeButtonAriaLabel"
+                :aria-label="closeAriaLabel"
                 flat
                 size="medium"
                 @click="emit('update:modelValue', false)"
@@ -77,6 +78,7 @@
 
 <script setup lang="ts">
 import { computed, useSlots } from 'vue';
+import { useI18n } from 'vue-i18n';
 import AbyssButton from '@/components/ui/AbyssButton/AbyssButton.vue';
 import AbyssButtonGroup from '@/components/ui/AbyssButtonGroup/AbyssButtonGroup.vue';
 import AbyssSeparator from '@/components/ui/AbyssSeparator/AbyssSeparator.vue';
@@ -119,6 +121,7 @@ export interface AbyssDialogProps {
   icon?: string;
   closeButton?: boolean;
   closeButtonIcon?: string;
+  /** Nadpisuje domyślną nazwę dostępną z `ui.dialog.close`. */
   closeButtonAriaLabel?: string;
   actions?: AbyssDialogAction[];
   class?: AbyssDialogClass;
@@ -131,7 +134,7 @@ const props = withDefaults(defineProps<AbyssDialogProps>(), {
   icon: '',
   closeButton: false,
   closeButtonIcon: 'sym_r_close',
-  closeButtonAriaLabel: 'Zamknij dialog',
+  closeButtonAriaLabel: '',
   actions: () => [],
   class: '',
   style: '',
@@ -144,6 +147,11 @@ const emit = defineEmits<{
 }>();
 
 const slots = useSlots();
+const { t } = useI18n();
+
+const closeAriaLabel = computed(
+  () => props.closeButtonAriaLabel || t('ui.dialog.close'),
+);
 
 const hasHeader = computed(() => {
   return !!(
@@ -238,10 +246,6 @@ function getActionButtonProps(
 
     &:empty {
       display: none;
-    }
-
-    :deep(.abyss-button) {
-      --border-radius: 12px;
     }
   }
 

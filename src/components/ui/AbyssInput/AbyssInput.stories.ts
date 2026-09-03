@@ -86,6 +86,12 @@ const meta: Meta<typeof AbyssInput> = {
         'Wariant bez cienia — np. w nagłówku tabeli lub zwartym toolbarze',
       table: { defaultValue: { summary: 'false' } },
     },
+    fullWidth: {
+      control: 'boolean',
+      description:
+        'Etykieta nad polem, pole na pełną szerokość kontenera — dla długiej odpowiedzi (`textarea`) lub pola w wąskiej kolumnie. Bez tego propsa etykieta stoi obok pola w siatce dwukolumnowej.',
+      table: { defaultValue: { summary: 'false' } },
+    },
     style: {
       control: 'object',
       description:
@@ -281,6 +287,43 @@ export const Textarea: Story = {
     },
     template: `<AbyssInput v-bind="args" v-model="args.modelValue" />`,
   }),
+};
+
+export const FullWidth: Story = {
+  args: {
+    modelValue: '',
+    label: 'Twoja odpowiedź',
+    placeholder: 'Opisz, co się wydarzyło...',
+    type: 'textarea',
+    fullWidth: true,
+    counter: true,
+    maxLength: 500,
+    hint: 'Maksymalnie 500 znaków',
+  },
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'Prop `full-width` zostawia widoczną etykietę, przenosi ją nad pole i rozciąga kontrolkę na całą szerokość kontenera. Nie usuwaj `label`, żeby uzyskać pełną szerokość — pole straciłoby dostępną nazwę. Wariant działa dla każdego `type`, w szczególności `textarea`.',
+      },
+    },
+  },
+  render: (args) => ({
+    components: { AbyssInput },
+    setup() {
+      return { args };
+    },
+    template: `<AbyssInput v-bind="args" v-model="args.modelValue" />`,
+  }),
+  play: async ({ canvas }) => {
+    const field = canvas.getByRole('textbox');
+    await expect(field).toBeVisible();
+    await expect(canvas.getByText('Twoja odpowiedź')).toBeVisible();
+    await expect(canvas.getByText('Maksymalnie 500 znaków')).toBeVisible();
+    await expect(
+      canvas.getByText('Twoja odpowiedź').closest('.abyss-input-wrapper'),
+    ).toHaveClass('abyss-input-wrapper--full-width');
+  },
 };
 
 export const WithError: Story = {

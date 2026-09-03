@@ -17,7 +17,7 @@ const meta: Meta<typeof AbyssCard> = {
           'Komponent karty (AbyssCard) służy do wyświetlania zawartości w kontenerze z nagłówkiem i treścią.\n\n' +
           '**Nagłówek** — sloty `header-prepend`, `header`, `header-append`:\n' +
           '- Przy tytule **zawsze** umieszczaj w `header-prepend` ikonę odpowiadającą tematowi karty (`q-icon`).\n' +
-          '- Kontekstowe akcje typowe dla danej karty (np. odświeżenie danych, ustawienia widoku) umieszczaj w `header-append` jako płaskie przyciski ikonowe (`AbyssButton` + `flat`).\n' +
+          '- Kontekstowe akcje typowe dla danej karty (np. odświeżenie danych, ustawienia widoku) umieszczaj w `header-append` jako płaskie przyciski ikonowe (`AbyssButton` + `flat` + `size="medium"` + `aria-label`, bez widocznego labela). Promień bierze się ze skali przycisku — karta go nie nadpisuje.\n' +
           '- W nagłówku i stopce karty **każdy** przycisk jest `flat`. Akcja operacyjna z kolorem semantycznym łączy `flat` + `gradient` + `gradientColors`.\n\n' +
           '**Stopka** — sloty `footer-prepend`, `footer`, `footer-append`:\n' +
           '- Zarezerwowana wyłącznie na specyficzne sytuacje (np. niezapisane zmiany w trakcie edycji). **Nie stosuj footera w standardowym układzie karty.** Akcje zapisu i potwierdzenia należą do treści, dialogu albo osobnego flow — nie do stopki karty.\n\n' +

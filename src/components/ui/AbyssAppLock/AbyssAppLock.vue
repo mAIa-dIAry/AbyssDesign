@@ -24,7 +24,7 @@
       v-if="showBiometricUnlock"
       class="abyss-app-lock__biometric"
       icon="sym_r_fingerprint"
-      :label="biometricUnlockLabel"
+      :label="resolvedBiometricUnlockLabel"
       :loading="isUnlocking"
       :disable="disable"
       full-width
@@ -35,6 +35,7 @@
 
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue';
+import { useI18n } from 'vue-i18n';
 import AbyssButton from '@/components/ui/AbyssButton/AbyssButton.vue';
 import AbyssNumericKeypad from '@/components/ui/AbyssNumericKeypad/AbyssNumericKeypad.vue';
 import AbyssPinInput from '@/components/ui/AbyssPinInput/AbyssPinInput.vue';
@@ -46,9 +47,13 @@ export interface AbyssAppLockProps {
   disable?: boolean;
   showBiometricUnlock?: boolean;
   isUnlocking?: boolean;
+  /** Nadpisuje domyślną etykietę z `ui.appLock.biometricUnlock`. */
   biometricUnlockLabel?: string;
+  /** Nadpisuje domyślną nazwę dostępną z `ui.keypad.backspace`. */
   backspaceLabel?: string;
+  /** Nadpisuje domyślną nazwę dostępną z `ui.pinInput.ariaLabel`. */
   dotsAriaLabel?: string;
+  /** Nadpisuje domyślną nazwę dostępną z `ui.keypad.label`. */
   keypadLabel?: string;
   pinLength?: number;
   chaos?: boolean;
@@ -66,10 +71,10 @@ const props = withDefaults(defineProps<AbyssAppLockProps>(), {
   disable: false,
   showBiometricUnlock: false,
   isUnlocking: false,
-  biometricUnlockLabel: 'Odblokuj',
-  backspaceLabel: 'Usuń ostatnią cyfrę',
-  dotsAriaLabel: 'Wprowadzony kod PIN',
-  keypadLabel: 'Klawiatura numeryczna',
+  biometricUnlockLabel: '',
+  backspaceLabel: '',
+  dotsAriaLabel: '',
+  keypadLabel: '',
   pinLength: PIN_LENGTH,
   chaos: false,
   resetToken: 0,
@@ -81,6 +86,12 @@ const emit = defineEmits<{
   complete: [pin: string];
   'unlock-biometric': [];
 }>();
+
+const { t } = useI18n();
+
+const resolvedBiometricUnlockLabel = computed(
+  () => props.biometricUnlockLabel || t('ui.appLock.biometricUnlock'),
+);
 
 const enteredPin = ref('');
 const enteredLength = computed(() => enteredPin.value.length);

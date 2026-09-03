@@ -31,8 +31,9 @@ const meta: Meta<typeof AbyssKeybind> = {
     },
     placeholder: {
       control: 'text',
-      description: 'Placeholder widoczny, gdy nie ma ustawionej kombinacji.',
-      table: { defaultValue: { summary: '"Naciśnij kombinację klawiszy"' } },
+      description:
+        'Placeholder widoczny, gdy nie ma ustawionej kombinacji. Pusty prop bierze tekst z `ui.keybind.placeholder`.',
+      table: { defaultValue: { summary: 'ui.keybind.placeholder' } },
     },
     hint: {
       control: 'text',

@@ -5,8 +5,9 @@
   >
     <AbyssGrid
       class="abyss-select-wrapper"
-      :column-size="INPUT_COLUMN_SIZE"
-      :max-columns="INPUT_GRID_MAX_COLUMNS"
+      :class="{ 'abyss-select-wrapper--full-width': fullWidth }"
+      :column-size="fullWidth ? '100%' : INPUT_COLUMN_SIZE"
+      :max-columns="fullWidth ? 0 : INPUT_GRID_MAX_COLUMNS"
       :rowGap="ABYSS_INPUT_ROW_GAP"
       content-rows
     >
@@ -177,6 +178,7 @@ const props = withDefaults(defineProps<AbyssSelectProps>(), {
   dense: false,
   size: 'big',
   flat: false,
+  fullWidth: false,
   behavior: 'menu',
   popupNoRouteDismiss: false,
   disableTabSelection: false,
@@ -423,6 +425,10 @@ function resolveControlElement(): HTMLElement | null {
 
   .abyss-select-wrapper {
     width: 100%;
+
+    &--full-width {
+      grid-template-columns: 1fr;
+    }
 
     :deep(.abyss-select) {
       --control-radius-top: var(--border-radius);

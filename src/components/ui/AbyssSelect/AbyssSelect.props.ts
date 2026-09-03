@@ -39,6 +39,8 @@ export interface AbyssSelectProps {
   dense?: boolean;
   size?: 'small' | 'big';
   flat?: boolean;
+  /** Etykieta nad polem, kontrolka na pełną szerokość kontenera. */
+  fullWidth?: boolean;
   prefix?: string;
   suffix?: string;
   tabindex?: number | string;

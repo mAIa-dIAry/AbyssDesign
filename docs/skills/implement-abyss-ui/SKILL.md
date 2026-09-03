@@ -84,6 +84,9 @@ Nie importuj shadow-wrapperów `AbyssTemplate`, `AbyssScrollView`, `AbyssSidebar
 | Sticky nagłówek kontekstowy (detal, wstecz) | `AbyssNavHeader` | Nie duplikat etykiety głównej zakładki. Przyciski w `#actions`: `size="medium"` `flat` `embedded`. |
 | Menu akcji wiersza tabeli | `AbyssDropdown` | Nie lista przycisków poza Dropdown. Trigger: `icon-only` `more_vert`. |
 | Tabela danych | `AbyssTable` (`as-card` na stronie; bez `as-card` w dialogu / panelu) | Nie `q-table`. Dwa tryby to jeden komponent — kontekst ustawia prop, nie drugi kontener. |
+| Akcja w komórce tabeli (otwarcie rekordu, trigger menu) | `AbyssButton` `flat` `size="small"` w `q-td` | Nie przycisk bez `flat` (konkuruje z tabelą). Nie klikalny cały wiersz — to wiersz listy (**BRAK**). |
+| Szczegóły rekordu po kliknięciu | `AbyssDialog` (krótkie zadanie, podgląd) albo osobna trasa (wiele sekcji, deep link) | Nie blok dopięty pod listą / tabelą. Nie `row-expand` jako pełny widok szczegółów. |
+| Pole formularza na pełną szerokość z etykietą | `full-width` na `AbyssInput` / `AbyssSelect` | Nie usuwanie `label`. Nie nadpisywanie wewnętrznej siatki pola. |
 | Ciągła seria czasowa | `AbyssChart` | Nie `AbyssHistogram` (koszyki / udział). |
 | Koszyki / udział | `AbyssHistogram` | Nie `AbyssChart` (seria ciągła). |
 | Oś czasu zdarzeń | `AbyssTimeline` + `AbyssTimelineItem` | Nie lista kart jako timeline. |
@@ -104,7 +107,9 @@ Nie importuj shadow-wrapperów `AbyssTemplate`, `AbyssScrollView`, `AbyssSidebar
 | Skrót klawiszowy | `AbyssKeybind` | — |
 | Strona 404 / błąd | `AbyssTemplateMain` + `AbyssButton` | Nie `q-btn` i surowy szablon Quasar `ErrorNotFound`. |
 
-**`flat` na `AbyssButton` — jedna lista miejsc:** header i stopka `AbyssCard`, `AbyssDialog`, sloty `#prepend` / `#append` w `AbyssInput`, akcje `AbyssNavHeader`, wnętrze `AbyssSwitcher`. Wszędzie indziej `flat` jest naruszeniem (w tym wiersz listy — patrz **BRAK** powyżej).
+**`flat` na `AbyssButton` — jedna lista miejsc:** header i stopka `AbyssCard`, `AbyssDialog`, sloty `#prepend` / `#append` w `AbyssInput`, akcje `AbyssNavHeader`, wnętrze `AbyssSwitcher`, komórka `AbyssTable` (akcja rekordu i trigger menu). Wszędzie indziej `flat` jest naruszeniem (w tym wiersz listy — patrz **BRAK** powyżej).
+
+Akcja **w komórce** tabeli to dozwolony `flat` (`size="small"`); klikalny **cały wiersz / list-row** nadal nie ma prymitywu (**BRAK**) — nie buduj go z `AbyssButton flat`.
 
 ### Quasar dozwolony
 
@@ -138,6 +143,7 @@ Reguły układu:
 - Przyciski akcji pod polami: `AbyssGrid` z `align="right"`, `:column-size="INPUT_COLUMN_SIZE"`, `:max-columns="INPUT_GRID_MAX_COLUMNS"`.
 - Przyciski główne: `size="big"`, często `full-width`.
 - Pola (`AbyssInput` / `AbyssSelect`): `size="small"` \| `"big"` (domyślnie `big`) — ta sama nazwa co przycisk.
+- Pole na pełną szerokość kontenera z widoczną etykietą: prop `full-width` (etykieta nad polem). Nie usuwaj `label` i nie nadpisuj wewnętrznej siatki pola.
 - Hasło: zmiana/ustawienie **tylko** w `AbyssDialog`; w karcie wyłącznie trigger (wyjątek: pole hasła przy logowaniu).
 
 | `size` | Typy | Wysokość | Font | Ikona | Padding (y / x) | Radius |
@@ -154,7 +160,8 @@ Reguły układu:
 
 - `theme` — globalne CTA aplikacji, nie lokalna akcja w karcie.
 - W karcie/dialogu: każdy przycisk **`flat`**; akcja operacyjna dodatkowo `gradient` + `gradient-colors`.
-- Pełna lista miejsc `flat`: Krok 2 (header/stopka Card, Dialog, Input prepend/append, NavHeader actions, wnętrze Switcher).
+- Pełna lista miejsc `flat`: Krok 2 (header/stopka Card, Dialog, Input prepend/append, NavHeader actions, wnętrze Switcher, komórka Table).
+- Ikonowe akcje nagłówków `AbyssCard` / `AbyssTable` / `AbyssDialog`: `flat` + `size="medium"` + `aria-label`, bez widocznego labela. Akcje w komórkach tabeli: `flat` + `size="small"`.
 - Anulowanie: samo `flat`, bez gradientu.
 - Nie używaj własnych tablic kolorów.
 
@@ -162,7 +169,7 @@ Reguły układu:
 
 | Prop         | Kiedy                                                                                |
 | ------------ | ------------------------------------------------------------------------------------ |
-| `flat`       | header/stopka `AbyssCard`, `AbyssDialog`, `#prepend`/`#append` `AbyssInput`, akcje `AbyssNavHeader`, wnętrze `AbyssSwitcher` |
+| `flat`       | header/stopka `AbyssCard`, `AbyssDialog`, `#prepend`/`#append` `AbyssInput`, akcje `AbyssNavHeader`, wnętrze `AbyssSwitcher`, komórka `AbyssTable` |
 | `gradient`   | akcja operacyjna ze znaczeniem (z `flat` w karcie/dialogu)                           |
 | `embedded`   | akcja poboczna (np. reset hasła)                                                     |
 | `current`    | aktywny route / wybrany kontekst nawigacji                                           |
@@ -193,6 +200,10 @@ Szybki test:
 - [ ] Brak custom klas na prymitywach w formularzach/kartach
 - [ ] Brak Quasara spoza tabeli „Quasar dozwolony”
 - [ ] Wiersz **BRAK** (spinner, list-row, badge statusu) nie zastąpiony Quasarem
+- [ ] Szczegóły rekordu w `AbyssDialog` albo na osobnej trasie — nie dopięte pod listą / tabelą
+- [ ] Ikonowe akcje nagłówków kart, tabel i dialogów: `size="medium"`; akcje w komórkach tabeli: `size="small"`
+- [ ] Brak tłumaczenia wewnętrznych etykiet Abyss (zamknięcie dialogu / toasta) w aplikacji
+- [ ] `AbyssDialog` ma niepusty `title` (nazwa dostępna powierzchni)
 
 ## Przykłady decyzji
 

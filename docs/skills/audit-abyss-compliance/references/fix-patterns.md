@@ -33,9 +33,11 @@ Quasar **zostaw** wyłącznie z tabeli „Quasar dozwolony” w `abyss-design.md
 
 ```html
 <template #header-append>
-  <AbyssButton flat size="small" icon="refresh" label="Odśwież" />
+  <AbyssButton flat size="medium" icon="sym_r_refresh" aria-label="Odśwież" />
 </template>
 ```
+
+Ikonowa akcja nagłówka: `size="medium"`, bez widocznego labela, nazwa dostępna z `aria-label`. Ten sam wygląd w `AbyssCard`, `AbyssTable` i `AbyssDialog` — nie nadpisuj promienia przycisku.
 
 **Dynamiczny AbyssInfo po akcji → Notify:**
 
@@ -74,7 +76,23 @@ Import: helper kolejki w aplikacji (nie hard-coded `notify.store`).
 <AbyssButton flat gradient gradient-colors="danger" label="Usuń" full-width />
 ```
 
-**Usuń `flat` poza listą miejsc** (header/stopka Card, Dialog, Input prepend/append, NavHeader actions, wnętrze Switcher). Wiersz listy z `flat` to **BRAK** prymitywu — nie „naprawiaj” Quasarem ani nie legalizuj `flat` na liście.
+**Usuń `flat` poza listą miejsc** (header/stopka Card, Dialog, Input prepend/append, NavHeader actions, wnętrze Switcher, komórka `AbyssTable`). Wiersz listy z `flat` to **BRAK** prymitywu — nie „naprawiaj” Quasarem ani nie legalizuj `flat` na liście.
+
+**Nie zdejmuj `flat` z akcji w komórce `AbyssTable`** — to dozwolone miejsce:
+
+```html
+<q-td :props="cellProps">
+  <AbyssButton flat size="small" :label="cellProps.row.title" @click="openDetails(cellProps.row)" />
+</q-td>
+```
+
+**Szczegóły rekordu dopięte pod listą → `AbyssDialog` albo osobna trasa:**
+
+```html
+<!-- Antywzorzec -->
+<Records @open="selectedId = $event" />
+<RecordDetails v-if="selectedId" :id="selectedId" />
+```
 
 ---
 

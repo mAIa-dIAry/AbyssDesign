@@ -4,7 +4,7 @@
     :class="$props.class"
     :style="style"
     role="group"
-    :aria-label="keypadLabel"
+    :aria-label="resolvedKeypadLabel"
   >
     <template v-for="key in layoutKeys" :key="key.id">
       <AbyssButton
@@ -23,7 +23,7 @@
         embedded
         full-width
         :disable="disable || !canBackspace"
-        :aria-label="backspaceLabel"
+        :aria-label="resolvedBackspaceLabel"
         @click="emit('backspace')"
       />
       <AbyssButton
@@ -33,7 +33,7 @@
         embedded
         full-width
         :disable="disable"
-        :aria-label="shuffleLabel"
+        :aria-label="resolvedShuffleLabel"
         @click="handleShuffle"
       />
       <span
@@ -46,7 +46,8 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch } from 'vue';
+import { computed, ref, watch } from 'vue';
+import { useI18n } from 'vue-i18n';
 import AbyssButton from '@/components/ui/AbyssButton/AbyssButton.vue';
 
 type KeypadKey =
@@ -83,8 +84,11 @@ export interface AbyssNumericKeypadProps {
   disable?: boolean;
   canBackspace?: boolean;
   chaos?: boolean;
+  /** Nadpisuje domyślną nazwę dostępną z `ui.keypad.backspace`. */
   backspaceLabel?: string;
+  /** Nadpisuje domyślną nazwę dostępną z `ui.keypad.shuffle`. */
   shuffleLabel?: string;
+  /** Nadpisuje domyślną nazwę dostępną z `ui.keypad.label`. */
   keypadLabel?: string;
   style?: string | Record<string, string>;
   class?:
@@ -97,9 +101,9 @@ const props = withDefaults(defineProps<AbyssNumericKeypadProps>(), {
   disable: false,
   canBackspace: true,
   chaos: false,
-  backspaceLabel: 'Usuń ostatnią cyfrę',
-  shuffleLabel: 'Losuj układ klawiatury',
-  keypadLabel: 'Klawiatura numeryczna',
+  backspaceLabel: '',
+  shuffleLabel: '',
+  keypadLabel: '',
   style: '',
   class: '',
 });
@@ -109,6 +113,18 @@ const emit = defineEmits<{
   backspace: [];
   shuffle: [];
 }>();
+
+const { t } = useI18n();
+
+const resolvedKeypadLabel = computed(
+  () => props.keypadLabel || t('ui.keypad.label'),
+);
+const resolvedBackspaceLabel = computed(
+  () => props.backspaceLabel || t('ui.keypad.backspace'),
+);
+const resolvedShuffleLabel = computed(
+  () => props.shuffleLabel || t('ui.keypad.shuffle'),
+);
 
 const layoutKeys = ref<KeypadKey[]>(buildLayout(props.chaos));
 

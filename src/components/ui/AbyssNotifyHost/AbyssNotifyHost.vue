@@ -41,6 +41,7 @@ export interface AbyssNotifyHostItem {
 
 export interface AbyssNotifyHostProps {
   items?: AbyssNotifyHostItem[];
+  /** Nadpisuje domyślną nazwę dostępną toastów z `ui.notify.close`. */
   closeLabel?: string;
   /** Poza `AbyssTemplateRoot` — klasa `abyss-notify-queue` (padding, max-height, scrollbar). */
   standalone?: boolean;
@@ -53,7 +54,7 @@ export interface AbyssNotifyHostProps {
 
 withDefaults(defineProps<AbyssNotifyHostProps>(), {
   items: () => [],
-  closeLabel: 'Zamknij',
+  closeLabel: '',
   standalone: false,
   style: '',
   class: '',

@@ -102,6 +102,12 @@ const meta = {
         'Wariant bez cienia — np. w nagłówku tabeli lub zwartym toolbarze',
       table: { defaultValue: { summary: 'false' } },
     },
+    fullWidth: {
+      control: 'boolean',
+      description:
+        'Etykieta nad polem, kontrolka na pełną szerokość kontenera. Bez tego propsa etykieta stoi obok pola w siatce dwukolumnowej.',
+      table: { defaultValue: { summary: 'false' } },
+    },
     emitValue: {
       control: 'boolean',
       description: 'Emituj tylko wartość opcji zamiast całego obiektu',
@@ -187,6 +193,39 @@ export const Default: Story = {
   play: async ({ canvas }) => {
     const combobox = canvas.getByRole('combobox');
     await expect(combobox.closest('.abyss-select-wrapper')).toBeVisible();
+  },
+};
+
+export const FullWidth: Story = {
+  name: 'Pełna szerokość',
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'Prop `full-width` zostawia widoczną etykietę, przenosi ją nad pole i rozciąga kontrolkę na całą szerokość kontenera. Nie usuwaj `label`, żeby uzyskać pełną szerokość.',
+      },
+    },
+  },
+  args: {
+    label: 'Framework',
+    options: stringOptions,
+    fullWidth: true,
+  },
+  render: (args) => ({
+    components: { AbyssSelect },
+    setup() {
+      const value = ref(null);
+      return { args, value };
+    },
+    template: `
+      <AbyssSelect v-bind="args" v-model="value" />
+    `,
+  }),
+  play: async ({ canvas }) => {
+    await expect(canvas.getByText('Framework')).toBeVisible();
+    await expect(
+      canvas.getByText('Framework').closest('.abyss-select-wrapper'),
+    ).toHaveClass('abyss-select-wrapper--full-width');
   },
 };
 

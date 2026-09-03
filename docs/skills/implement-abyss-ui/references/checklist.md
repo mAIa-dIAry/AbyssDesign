@@ -7,18 +7,19 @@
 - [ ] `AbyssInput` / `AbyssSelect` **nie** owinięte dodatkowym `AbyssGrid`
 - [ ] Przyciski akcji w `AbyssGrid` z `INPUT_COLUMN_SIZE` i `INPUT_GRID_MAX_COLUMNS`
 - [ ] Zmiana hasła w `AbyssDialog`, nie inline w karcie (wyjątek: login)
+- [ ] Pole na pełną szerokość przez `full-width` (etykieta zostaje), nie przez usunięcie `label`
 - [ ] Data/czas w formularzu przez `AbyssInput` z `type="date"` / `"time"` / `"datetime-local"`; samodzielny `AbyssDate` / `AbyssTime` tylko w popupie / toolbarze
 
 ## AbyssCard
 
 - [ ] Tytuł + ikona tematyczna w `#header-prepend`
-- [ ] Akcje kontekstowe w `#header-append` jako `AbyssButton flat`
+- [ ] Akcje kontekstowe w `#header-append` jako `AbyssButton flat` z `size="medium"` i `aria-label`
 - [ ] Footer tylko gdy uzasadniony (np. niezapisane zmiany)
 
 ## AbyssButton
 
 - [ ] W headerze/stopce karty i dialogu: wszystkie przyciski `flat`
-- [ ] `flat` tylko na liście: Card header/footer, Dialog, Input prepend/append, NavHeader actions, wnętrze Switcher
+- [ ] `flat` tylko na liście: Card header/footer, Dialog, Input prepend/append, NavHeader actions, wnętrze Switcher, komórka `AbyssTable`
 - [ ] Akcja operacyjna: `flat` + `gradient` + klucz semantyczny `gradient-colors`
 - [ ] Anulowanie bez gradientu
 - [ ] Brak własnych tablic kolorów w `gradient-colors`
@@ -30,6 +31,14 @@
 
 - [ ] Potwierdzenia i skupione akcje — nie inline na stronie
 - [ ] Przy istotnej decyzji: jawne anulowanie, nie tylko ikona zamknięcia
+- [ ] Niepusty `title` — jest też `aria-label` powierzchni dialogu
+- [ ] Brak własnej etykiety zamknięcia — domyślna pochodzi z `ui.dialog.close`
+
+## AbyssTable
+
+- [ ] Akcja w komórce: `AbyssButton` `flat` `size="small"` (tekst rekordu albo ikona z `aria-label`)
+- [ ] Trigger menu akcji: `flat` `size="small"` `more_vert` + `AbyssDropdown`
+- [ ] Szczegóły rekordu w `AbyssDialog` albo na osobnej trasie — nie dopięte pod tabelą
 
 ## Komponent złożony aplikacji
 

@@ -43,6 +43,7 @@ W **F**: każde `class=` / `style=` na tagu `Abyss*` to naruszenie (🔴).
 | 3.1 | Karta z `title` bez `#header-prepend` z ikoną                 | 🟡       |
 | 3.2 | Akcje kontekstowe poza `#header-append`                       | 🟡       |
 | 3.3 | Przyciski w `header-append` bez `flat`                        | 🔴       |
+| 3.6 | Ikonowa akcja w `#header-append` z `size="small"` (powinno być `size="medium"`) | 🟡       |
 | 3.4 | Footer w standardowym układzie ustawień                       | 🟡       |
 | 3.5 | `AbyssInfo` jako dynamiczny feedback po akcji (`v-if` po API) | 🔴       |
 
@@ -57,7 +58,7 @@ W **F**: każde `class=` / `style=` na tagu `Abyss*` to naruszenie (🔴).
 | 4.3  | Anulowanie z `gradient`                                                | 🟡       |
 | 4.4  | `gradient-colors` jako tablica kolorów zamiast klucza semantycznego    | 🔴       |
 | 4.5  | `theme` na lokalnej akcji w bloku (nie globalne CTA)                   | 🟡       |
-| 4.6  | `flat` poza listą: header/stopka Card, Dialog, Input prepend/append, NavHeader actions, wnętrze Switcher | 🟡       |
+| 4.6  | `flat` poza listą: header/stopka Card, Dialog, Input prepend/append, NavHeader actions, wnętrze Switcher, komórka `AbyssTable` | 🟡       |
 | 4.7  | `current` na filtrach wielokrotnego wyboru (powinno być `toggled`)     | 🟡       |
 | 4.8  | Ręczne grupowanie przycisków zamiast `AbyssButtonGroup`                | 🟡       |
 | 4.9  | `gradient` gdy akcja jedyna na liście poza kartą/dialogiem             | 🟡       |
@@ -90,6 +91,7 @@ Dozwolone klucze `gradient-colors`: `theme`, `success`, `info`, `warning`, `dang
 | 6.4 | `AbyssCode` bez `:scrollable="false"` w dialogu                               | 🟡       |
 | 6.5 | Istotna decyzja bez jawnego anulowania (tylko X)                              | 🟡       |
 | 6.6 | Przyciski w stopce bez `flat`                                                 | 🔴       |
+| 6.7 | `AbyssDialog` bez `title` — `role="dialog"` bez dostępnej nazwy               | 🟡       |
 
 ---
 
@@ -100,6 +102,9 @@ Dozwolone klucze `gradient-colors`: `theme`, `success`, `info`, `warning`, `dang
 | 7.1 | Tabela klucz–wartość w dialogu z `as-card`               | 🟡       |
 | 7.2 | `expandable` / slot `row-expand` bez potrzeby rozwijania | 🟢       |
 | 7.3 | Główna tabela strony bez `as-card`                       | 🟡       |
+| 7.4 | Akcja w komórce (`q-td`) bez `flat` — wypełniony przycisk w wierszu | 🟡       |
+| 7.5 | Akcja w komórce z `size="medium"` zamiast `size="small"` | 🟢       |
+| 7.6 | Szczegóły rekordu dopięte pod tabelą / listą zamiast `AbyssDialog` lub osobnej trasy | 🔴       |
 
 ---
 
