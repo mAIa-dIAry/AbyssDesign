@@ -65,14 +65,15 @@ const meta = {
           '```\n\n' +
           'Import stałych: `import { INPUT_COLUMN_SIZE, INPUT_GRID_MAX_COLUMNS, ABYSS_INPUT_ROW_GAP } from \'@/components/ui/AbyssGrid/AbyssGrid.constants\'`.\n\n' +
           '`INPUT_COLUMN_SIZE` + `INPUT_GRID_MAX_COLUMNS` (wartość `2`) definiują **jeden wspólny próg łamania** (ok. 560px kontenera): dwie kolumny (etykieta | pole lub przycisk | przycisk), poniżej jedna kolumna.\n\n' +
+          '**Przyciski w `#content` karty** — wyłącznie standardowy `AbyssButton` `size="big"`: bez `flat`, bez `embedded`. `gradient` / `gradient-colors` tylko przy akcji operacyjnej (nadal bez `flat`). `flat` i `embedded` zostają w chrome karty (`#header-append`, stopka) i w `AbyssDialog`.\n\n' +
           '**Przyciski główne** używają `size="big"` (domyślny rozmiar inputów) i `full-width`, żeby szerokość kolumny pokrywała się z polem.\n\n' +
           '#### Dobór wariantu przycisku\n\n' +
           '| Scenariusz | Wariant | Przykład |\n' +
           '|------------|---------|----------|\n' +
-          '| Podstawowa akcja bez akcentu | `size="big"`, bez `gradient` | Zaloguj się, Zmień hasło (otwarcie dialogu) |\n' +
-          '| Operacja ryzykowna | `gradient` + `gradient-colors="danger"` | Usuń konto |\n' +
-          '| Wylogowanie | `gradient` + `gradient-colors="warning"` | Wyloguj |\n' +
-          '| Opcja poboczna, bez przyciągania uwagi | `embedded` | Resetowanie hasła |\n\n' +
+          '| Podstawowa akcja w `#content` | `size="big"`, bez `flat`, bez `embedded` | Zaloguj się, Zapisz token, Zmień hasło (otwarcie dialogu) |\n' +
+          '| Operacja ryzykowna w `#content` | `size="big"` + `gradient` + `gradient-colors="danger"` — bez `flat` | Usuń konto |\n' +
+          '| Wylogowanie w `#content` | `size="big"` + `gradient` + `gradient-colors="warning"` — bez `flat` | Wyloguj |\n' +
+          '| Akcja w `#header-append` / stopce / dialogu | `flat` (zwykle `size="medium"`) | Odśwież, Anuluj w dialogu |\n\n' +
           'Pola w slocie binduj przez `v-model` do właściwości `modelValue`. Komponent udostępnia metody walidacji `q-form` przez `defineExpose` (`validate`, `resetValidation`, `submit`).',
       },
     },
@@ -101,7 +102,7 @@ export const FormLayoutBasics: Story = {
     docs: {
       description: {
         story:
-          'Referencyjny układ: `AbyssCard` + `AbyssForm` + pola (wewnętrzny `AbyssGrid` w `AbyssInput`/`AbyssSelect`) + `AbyssGrid` (`align="right"`, `INPUT_COLUMN_SIZE`, `INPUT_GRID_MAX_COLUMNS`) wyłącznie z przyciskami `size="big"`. Pokazuje dobór wariantów: akcja podstawowa, `embedded`, `warning`, `danger`. Przyciski „Zmień hasło” i „Resetowanie hasła” otwierają dedykowany `AbyssDialog` — pola hasła nie są inline w karcie.',
+          'Referencyjny układ: `AbyssCard` + `AbyssForm` + pola (wewnętrzny `AbyssGrid` w `AbyssInput`/`AbyssSelect`) + `AbyssGrid` (`align="right"`, `INPUT_COLUMN_SIZE`, `INPUT_GRID_MAX_COLUMNS`) wyłącznie z przyciskami `size="big"` bez `flat` i bez `embedded`. Pokazuje dobór wariantów: akcja podstawowa, `warning`, `danger`. Przyciski „Zmień hasło” i „Resetowanie hasła” otwierają dedykowany `AbyssDialog` — pola hasła nie są inline w karcie.',
       },
       source: {
         code: `<AbyssCard title="Konto">
@@ -142,7 +143,7 @@ export const FormLayoutBasics: Story = {
       <AbyssInput v-model="authForm.password" type="password" label="Hasło" />
       <AbyssGrid align="right" :column-size="INPUT_COLUMN_SIZE" :max-columns="INPUT_GRID_MAX_COLUMNS">
         <AbyssButton type="submit" size="big" label="Zaloguj się" full-width />
-        <AbyssButton embedded label="Resetowanie hasła" @click="openForgotPassword" />
+        <AbyssButton size="big" label="Resetowanie hasła" full-width @click="openForgotPassword" />
       </AbyssGrid>
     </AbyssForm>
   </template>
@@ -297,8 +298,9 @@ export const FormLayoutBasics: Story = {
                   data-testid="login-submit"
                 />
                 <AbyssButton
-                  embedded
+                  size="big"
                   label="Resetowanie hasła"
+                  full-width
                   data-testid="forgot-password"
                   @click="onForgotPassword"
                 />
@@ -339,16 +341,27 @@ export const FormLayoutBasics: Story = {
     await expect(changePassword).toBeVisible();
     await expect(changePassword).toHaveClass('size-big');
     await expect(changePassword).not.toHaveClass('gradient');
+    await expect(changePassword).not.toHaveClass('flat');
+    await expect(changePassword).not.toHaveClass('embedded');
 
     const logout = canvas.getByTestId('logout');
     await expect(logout).toHaveClass('gradient');
     await expect(logout).toHaveClass('size-big');
+    await expect(logout).not.toHaveClass('flat');
+
+    const loginSubmit = canvas.getByTestId('login-submit');
+    await expect(loginSubmit).toHaveClass('size-big');
+    await expect(loginSubmit).not.toHaveClass('flat');
+    await expect(loginSubmit).not.toHaveClass('embedded');
 
     const forgotPassword = canvas.getByTestId('forgot-password');
-    await expect(forgotPassword).toHaveClass('embedded');
+    await expect(forgotPassword).toHaveClass('size-big');
+    await expect(forgotPassword).not.toHaveClass('embedded');
+    await expect(forgotPassword).not.toHaveClass('flat');
 
     const deleteAccount = canvas.getByTestId('delete-account');
     await expect(deleteAccount).toHaveClass('gradient');
+    await expect(deleteAccount).not.toHaveClass('flat');
 
     await userEvent.type(canvas.getByTestId('login-email'), 'demo@maia.app');
     await userEvent.type(canvas.getByTestId('login-password'), 'secret');
@@ -445,7 +458,7 @@ export const AuthSubmit: Story = {
       <AbyssInput v-model="form.password" type="password" label="Hasło" />
       <AbyssGrid align="right" :column-size="INPUT_COLUMN_SIZE" :max-columns="INPUT_GRID_MAX_COLUMNS">
         <AbyssButton type="submit" size="big" label="Zaloguj się" full-width />
-        <AbyssButton embedded label="Resetowanie hasła" @click="openForgotPassword" />
+        <AbyssButton size="big" label="Resetowanie hasła" full-width @click="openForgotPassword" />
       </AbyssGrid>
     </AbyssForm>
   </template>

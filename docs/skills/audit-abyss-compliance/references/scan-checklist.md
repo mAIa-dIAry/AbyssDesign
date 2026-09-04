@@ -53,8 +53,8 @@ W **F**: każde `class=` / `style=` na tagu `Abyss*` to naruszenie (🔴).
 
 | #    | Reguła                                                                 | Severity |
 | ---- | ---------------------------------------------------------------------- | -------- |
-| 4.1  | Przycisk w `AbyssCard` / `AbyssDialog` bez `flat`                      | 🔴       |
-| 4.2  | Akcja operacyjna w karcie/dialogu: brak `gradient` + `gradient-colors` | 🟡       |
+| 4.1  | Przycisk w headerze/stopce karty lub w dialogu bez `flat`              | 🔴       |
+| 4.2  | Akcja operacyjna w dialogu / chrome karty: brak `gradient` + `gradient-colors` | 🟡       |
 | 4.3  | Anulowanie z `gradient`                                                | 🟡       |
 | 4.4  | `gradient-colors` jako tablica kolorów zamiast klucza semantycznego    | 🔴       |
 | 4.5  | `theme` na lokalnej akcji w bloku (nie globalne CTA)                   | 🟡       |
@@ -63,6 +63,9 @@ W **F**: każde `class=` / `style=` na tagu `Abyss*` to naruszenie (🔴).
 | 4.8  | Ręczne grupowanie przycisków zamiast `AbyssButtonGroup`                | 🟡       |
 | 4.9  | `gradient` gdy akcja jedyna na liście poza kartą/dialogiem             | 🟡       |
 | 4.10 | `icon-only` przy akcji nieodwracalnej/niejasnej                        | 🟡       |
+| 4.11 | `flat` na przycisku formularza w `#content` karty                      | 🔴       |
+| 4.12 | `embedded` na przycisku formularza w `#content` karty                  | 🟡       |
+| 4.13 | Submit / akcja w `#content` karty bez `size="big"`                     | 🟡       |
 
 Dozwolone klucze `gradient-colors`: `theme`, `success`, `info`, `warning`, `danger`, `hint`.
 

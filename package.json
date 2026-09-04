@@ -23,6 +23,7 @@
   "files": [
     "dist",
     "src/components",
+    "src/utils",
     "src/scss",
     "src/stories",
     "src/storybook",
@@ -58,7 +59,7 @@
   },
   "scripts": {
     "prepublishOnly": "yarn build",
-    "build": "vite build && vue-tsc --emitDeclarationOnly -p tsconfig.build.json",
+    "build": "vite build && vue-tsc --emitDeclarationOnly -p tsconfig.build.json && node tools/check-published-sfc-imports.mjs",
     "release": "node tools/release.mjs",
     "release:dry-run": "node tools/release.mjs --dry-run --allow-dirty",
     "changelog:preview": "node tools/changelog.mjs --version-from-package",

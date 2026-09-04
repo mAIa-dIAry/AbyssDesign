@@ -111,12 +111,12 @@ Nie importuj shadow-wrapperów `AbyssTemplate`, `AbyssScrollView`, `AbyssSidebar
 | Badge subskrypcji gold / sakura / garden | `AbyssGradientBadge` | Nie status wiersza tabeli. Nie `q-badge`. |
 | Wiersz listy (klikalny rekord, dzień analizy) | **BRAK** | Nie `AbyssButton flat` poza dozwolonymi miejscami `flat`. Nie `ul` / `li` + `flat`. Zgłoś `make-component`. |
 | Tło gradientowe aplikacji | `AbyssBackground` | Nie `AbyssGradientBox` jako tło całego layoutu. |
-| Preset gradientu (box) | `AbyssGradientBox` | Nie `AbyssBackground` wewnątrz karty. |
+| Preset gradientu (box) | `AbyssGradientBox` | Nie `AbyssBackground` wewnątrz karty. Nie sztywne `64px` — box wypełnia komórkę siatki (`width: 100%`, `aspect-ratio: 1 / 1`). |
 | Separator wizualny | `AbyssSeparator` | Nie `hr` / własny border jako separator systemowy. |
 | Skrót klawiszowy | `AbyssKeybind` | — |
 | Strona 404 / błąd | `AbyssTemplateMain` + `AbyssButton` | Nie `q-btn` i surowy szablon Quasar `ErrorNotFound`. |
 
-**`flat` na `AbyssButton` — jedna lista miejsc:** header i stopka `AbyssCard`, `AbyssDialog`, sloty `#prepend` / `#append` w `AbyssInput`, akcje `AbyssNavHeader`, wnętrze `AbyssSwitcher`, komórka `AbyssTable` (akcja rekordu i trigger menu). Wszędzie indziej `flat` jest naruszeniem (w tym wiersz listy — patrz **BRAK** powyżej).
+**`flat` na `AbyssButton` — jedna lista miejsc:** header i stopka `AbyssCard`, `AbyssDialog`, sloty `#prepend` / `#append` w `AbyssInput`, akcje `AbyssNavHeader`, wnętrze `AbyssSwitcher`, komórka `AbyssTable` (akcja rekordu i trigger menu). Wszędzie indziej `flat` jest naruszeniem (w tym wiersz listy — patrz **BRAK** powyżej; w tym submit formularza w `#content` karty — tam standardowy `size="big"` bez `flat` i bez `embedded`).
 
 Komórka tabeli a wiersz listy to dwie różne potrzeby: akcja **wewnątrz komórki** `AbyssTable` jest dozwolonym `flat` (patrz [Akcje w komórkach](#akcje-w-komórkach)), a klikalny **cały wiersz / list-row** nadal nie ma prymitywu (**BRAK**) — nie buduj go z `AbyssButton flat`.
 
@@ -413,7 +413,7 @@ Na **głównych podstronach** (trasy z `AbyssNavigation` / zakładki sidebara) n
 
 - Karta z tytułem **zawsze** ma ikonę w `header-prepend` odpowiadającą tematowi sekcji.
 - Akcje kontekstowe (odświeżenie, filtr, menu) w `header-append` jako `AbyssButton` `flat` z **`size="medium"`** — bez widocznego labela, dostępna nazwa z `aria-label`. `size="small"` w nagłówku jest nieprawidłowy: zmniejsza obszar interakcji i odstaje od pozostałych akcji nagłówkowych.
-- Ikonowe akcje nagłówków `AbyssCard`, `AbyssTable` i `AbyssDialog` mają **ten sam wygląd** — promień pochodzi ze skali `size` przycisku (`medium` → 6px). Nagłówek nie nadpisuje `--border-radius` przycisku, więc stany hover / focus / active są identyczne w karcie, tabeli i dialogu.
+- Promień ikonowej akcji nagłówka wynika z wysokości chrome'u pojemnika, nie z tokenu `size` przycisku. Karta i dialog mają niski header (`min-height: 48px`, `border-radius: 16px`) i nadpisują `--border-radius: 12px` na przyciskach w `#header-append` / stopce, żeby krzywizna była współśrodkowa z narożnikiem. Tabela ma wyższy top bar (tytuł, wyszukiwarka, akcje) — tam zostaje promień ze skali `medium` (`6px`). Nie zrównywać tych dwóch.
 - Stopka (`footer`, `footer-prepend`, `footer-append`) tylko w specyficznych sytuacjach (np. niezapisane zmiany) — nie w standardowym układzie.
 - `AbyssInfo` stosuj tylko, gdy komunikat ma tytuł lub status semantyczny **i jest częścią stałego układu ekranu** (np. pusty stan tabeli, ostrzeżenie przed usunięciem konta).
 - Nie używaj `AbyssInfo` do pokazywania wyniku akcji użytkownika (sukces/błąd po API) — do tego służy helper kolejki `notify()`.
@@ -530,6 +530,7 @@ Reguły:
 - `warning` ma priorytet nad `info`, gdy chodzi o zapis lub potwierdzenie czegoś istotnego.
 - Nie używaj `gradient`, jeśli akcja jest jedyna na liście poza kartą/dialogiem.
 - W nagłówku i stopce `AbyssCard` oraz w `AbyssDialog` **wszystkie** przyciski używają `flat`. Akcja operacyjna łączy `flat` + `gradient` + `gradient-colors`. Ta sama lista miejsc `flat`: header/stopka karty, dialog, sloty Input, akcje `AbyssNavHeader`, wnętrze `AbyssSwitcher`, komórki `AbyssTable`.
+- Formularz w `#content` karty **nie** używa `flat` ani `embedded`. Jedyny wariant to standardowy `AbyssButton` `size="big"`; `gradient` / `gradient-colors` tylko przy akcji operacyjnej, nadal bez `flat`.
 
 ### Warianty semantyczne
 
@@ -539,7 +540,8 @@ Reguły:
 | `flat`     | header/stopka `AbyssCard`, `AbyssDialog`, `#prepend`/`#append` `AbyssInput`, akcje `AbyssNavHeader`, wnętrze `AbyssSwitcher`, komórka `AbyssTable` | poza tą listą (w tym wiersz listy — **BRAK** prymitywu) |
 | `current`  | aktualnie aktywny kontekst (nawigacja, wybrany rekord)                       | stan przełączalny toggle; tymczasowy filtr                             |
 | `toggled`  | włączony stan nadal klikalny (toolbar, filtry)                               | nawigacja, aktywny route                                               |
-| `gradient` | akcja operacyjna ze znaczeniem semantycznym                                   | bez `flat` w headerze/stopce karty i dialogu                         |
+| `gradient` | akcja operacyjna ze znaczeniem semantycznym                                   | bez `flat` w headerze/stopce karty i dialogu; w `#content` karty `gradient` bez `flat` |
+| `embedded` | akcja poboczna w chrome (nie w treści formularza)                            | formularz w `#content` karty                                              |
 
 ### Modyfikatory układu
 
@@ -552,7 +554,7 @@ Reguły:
 | `icon-only`    | znaczenie oczywiste z kontekstu (zamknięcie, znane ikony) |
 | `loading`      | akcja trwa — blokada ponownego kliknięcia                 |
 | `percentage`   | postęp ma wartość informacyjną dla użytkownika            |
-| `embedded`     | akcja poboczna bez przyciągania uwagi (np. reset hasła)   |
+| `embedded`     | akcja poboczna w chrome karty / dialogu, nie w `#content` formularza |
 
 ### Skala `size`
 
@@ -591,7 +593,7 @@ Przyciski wbudowane w `AbyssInput` (hasło, lupa, kopiuj, data): przy `size="sma
 
 - Pola bez dodatkowego `AbyssGrid` — wewnętrzna siatka jest w `AbyssInput` / `AbyssSelect`.
 - Domyślnie etykieta stoi obok pola (siatka `INPUT_COLUMN_SIZE` × 2 kolumny). Gdy pole ma zająć całą szerokość kontenera — np. długa odpowiedź w `type="textarea"` albo pole w wąskiej kolumnie — dodaj `full-width`: etykieta przechodzi nad pole i zostaje widoczna.
-- Przyciski akcji w `AbyssGrid` z `INPUT_COLUMN_SIZE`, `INPUT_GRID_MAX_COLUMNS`, `size="big"`, `full-width`.
+- Przyciski akcji w `AbyssGrid` z `INPUT_COLUMN_SIZE`, `INPUT_GRID_MAX_COLUMNS`, `size="big"`, `full-width` — bez `flat` i bez `embedded`.
 - Zmiana hasła: trigger w karcie → dedykowany `AbyssDialog` z polami hasła (wyjątek: logowanie).
 
 ### 2. Blok destrukcyjny
@@ -606,7 +608,7 @@ Przyciski wbudowane w `AbyssInput` (hasło, lupa, kopiuj, data): przy `size="sma
       Operacja jest nieodwracalna.
     </AbyssInfo>
     <AbyssGrid align="right" :column-size="INPUT_COLUMN_SIZE" :max-columns="INPUT_GRID_MAX_COLUMNS">
-      <AbyssButton flat gradient gradient-colors="danger" label="Usuń konto" full-width />
+      <AbyssButton size="big" gradient gradient-colors="danger" label="Usuń konto" full-width />
     </AbyssGrid>
   </template>
 </AbyssCard>
@@ -796,7 +798,7 @@ Nie renderuj szczegółów jako append, prepend ani rozwijanego bloku w treści 
 
 - Używaj ikony w `header-prepend` przy każdym tytule `AbyssCard`.
 - Umieszczaj kontekstowe akcje karty w `header-append` jako `AbyssButton flat`.
-- Traktuj `flat` jako obowiązkowy wariant w: headerze/stopce `AbyssCard`, `AbyssDialog`, slotach `#prepend`/`#append` `AbyssInput`, akcjach `AbyssNavHeader`, wnętrzu `AbyssSwitcher`, komórkach `AbyssTable`; akcje operacyjne w karcie/dialogu łącz z `gradient`.
+- Traktuj `flat` jako obowiązkowy wariant w: headerze/stopce `AbyssCard`, `AbyssDialog`, slotach `#prepend`/`#append` `AbyssInput`, akcjach `AbyssNavHeader`, wnętrzu `AbyssSwitcher`, komórkach `AbyssTable`. W `#content` karty stawiaj standardowy `AbyssButton` `size="big"` — bez `flat` i bez `embedded`; akcja operacyjna może dostać `gradient`.
 - Akcję osadzoną w komórce `AbyssTable` buduj jako `AbyssButton` `flat` `size="small"` — tekstową z etykietą rekordu albo ikonową z `aria-label`; bez `gradient`, gdy akcja tylko otwiera szczegóły.
 - Szczegóły rekordu po kliknięciu pokazuj w `AbyssDialog` albo na osobnej trasie — nigdy jako blok dopięty do bieżącej strony.
 - Używaj wyłącznie kluczy semantycznych w `gradient-colors`.
@@ -809,7 +811,7 @@ Nie renderuj szczegółów jako append, prepend ani rozwijanego bloku w treści 
 - W formularzu używaj `AbyssInput` z `type="date"`, `"time"` lub `"datetime-local"`; samodzielny `AbyssDate` / `AbyssTime` tylko w popupie lub toolbarze.
 - Owijaj pola formularza w `AbyssForm`.
 - Rozciągaj pole na pełną szerokość propsem `full-width` na `AbyssInput` / `AbyssSelect` — etykieta zostaje widoczna nad polem.
-- Dawaj ikonowym akcjom nagłówków `AbyssCard`, `AbyssTable` i `AbyssDialog` `size="medium"` i zostaw promień ze skali przycisku.
+- Dawaj ikonowym akcjom nagłówków `AbyssCard` i `AbyssDialog` `size="medium"` oraz zostaw nadpisany promień `12px` (niski narożnik pojemnika). W nagłówku `AbyssTable` ten sam `size="medium"`, ale promień ze skali przycisku (`6px`) — header tabeli jest wyższy.
 - Zostaw domyślne etykiety wewnętrzne z warstwy `ui.*` (m.in. `ui.dialog.close`, `ui.notify.close`, `ui.keypad.*`, `ui.keybind.placeholder`) — propsy tekstowe tylko do nadpisania.
 - Dawaj `AbyssDialog` niepusty `title` — Quasar stawia `role="dialog"` bez nazwy; komponent przepisuje `title` na `aria-label`.
 - Używaj `AbyssInput` z `type="copy"` dla wartości tylko do odczytu z kopiowaniem do schowka — pole jest `readonly`, przycisk jest wbudowany w `#append`, klik/focus zaznacza całą treść, a feedback po kopiowaniu realizuje wbudowany Quasar Notify.
@@ -828,6 +830,9 @@ Nie renderuj szczegółów jako append, prepend ani rozwijanego bloku w treści 
 
 - Nie dodawaj własnych klas CSS, stylów inline ani nadpisań SCSS na prymitywach Abyss **w formularzach i standardowych kartach** — tam wystarczają propsy.
 - Nie używaj `flat` poza headerem/stopką `AbyssCard`, `AbyssDialog`, slotami `#prepend` / `#append` w `AbyssInput`, akcjami `AbyssNavHeader`, wnętrzem `AbyssSwitcher` i komórkami `AbyssTable`.
+- Nie używaj `flat` ani `embedded` na przycisku formularza w `#content` karty — tam wyłącznie standardowy `AbyssButton` `size="big"`.
+- Nie zrównywaj promienia akcji nagłówka karty/dialogu (`12px`) z przyciskiem w top barze tabeli (`6px`) — wysokości chrome'u są różne.
+- Nie nadpisuj `.abyss-gradient-box` w karcie ustawień i nie dawaj siatce presetów `column-size="64px"` — box sam wypełnia komórkę (`width: 100%`, `aspect-ratio: 1 / 1`).
 - Nie zdejmuj `flat` z akcji w komórce `AbyssTable` — wypełniony przycisk konkuruje z tabelą i rozjeżdża wiersz.
 - Nie dopinaj szczegółów rekordu pod listą, tabelą ani tablicą (`<Records /> <RecordDetails v-if="selectedId" />`) — to zmienia wysokość strony, przesuwa źródło kliknięcia i nie daje jednoznacznego zamknięcia ani deep linku. Rozwijanie techniczne udokumentowane w komponencie (np. `row-expand`) nie jest widokiem szczegółów rekordu.
 - Nie używaj footera `AbyssCard` w standardowym układzie.

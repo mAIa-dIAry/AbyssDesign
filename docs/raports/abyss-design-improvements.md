@@ -22,14 +22,13 @@ Statusy:
 - `UPSTREAM` — zgłoszona lub poprawiana w AbyssDesign,
 - `DONE` — kanon i odpowiednie story zostały poprawione.
 
+Aktualny pakiet aplikacji: `@maiadiary/abyss-design@0.2.5`.
+
 ---
 
 ## ADI-001 — Przyciski w komórkach `AbyssTable`
 
-**Status:** `DONE` — komórka `AbyssTable` jest na liście dozwolonych miejsc dla
-`flat`, kanon rozróżnia akcję w komórce od klikalnego wiersza, story
-`AbyssTable` → „Akcje w komórkach” pokazuje tekstową akcję i trigger
-`more_vert` z `AbyssDropdown`, checklisty audytu chronią `flat` w tabeli.
+**Status:** `DONE` — `@maiadiary/abyss-design@0.2.5`
 
 ### Kontekst
 
@@ -103,6 +102,12 @@ z przycisku.
 4. Dodać przypadek do checklisty audytu, aby automatyczna kontrola nie usuwała
    `flat` z akcji tabelarycznych.
 
+### Zastosowana poprawka
+
+Kanon 0.2.5 dodaje komórkę `AbyssTable` do listy miejsc `flat` (`size="small"`)
+i rozróżnia akcję w komórce od klikalnego całego wiersza. Aplikacja już używa
+tego wzorca w tabelach planów i stacków.
+
 ### Miejsce wykrycia
 
 - `src/components/shared/PlansTablePanel/PlansTablePanel.vue`
@@ -113,9 +118,7 @@ z przycisku.
 
 ## ADI-002 — Szczegóły rekordu nigdy jako append do bieżącej strony
 
-**Status:** `DONE` — zasada nadrzędna 12 w kanonie, sekcja „Szczegóły rekordu”
-z kryteriami dialog vs. trasa, antyprzykład w Do / Don't, kontrola w
-checklistach audytu, dialog szczegółów w story „Akcje w komórkach”.  
+**Status:** `DONE` — `@maiadiary/abyss-design@0.2.5`  
 **Ważność:** `CRITICAL` — podatność UX
 
 ### Kontekst
@@ -196,15 +199,16 @@ Użyj osobnej strony, gdy:
 - kliknięcie karty zadania otwiera `TaskThreadPanel` w `AbyssDialog`,
 - szczegóły nie są już dopinane pod tablicą.
 
+Kanon 0.2.5 wpisuje tę regułę do mapy „Potrzeba → jeden komponent”: szczegóły
+rekordu po kliknięciu to `AbyssDialog` albo osobna trasa, nigdy blok dopięty
+pod listą.
+
 ---
 
-## ADI-003 — Akcja nagłówka karty nie dziedziczy stylu nagłówka tabeli
+## ADI-003 — Ikonowa akcja nagłówka: `size="medium"`, promień należy do pojemnika
 
-**Status:** `DONE` — `AbyssCard` i `AbyssDialog` nie nadpisują już
-`--border-radius: 12px` na przyciskach nagłówka, więc akcja bierze natywny
-promień ze skali `size="medium"` — tak samo jak w nagłówku `AbyssTable`.
-`size="medium"` jest udokumentowany jako jedyny rozmiar akcji nagłówka.  
-**Ważność:** `HIGH` — błąd layoutu/API komponentu
+**Status:** `DONE` — przywrócone nadpisanie `--border-radius: 12px` w `#header-append` / stopce `AbyssCard` i `AbyssDialog`. Kanon rozróżnia niski narożnik karty/dialogu od wyższego top baru tabeli (`6px`).  
+**Ważność:** `HIGH` — błąd layoutu po niepotrzebnej zmianie kanonu
 
 ### Kontekst
 
@@ -223,60 +227,77 @@ odświeżenia. Zgodnie ze story `AbyssCard` powinna to być płaska akcja ikonow
 Przycisk nie powinien mieć widocznego labela. Dostępna nazwa akcji pochodzi z
 `aria-label`.
 
-### Reguła rozmiaru
+### Co było potrzebne
 
-Ikonowe akcje w `#header-append` komponentów `AbyssCard` oraz
-`AbyssTable as-card` zawsze używają `size="medium"`. Rozmiar `small` jest w
-headerze nieprawidłowy: zmniejsza obszar interakcji i przestaje odpowiadać
-pozostałym akcjom nagłówkowym.
+Ikonowe akcje w `#header-append` zawsze używają `size="medium"`. Rozmiar
+`small` jest w headerze nieprawidłowy: zmniejsza obszar interakcji i przestaje
+odpowiadać pozostałym akcjom nagłówkowym.
 
-### Błąd layoutu
+To jedyna wspólna reguła karty i tabeli: ten sam rozmiar, ikona, `flat`,
+`aria-label`.
 
-`AbyssButton` nie udostępnia wariantu pozwalającego zachować w karcie wygląd
-ikonowej akcji nagłówka tabeli:
+### Niepotrzebna zmiana w 0.2.5
 
-- wariant `small` i `medium` zachowuje promień `6px`,
-- stan hover/focus/active pokazuje tło i border o tym promieniu,
-- `AbyssCard` nadpisuje `--border-radius` przycisków nagłówka na `12px`,
-- publiczne API nie ma propsa pozwalającego wyłączyć nadpisanie karty.
+Changelog 0.2.5 zrównał też **promień** ikonowych akcji nagłówków
+`AbyssCard`, `AbyssTable` i `AbyssDialog` ze skalą `size="medium"` (`6px`)
+i usunął nadpisanie `--border-radius: 12px` w karcie i dialogu.
 
-Efekt to mocniej zaokrąglony przycisk w karcie niż ten sam przycisk w nagłówku
-tabeli.
+Ta część zmiany była niepotrzebna i psuje layout karty.
+
+Tabela ma wyższy header niż karta: w top barze tabeli oprócz tytułu mieszczą
+się wyszukiwarka i akcje, więc narożnik jest wyższy. Karta ma niski header
+(`min-height: 48px`) i ten sam przycisk `size="medium"` dosunięty ujemnym
+marginem do krawędzi. Przy różnej wysokości narożnika **border-radius
+przycisku musi być różny** — inaczej krzywizna nie składa się z obrysem
+pojemnika.
+
+Dlatego tabela może używać promienia ze skali `size="medium"` (`6px`), a karta
+nie. Karta ma `border-radius: 16px`; poprzednie `12px` na przycisku nagłówka
+było dopasowaniem do niższego narożnika karty, nie błędem do „naprawienia”
+wzorem tabeli.
+
+Promień `6px` w karcie nie jest współśrodkowy z narożnikiem pojemnika:
+powstaje ciasna, obca krzywizna i nierówna szczelina między obrysem przycisku
+a obrysem karty.
+
+Nie zrównywać promienia przycisku karty z przyciskiem tabeli. Promień akcji
+narożnej wynika z wysokości headera i chrome'u pojemnika (`AbyssCard` /
+`AbyssDialog` vs `AbyssTable`), nie z tokenu `size` przycisku.
 
 ### Stan aplikacji
 
-Lokalne obejście zostało wycofane. Style nagłówków `AbyssCard` i `AbyssTable`
-pozostają nietknięte, aby nie zmieniać zachowania hover/focus dostarczanego
-przez AbyssDesign.
+Aplikacja nie obchodzi tego lokalnym CSS. Czeka na przywrócenie nadpisania
+promienia w `AbyssCard` / `AbyssDialog` (wcześniej `--border-radius: 12px`
+w `.abyss-card-append`).
+
+Nadal obowiązuje:
 
 - `AbyssButton flat`,
 - tylko `icon`,
 - `aria-label` zamiast widocznego labela,
-- obowiązkowo `size="medium"`,
-- natywny promień przycisku karty,
-- bez zmian hover/focus/active dostarczanych przez AbyssButton.
+- obowiązkowo `size="medium"`.
 
 ### Proponowana poprawka w AbyssDesign
 
-1. Ujednolicić ikonowe akcje nagłówków `AbyssCard` i `AbyssTable`.
-2. Nie nadpisywać promienia przycisku karty wartością `12px`.
-3. Użyć wariantu w `AbyssCard` i `AbyssTable` stories dla refresh/filter/menu.
-4. Jawnie udokumentować `size="medium"` jako jedyny rozmiar akcji nagłówka.
-5. Dodać test wizualny stanów rest, hover, focus, active i loading.
+1. Cofnąć zrównywanie `--border-radius` nagłówka karty i dialogu ze skalą
+   `size="medium"`.
+2. Przywrócić większy promień akcji w `#header-append` karty / dialogu, tak
+   aby krzywizna była współśrodkowa z narożnikiem pojemnika.
+3. Zostawić `size="medium"` jako jedyny rozmiar akcji nagłówka.
+4. Poprawić stories i checklistę audytu: nie pisać, że karta i tabela mają
+   „ten sam wygląd” w zakresie promienia. Jawnie: header tabeli jest wyższy,
+   więc promień przycisku nagłówka musi być inny niż w karcie.
+5. Dodać test wizualny narożnika karty (rest / hover / focus).
 
 ### Miejsce wykrycia
 
 - `src/components/shared/PlanBoardPanel/PlanBoardPanel.vue`
-- `src/components/shared/PlansTablePanel/PlansTablePanel.vue`
-- `src/components/shared/StacksTablePanel/StacksTablePanel.vue`
 
 ---
 
 ## ADI-004 — `AbyssInput` wymaga propsa `full-width`
 
-**Status:** `DONE` — `full-width` jest w `AbyssInput` i `AbyssSelect`
-(jednokolumnowa siatka, etykieta nad polem), z osobnym story w obu
-komponentach i regułą w kanonie.  
+**Status:** `DONE` — `@maiadiary/abyss-design@0.2.5`  
 **Ważność:** `HIGH` — brak w API komponentu
 
 ### Problem
@@ -319,6 +340,11 @@ W tym wariancie:
 3. Udokumentować wariant w story `AbyssInput`.
 4. Dodać testy dla labela, textarea, error message, hint i responsywności.
 
+### Zastosowana poprawka
+
+`AbyssInput` (i `AbyssSelect`) mają `full-width`. Pole odpowiedzi w
+`TaskThreadPanel` używa tego propsa i zachowuje etykietę nad textarea.
+
 ### Miejsce wykrycia
 
 - `src/components/shared/TaskThreadPanel/TaskThreadPanel.vue`
@@ -327,13 +353,7 @@ W tym wariancie:
 
 ## ADI-005 — Zahardkodowane polskie etykiety zamykania w `AbyssDialog` i `AbyssNotify`
 
-**Status:** `DONE` — domyślne etykiety zamykania pochodzą z `ui.dialog.close`
-i `ui.notify.close`; przy okazji przeniesiono do warstwy `ui.*` pozostałe
-zaszyte teksty: `ui.keypad.*` (`AbyssNumericKeypad`, `AbyssAppLock`),
-`ui.pinInput.ariaLabel`, `ui.keybind.placeholder`,
-`ui.appLock.biometricUnlock`. Propsy tekstowe mają teraz pusty default i służą
-wyłącznie do nadpisania. `AbyssDialog` dostał też `aria-label` z `title`, bo
-Quasar renderował `role="dialog"` bez dostępnej nazwy.  
+**Status:** `DONE` — `@maiadiary/abyss-design@0.2.5`  
 **Ważność:** `MEDIUM` — błąd i18n / dostępności
 
 ### Problem
@@ -364,9 +384,202 @@ element wewnętrzny design systemu, który ma już do tego własny mechanizm.
 3. Wyłapać pozostałe zahardkodowane ciągi w komponentach `ui/`.
 4. Dodać test sprawdzający brak literałów językowych w domyślnych propsach.
 
+### Zastosowana poprawka
+
+Domyślne etykiety pochodzą z `ui.dialog.close` i `ui.notify.close`. Aplikacja
+dostarcza te klucze w `en-US` i `pl-PL`, host toastów to `AbyssNotifyHost`,
+a modal zadania nie nadpisuje już `close-button-aria-label`.
+
 ### Miejsce wykrycia
 
-- `node_modules/@maiadiary/abyss-design/src/components/ui/AbyssDialog/AbyssDialog.vue:134`
-- `node_modules/@maiadiary/abyss-design/src/components/ui/AbyssNotify/AbyssNotify.vue:196`
-- `src/pages/PlanBoardPage.vue` — obejście przez `:close-button-aria-label="t('common.close')"`
+- `src/pages/PlanBoardPage.vue`
+- `src/layouts/MainLayout.vue`
+- `src/layouts/AuthLayout.vue`
+- `src/pages/ErrorNotFound.vue`
+
+---
+
+## ADI-006 — Tarball 0.2.5 nie publikuje `src/utils`
+
+**Status:** `DONE` — `src/utils` jest w `files`, `debounce` jest eksportowane z `src/index.ts` (build emituje `dist/utils/debounce.js`), a `tools/check-published-sfc-imports.mjs` sprawdza względne importy SFC i obecność JS debounce.  
+**Ważność:** `HIGH` — błąd pakietu npm
+
+### Problem
+
+Od 0.2.5 komponenty SFC importują narzędzia względną ścieżką
+(`../../../utils/debounce`, `pinCode`, `markdownToHtml`, `desktopShortcut`),
+zamiast aliasu `@/utils/*`. Pole `files` w `package.json` pakietu zawiera
+`src/components`, ale nie `src/utils`. `dist/utils/debounce.js` też nie jest
+publikowane — jest tylko `.d.ts`.
+
+Konsument nie może skompilować `AbyssForm` bez ręcznego uzupełnienia tych
+plików.
+
+### Obejście w aplikacji
+
+`tools/materialize-abyss-src-utils.mjs` kopiuje shim debounce i re-eksportuje
+pozostałe utility z `dist/utils/*.js` do `node_modules/.../src/utils`.
+Wywołanie: `postinstall`, `typecheck` i `quasar.config.ts`.
+
+### Proponowana poprawka w AbyssDesign
+
+1. Dodać `src/utils` do `files` albo przywrócić importy `@/utils/*`.
+2. Publikować `dist/utils/debounce.js`, nie tylko deklarację.
+3. Dodać test paczki sprawdzający, że każdy względny import SFC istnieje
+   w tarballu.
+
+---
+
+## ADI-007 — `AbyssGradientBox` nie może mieć sztywnego `64px`
+
+**Status:** `DONE` — box wypełnia komórkę (`width: 100%`, `aspect-ratio: 1 / 1`); story „Przełącznik gradientów” pokazuje układ w karcie + `AbyssGrid` `content-rows`.  
+**Ważność:** `HIGH` — błąd layoutu/API komponentu  
+**Docelowa wersja:** następna po `0.2.5`
+
+### Problem
+
+`AbyssGradientBox` ma zahardkodowane `width: 64px` i `height: 64px`. Story i
+autodocs opisują go jako kwadrat 64×64. W karcie ustawień („Gradient
+aplikacji”) siatka presetów ma wypełniać **stałą szerokość kontenera**:
+rząd zajmuje całą szerokość karty, kafelki dzielą ją równo i zachowują
+proporcje kwadratu.
+
+Sztywne `64px` jest nieprawidłowe. Przy szerszej karcie zostaje puste miejsce
+po prawej, przy węższej kafelki nie zwężają się. Konsumenci są zmuszeni albo
+zostawić dziurę, albo nadpisywać prymityw lokalnym CSS (`width: 100%`,
+`aspect-ratio: 1 / 1`) — to obejście, nie API.
+
+### Pułapka
+
+Kanoniczny `AbyssGrid column-size="64px" :max-columns="8"` powiela ten sam
+błąd: kolumna dziedziczy sztywny rozmiar boxa zamiast rozciągać się do
+szerokości karty.
+
+### Oczekiwany wzorzec
+
+W `#content` karty:
+
+```vue
+<AbyssGrid content-rows>
+  <AbyssGradientBox
+    v-for="preset in GRADIENT_PRESETS"
+    :key="preset.label"
+    :colors="preset.colors"
+    :active="selected === preset.label"
+    @click="select(preset.label)"
+  />
+</AbyssGrid>
+```
+
+- rząd wypełnia szerokość karty,
+- box rośnie i maleje z kolumną,
+- kwadrat (`aspect-ratio: 1 / 1`), nie osobna wysokość `64px`,
+- bez `:deep()` na `.abyss-gradient-box` w karcie ustawień.
+
+### Proponowana poprawka w AbyssDesign (następna wersja)
+
+1. Usunąć sztywne `64px` z `AbyssGradientBox` jako jedyny rozmiar.
+2. Domyślnie wypełniać komórkę siatki (szerokość `100%`, wysokość z
+   `aspect-ratio: 1 / 1`).
+3. Zaktualizować autodocs i story „Przełącznik gradientów”: układ w karcie /
+   `AbyssGrid` na pełną szerokość, nie `flex-wrap` ze stałymi 64px.
+4. Dodać test, że box w siatce rozciąga się przy zmianie szerokości
+   kontenera.
+
+### Miejsce wykrycia
+
+- `src/components/shared/SettingsAppearanceTab/SettingsAppearanceTab.vue`
+
+---
+
+## ADI-008 — W formularzu w `#content` karty tylko standardowy `AbyssButton` `size="big"`
+
+**Status:** `DONE` — kanon, skill, checklisty i story `AbyssForm` rozdzielają chrome (`flat`) od submitu w `#content` (standard, `size="big"`, bez `embedded`).  
+**Ważność:** `HIGH` — luka i sprzeczność w kanonie  
+**Docelowa wersja:** następna po `0.2.5`
+
+### Problem
+
+Formularz w slocie `#content` karty (`AbyssForm` wewnątrz `AbyssCard`) nie
+może używać przycisków `flat` ani `embedded`. Dozwolony jest wyłącznie
+**standardowy** `AbyssButton` (bez `flat`, bez `embedded`) o rozmiarze
+**`big`**.
+
+`flat` i `embedded` zostają zarezerwowane dla chrome'u karty: `#header-append`
+i stopka. Nie przenoszą się na akcje leżące w treści, pod polami.
+
+### Pułapka
+
+Kanon i skill mówią jednocześnie dwie rzeczy:
+
+- lista miejsc `flat` wymienia header i stopkę `AbyssCard`, nie content,
+- skrót `AbyssButton` każe w karcie/dialogu stawiać **każdy** przycisk jako
+  `flat`.
+
+Drugi punkt jest błędny dla formularza w contencie. Łatwy wniosek: submit
+„Zapisz token” / „Zaloguj” / „Wyślij” dostaje `flat` albo `embedded`, bo
+„wszystko w karcie jest płaskie”. To spłaszcza CTA do wyglądu akcji
+nagłówka i gubi hierarchię.
+
+`embedded` w tym samym miejscu jest tym bardziej niedozwolony: to wariant
+akcji pobocznej w chrome, nie głównej akcji formularza.
+
+### Oczekiwany wzorzec
+
+```vue
+<AbyssCard title="Poświadczenia">
+  <template #header-prepend>
+    <q-icon name="sym_r_key" />
+  </template>
+  <template #content>
+    <AbyssForm :model-value="form" @submit-form="save">
+      <AbyssInput v-model="form.token" label="Token" />
+      <AbyssGrid
+        align="right"
+        :column-size="INPUT_COLUMN_SIZE"
+        :max-columns="INPUT_GRID_MAX_COLUMNS"
+      >
+        <AbyssButton
+          type="submit"
+          size="big"
+          :label="t('common.save')"
+        />
+      </AbyssGrid>
+    </AbyssForm>
+  </template>
+</AbyssCard>
+```
+
+W `#content` formularza:
+
+- `size="big"` — jedyny dozwolony rozmiar,
+- bez `flat`,
+- bez `embedded`,
+- `gradient` / `gradient-colors` tylko gdy akcja ma znaczenie semantyczne
+  (operacyjna), nadal bez `flat`.
+
+Nadal `flat` (zwykle `size="medium"`):
+
+- `#header-append` karty,
+- stopka karty,
+- stopka / akcje `AbyssDialog`.
+
+### Proponowana poprawka w AbyssDesign (następna wersja)
+
+1. Rozdzielić w kanonie przyciski **chrome'u karty** (`flat`) od przycisków
+   **formularza w `#content`** (standard, `size="big"`).
+2. Usunąć zdanie „w karcie/dialogu każdy przycisk jest `flat`” albo ograniczyć
+   je do headera, stopki i dialogu.
+3. Dodać `embedded` do zakazu w `#content` formularza.
+4. Uzupełnić story `AbyssForm` / `AbyssCard`: submit pod polami bez `flat`,
+   `size="big"`.
+5. Dodać pozycję do checklisty audytu, żeby `flat` na submitcie w contencie
+   karty był naruszeniem.
+
+### Miejsce wykrycia
+
+- `src/components/shared/CredentialsTab/CredentialsTab.vue`
+- `src/components/shared/LoginForm/LoginForm.vue`
+- `src/components/shared/TaskThreadPanel/TaskThreadPanel.vue`
+- `src/components/shared/SettingsAccountTab/SettingsAccountTab.vue`
 

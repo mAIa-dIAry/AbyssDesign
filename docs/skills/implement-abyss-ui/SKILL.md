@@ -102,12 +102,12 @@ Nie importuj shadow-wrapperów `AbyssTemplate`, `AbyssScrollView`, `AbyssSidebar
 | Badge subskrypcji gold / sakura / garden | `AbyssGradientBadge` | Nie status wiersza tabeli. Nie `q-badge`. |
 | Wiersz listy (klikalny rekord, dzień analizy) | **BRAK** | Nie `AbyssButton flat` poza dozwolonymi miejscami `flat`. Nie `ul` / `li` + `flat`. Zgłoś `make-component`. |
 | Tło gradientowe aplikacji | `AbyssBackground` | Nie `AbyssGradientBox` jako tło całego layoutu. |
-| Preset gradientu (box) | `AbyssGradientBox` | Nie `AbyssBackground` wewnątrz karty. |
+| Preset gradientu (box) | `AbyssGradientBox` | Nie `AbyssBackground` wewnątrz karty. Nie sztywne `64px` — box wypełnia komórkę siatki (`width: 100%`, `aspect-ratio: 1 / 1`). |
 | Separator wizualny | `AbyssSeparator` | Nie `hr` / własny border jako separator systemowy. |
 | Skrót klawiszowy | `AbyssKeybind` | — |
 | Strona 404 / błąd | `AbyssTemplateMain` + `AbyssButton` | Nie `q-btn` i surowy szablon Quasar `ErrorNotFound`. |
 
-**`flat` na `AbyssButton` — jedna lista miejsc:** header i stopka `AbyssCard`, `AbyssDialog`, sloty `#prepend` / `#append` w `AbyssInput`, akcje `AbyssNavHeader`, wnętrze `AbyssSwitcher`, komórka `AbyssTable` (akcja rekordu i trigger menu). Wszędzie indziej `flat` jest naruszeniem (w tym wiersz listy — patrz **BRAK** powyżej).
+**`flat` na `AbyssButton` — jedna lista miejsc:** header i stopka `AbyssCard`, `AbyssDialog`, sloty `#prepend` / `#append` w `AbyssInput`, akcje `AbyssNavHeader`, wnętrze `AbyssSwitcher`, komórka `AbyssTable` (akcja rekordu i trigger menu). Wszędzie indziej `flat` jest naruszeniem (w tym wiersz listy — patrz **BRAK** powyżej; w tym submit formularza w `#content` karty — tam standardowy `size="big"` bez `flat` i bez `embedded`).
 
 Akcja **w komórce** tabeli to dozwolony `flat` (`size="small"`); klikalny **cały wiersz / list-row** nadal nie ma prymitywu (**BRAK**) — nie buduj go z `AbyssButton flat`.
 
@@ -141,7 +141,7 @@ Reguły układu:
 - **Nie owijaj** `AbyssInput` / `AbyssSelect` w dodatkowy `AbyssGrid` — mają wewnętrzną siatkę.
 - Pola formularza **zawsze** w `AbyssForm` — nie natywny `<form>`, nie pola luzem w karcie.
 - Przyciski akcji pod polami: `AbyssGrid` z `align="right"`, `:column-size="INPUT_COLUMN_SIZE"`, `:max-columns="INPUT_GRID_MAX_COLUMNS"`.
-- Przyciski główne: `size="big"`, często `full-width`.
+- Przyciski główne: `size="big"`, często `full-width`, **bez** `flat` i **bez** `embedded` (to chrome karty / dialog, nie `#content`).
 - Pola (`AbyssInput` / `AbyssSelect`): `size="small"` \| `"big"` (domyślnie `big`) — ta sama nazwa co przycisk.
 - Pole na pełną szerokość kontenera z widoczną etykietą: prop `full-width` (etykieta nad polem). Nie usuwaj `label` i nie nadpisuj wewnętrznej siatki pola.
 - Hasło: zmiana/ustawienie **tylko** w `AbyssDialog`; w karcie wyłącznie trigger (wyjątek: pole hasła przy logowaniu).
@@ -159,9 +159,10 @@ Reguły układu:
 `theme` | `success` | `info` | `warning` | `danger` | `hint`
 
 - `theme` — globalne CTA aplikacji, nie lokalna akcja w karcie.
-- W karcie/dialogu: każdy przycisk **`flat`**; akcja operacyjna dodatkowo `gradient` + `gradient-colors`.
+- W nagłówku/stopce karty i w dialogu: każdy przycisk **`flat`**; akcja operacyjna dodatkowo `gradient` + `gradient-colors`.
+- W `#content` karty: standardowy `AbyssButton` `size="big"` — **bez** `flat` i **bez** `embedded`; `gradient` tylko na akcji operacyjnej.
 - Pełna lista miejsc `flat`: Krok 2 (header/stopka Card, Dialog, Input prepend/append, NavHeader actions, wnętrze Switcher, komórka Table).
-- Ikonowe akcje nagłówków `AbyssCard` / `AbyssTable` / `AbyssDialog`: `flat` + `size="medium"` + `aria-label`, bez widocznego labela. Akcje w komórkach tabeli: `flat` + `size="small"`.
+- Ikonowe akcje nagłówków `AbyssCard` / `AbyssDialog`: `flat` + `size="medium"` + `aria-label`, promień `12px` z chrome'u karty. Nagłówek `AbyssTable`: ten sam `size="medium"`, promień ze skali przycisku (`6px`). Akcje w komórkach tabeli: `flat` + `size="small"`.
 - Anulowanie: samo `flat`, bez gradientu.
 - Nie używaj własnych tablic kolorów.
 
@@ -170,8 +171,8 @@ Reguły układu:
 | Prop         | Kiedy                                                                                |
 | ------------ | ------------------------------------------------------------------------------------ |
 | `flat`       | header/stopka `AbyssCard`, `AbyssDialog`, `#prepend`/`#append` `AbyssInput`, akcje `AbyssNavHeader`, wnętrze `AbyssSwitcher`, komórka `AbyssTable` |
-| `gradient`   | akcja operacyjna ze znaczeniem (z `flat` w karcie/dialogu)                           |
-| `embedded`   | akcja poboczna (np. reset hasła)                                                     |
+| `gradient`   | akcja operacyjna ze znaczeniem (`flat` + `gradient` w headerze/stopce/dialogu; w `#content` karty `gradient` bez `flat`) |
+| `embedded`   | akcja poboczna w chrome — nie w `#content` formularza                                     |
 | `current`    | aktywny route / wybrany kontekst nawigacji                                           |
 | `toggled`    | aktywny filtr / narzędzie w toolbarze                                                |
 | `full-width` | samotna akcja w pionowym stacku formularza/dialogu                                   |
@@ -193,7 +194,8 @@ Szybki test:
 - [ ] Każda `AbyssCard` z tytułem ma ikonę w `#header-prepend`
 - [ ] Formularz w `AbyssForm` (nie natywny `<form>`, nie pola luzem)
 - [ ] Formularz bez dodatkowego `AbyssGrid` wokół pól
-- [ ] Przyciski w kartach/dialogach: `flat` (+ `gradient` tylko na akcji operacyjnej)
+- [ ] Przyciski w headerze/stopce karty i w dialogu: `flat` (+ `gradient` tylko na akcji operacyjnej)
+- [ ] Przyciski formularza w `#content` karty: `size="big"`, bez `flat`, bez `embedded`
 - [ ] `flat` tylko na liście miejsc z Kroku 2
 - [ ] Data/czas w formularzu: `AbyssInput` z `type="date"` / `"time"` / `"datetime-local"`
 - [ ] Brak natywnych pickerów daty/czasu systemowych
@@ -201,7 +203,7 @@ Szybki test:
 - [ ] Brak Quasara spoza tabeli „Quasar dozwolony”
 - [ ] Wiersz **BRAK** (spinner, list-row, badge statusu) nie zastąpiony Quasarem
 - [ ] Szczegóły rekordu w `AbyssDialog` albo na osobnej trasie — nie dopięte pod listą / tabelą
-- [ ] Ikonowe akcje nagłówków kart, tabel i dialogów: `size="medium"`; akcje w komórkach tabeli: `size="small"`
+- [ ] Ikonowe akcje nagłówków kart i dialogów: `size="medium"` i promień `12px`; nagłówek tabeli: `size="medium"` i promień `6px`; akcje w komórkach: `size="small"`
 - [ ] Brak tłumaczenia wewnętrznych etykiet Abyss (zamknięcie dialogu / toasta) w aplikacji
 - [ ] `AbyssDialog` ma niepusty `title` (nazwa dostępna powierzchni)
 
@@ -209,7 +211,7 @@ Szybki test:
 
 **Ustawienia konta (formularz)** → `AbyssCard` + `AbyssForm` + pola + `AbyssGrid` z przyciskami; bez SCSS na Abyss.
 
-**Usuń konto (destrukcyjne)** → `AbyssCard` + `AbyssInfo type="danger"` + `AbyssButton flat gradient gradient-colors="danger" full-width`.
+**Usuń konto (destrukcyjne)** → `AbyssCard` + `AbyssInfo type="danger"` + `AbyssButton size="big" gradient gradient-colors="danger" full-width` (bez `flat`).
 
 **Edytor notatek (złożony)** → własny komponent aplikacji; wewnątrz `AbyssInput`/`AbyssButton` z klasami BEM dozwolone.
 

@@ -49,7 +49,7 @@ const meta: Meta<AbyssButtonStoryArgs> = {
           '- `danger` — operacje nieodwracalne (np. usunięcie danych).\n' +
           '- `hint` — akcje informacyjne lub prowadzące do pobocznego procesu.\n\n' +
           'Kolory `success`, `info`, `warning`, `danger` i `hint` są kontekstowe — w dialogu z potwierdzeniem i anulowaniem przycisk operacyjny dostaje kolor zależny od wykonywanej akcji. Nie używaj wariantu gradientowego, jeśli akcja jest jedyna na liście.\n\n' +
-          '**`flat`** — tylko w dozwolonych miejscach: nagłówek i stopka `AbyssCard`, `AbyssDialog`, sloty `#prepend` / `#append` `AbyssInput`, akcje `AbyssNavHeader`, wnętrze `AbyssSwitcher`, komórka `AbyssTable`. W nagłówku/stopce karty i w dialogu **każdy** przycisk jest `flat`. Akcja operacyjna z kolorem semantycznym łączy `flat` + `gradient` + `gradientColors`; akcja pomocnicza (anulowanie, ikona kontekstowa, akcja w komórce tabeli) zostaje jako samo `flat`.\n\n' +
+          '**`flat`** — tylko w dozwolonych miejscach: nagłówek i stopka `AbyssCard`, `AbyssDialog`, sloty `#prepend` / `#append` `AbyssInput`, akcje `AbyssNavHeader`, wnętrze `AbyssSwitcher`, komórka `AbyssTable`. W nagłówku/stopce karty i w dialogu **każdy** przycisk jest `flat`. Formularz w `#content` karty używa standardowego `AbyssButton` `size="big"` — bez `flat` i bez `embedded`. W chrome akcja operacyjna łączy `flat` + `gradient` + `gradientColors`; akcja pomocnicza (anulowanie, ikona kontekstowa, akcja w komórce tabeli) zostaje jako samo `flat`.\n\n' +
           'Pełna matryca decyzyjna: `docs/architecture/abyss-design.md`.',
       },
     },

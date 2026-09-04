@@ -37,7 +37,7 @@ Quasar **zostaw** wyłącznie z tabeli „Quasar dozwolony” w `abyss-design.md
 </template>
 ```
 
-Ikonowa akcja nagłówka: `size="medium"`, bez widocznego labela, nazwa dostępna z `aria-label`. Ten sam wygląd w `AbyssCard`, `AbyssTable` i `AbyssDialog` — nie nadpisuj promienia przycisku.
+Ikonowa akcja nagłówka: `size="medium"`, bez widocznego labela, nazwa dostępna z `aria-label`. Karta i dialog nadpisują `--border-radius: 12px` (niski narożnik). Tabela zostawia `6px` ze skali `medium` — header jest wyższy. Nie zrównywać tych promieni.
 
 **Dynamiczny AbyssInfo po akcji → Notify:**
 
@@ -49,9 +49,9 @@ Import: helper kolejki w aplikacji (nie hard-coded `notify.store`).
 
 ---
 
-## AbyssButton w karcie / dialogu
+## AbyssButton — chrome vs `#content`
 
-**Przycisk operacyjny (zapis, usunięcie):**
+**Header / stopka karty i dialog:**
 
 ```html
 <AbyssButton
@@ -59,21 +59,32 @@ Import: helper kolejki w aplikacji (nie hard-coded `notify.store`).
   gradient
   gradient-colors="info"
   label="Zapisz"
+  size="medium"
+/>
+```
+
+**Formularz w `#content` karty (bez `flat`, bez `embedded`):**
+
+```html
+<AbyssButton
   size="big"
+  gradient
+  gradient-colors="info"
+  label="Zapisz"
   full-width
 />
 ```
 
-**Anulowanie:**
+**Anulowanie w dialogu:**
 
 ```html
 <AbyssButton flat label="Anuluj" />
 ```
 
-**Destrukcyjny:**
+**Destrukcyjny w `#content` karty:**
 
 ```html
-<AbyssButton flat gradient gradient-colors="danger" label="Usuń" full-width />
+<AbyssButton size="big" gradient gradient-colors="danger" label="Usuń" full-width />
 ```
 
 **Usuń `flat` poza listą miejsc** (header/stopka Card, Dialog, Input prepend/append, NavHeader actions, wnętrze Switcher, komórka `AbyssTable`). Wiersz listy z `flat` to **BRAK** prymitywu — nie „naprawiaj” Quasarem ani nie legalizuj `flat` na liście.

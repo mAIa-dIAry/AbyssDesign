@@ -3,6 +3,8 @@ import { expect } from 'storybook/test';
 import { ref } from 'vue';
 import AbyssGradientBox from '@/components/ui/AbyssGradientBox/AbyssGradientBox.vue';
 import AbyssButton from '@/components/ui/AbyssButton/AbyssButton.vue';
+import AbyssCard from '@/components/ui/AbyssCard/AbyssCard.vue';
+import AbyssGrid from '@/components/ui/AbyssGrid/AbyssGrid.vue';
 import { withAbyssBackground } from '@/stories/AbyssBackgroundDecorator';
 import { GRADIENT_PRESETS } from '@/defines/gradient-presets';
 
@@ -15,7 +17,7 @@ const meta: Meta<typeof AbyssGradientBox> = {
     docs: {
       description: {
         component:
-          'Komponent wyświetlający kwadratowy box z gradientem 64×64px. Obsługuje stan aktywny z obramowaniem i outline jak w polu input w trybie focus.',
+          'Kwadratowy box gradientu. Wypełnia komórkę siatki (`width: 100%`, `aspect-ratio: 1 / 1`) — nie ma sztywnego rozmiaru 64×64. W karcie ustawień układaj boxy w `AbyssGrid` `content-rows`, bez `column-size="64px"` i bez lokalnego `:deep()` na `.abyss-gradient-box`.',
       },
     },
   },
@@ -51,10 +53,23 @@ export const Default: Story = {
   parameters: {
     docs: {
       description: {
-        story: 'Domyślny stan komponentu bez aktywnego obramowania.',
+        story: 'Domyślny stan — kwadrat wypełnia komórkę siatki, bez sztywnego 64px.',
       },
     },
   },
+  render: (args) => ({
+    components: { AbyssGradientBox, AbyssGrid },
+    setup() {
+      return { args };
+    },
+    template: `
+      <div style="width: 240px;">
+        <AbyssGrid content-rows>
+          <AbyssGradientBox v-bind="args" />
+        </AbyssGrid>
+      </div>
+    `,
+  }),
 };
 
 export const Active: Story = {
@@ -70,6 +85,19 @@ export const Active: Story = {
       },
     },
   },
+  render: (args) => ({
+    components: { AbyssGradientBox, AbyssGrid },
+    setup() {
+      return { args };
+    },
+    template: `
+      <div style="width: 240px;">
+        <AbyssGrid content-rows>
+          <AbyssGradientBox v-bind="args" />
+        </AbyssGrid>
+      </div>
+    `,
+  }),
 };
 
 export const GradientSwitcher: Story = {
@@ -78,56 +106,67 @@ export const GradientSwitcher: Story = {
     docs: {
       description: {
         story:
-          'Kliknięcie boxa aktywuje go i zmienia wybrany gradient. Boxy pełnią rolę opcji wyboru.',
+          'W `#content` karty rząd `AbyssGrid` `content-rows` wypełnia szerokość; boxy dzielą ją równo i zostają kwadratami. Nie ustawiaj `column-size="64px"` i nie nadpisuj `.abyss-gradient-box` w karcie ustawień.',
       },
       source: {
-        code: `<template>
-  <div style="display: flex; gap: 12px; flex-wrap: wrap;">
-    <AbyssGradientBox
-      v-for="(preset, index) in GRADIENT_PRESETS"
-      :key="index"
-      :colors="preset.colors"
-      :active="activeIndex === index"
-      @click="activeIndex = index"
-    />
-  </div>
-</template>
-
-<script setup lang="ts">
-import { ref } from 'vue';
-import AbyssGradientBox from '@/components/ui/AbyssGradientBox/AbyssGradientBox.vue';
-
-const GRADIENT_PRESETS = [
-  { label: 'Default', colors: ['hsl(345, 100%, 72%)', 'hsl(188, 98%, 30%)'] },
-  { label: 'Gold',    colors: ['hsl(48, 100%, 77%)',  'hsl(18, 100%, 69%)']  },
-  { label: 'Sakura',  colors: ['hsl(291, 86%, 85%)',  'hsl(235, 100%, 72%)'] },
-  { label: 'Garden',  colors: ['hsl(85, 100%, 69%)',  'hsl(133, 100%, 39%)'] },
-];
-
-const activeIndex = ref(0);
-</script>`,
+        code: `<AbyssCard title="Gradient aplikacji">
+  <template #header-prepend>
+    <q-icon name="sym_r_gradient" />
+  </template>
+  <template #content>
+    <AbyssGrid content-rows>
+      <AbyssGradientBox
+        v-for="preset in GRADIENT_PRESETS"
+        :key="preset.label"
+        :colors="preset.colors"
+        :active="selected === preset.label"
+        @click="select(preset.label)"
+      />
+    </AbyssGrid>
+  </template>
+</AbyssCard>`,
         language: 'html',
       },
     },
   },
   render: () => ({
-    components: { AbyssGradientBox },
+    components: { AbyssCard, AbyssGradientBox, AbyssGrid },
     setup() {
       const activeIndex = ref(0);
       return { activeIndex, GRADIENT_PRESETS };
     },
     template: `
-      <div style="display: flex; gap: 12px; flex-wrap: wrap;">
-        <AbyssGradientBox
-          v-for="(preset, index) in GRADIENT_PRESETS"
-          :key="index"
-          :colors="preset.colors"
-          :active="activeIndex === index"
-          @click="activeIndex = index"
-        />
-      </div>
+      <AbyssCard title="Gradient aplikacji">
+        <template #header-prepend>
+          <q-icon name="sym_r_gradient" />
+        </template>
+        <template #content>
+          <AbyssGrid content-rows>
+            <AbyssGradientBox
+              v-for="(preset, index) in GRADIENT_PRESETS"
+              :key="preset.label"
+              :colors="preset.colors"
+              :active="activeIndex === index"
+              @click="activeIndex = index"
+            />
+          </AbyssGrid>
+        </template>
+      </AbyssCard>
     `,
   }),
+  play: async ({ canvasElement }) => {
+    const grid = canvasElement.querySelector('.abyss-grid');
+    const box = canvasElement.querySelector('.abyss-gradient-box');
+    if (!(grid instanceof HTMLElement) || !(box instanceof HTMLElement)) {
+      throw new Error('Expected gradient grid and box in the story canvas');
+    }
+
+    const gridWidth = grid.getBoundingClientRect().width;
+    const boxRect = box.getBoundingClientRect();
+    await expect(gridWidth).toBeGreaterThan(64);
+    await expect(boxRect.width).toBeGreaterThan(64);
+    await expect(Math.abs(boxRect.width - boxRect.height)).toBeLessThan(2);
+  },
 };
 
 export const ColorsWatch: Story = {
@@ -155,7 +194,9 @@ export const ColorsWatch: Story = {
     template: `
       <div style="display:flex;flex-direction:column;align-items:flex-start;gap:8px;">
         <AbyssButton label="Zmień kolory" size="small" @click="changeColors" />
+      <div style="width: 96px;">
         <AbyssGradientBox :colors="colors" />
+      </div>
       </div>
     `,
   }),

@@ -37,6 +37,7 @@ export {
 } from './defines/semantic-gradients';
 export type { CssColor, GradientPreset } from './types/color';
 export type { AbyssChartLabel } from './types/abyss-chart';
+export { debounce } from './utils/debounce';
 export { PIN_LENGTH } from './utils/pinCode';
 export { resolveDesktopShortcutFromKeyboardInput } from './utils/desktopShortcut';
 export { injectGradientPresetsPlugin } from './vite/inject-gradient-presets';

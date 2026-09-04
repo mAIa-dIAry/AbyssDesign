@@ -116,6 +116,10 @@ const hasFooter = computed(() => {
       margin-right: -12px;
     }
 
+    :deep(.abyss-button) {
+      --border-radius: 12px;
+    }
+
     :deep(> .abyss-button) {
       margin-top: -8px;
       margin-bottom: -8px;

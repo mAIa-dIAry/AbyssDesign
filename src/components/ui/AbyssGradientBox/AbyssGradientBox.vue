@@ -60,11 +60,13 @@ const computedStyle = computed(() => [
   --border-color: transparent;
   --overlay-opacity: 0.5;
 
-  display: inline-flex;
+  box-sizing: border-box;
+  display: flex;
   align-items: center;
   justify-content: center;
-  width: 64px;
-  height: 64px;
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  height: auto;
   padding: var(--padding);
   border-radius: var(--border-radius);
   background-color: rgba(white, 0.02);

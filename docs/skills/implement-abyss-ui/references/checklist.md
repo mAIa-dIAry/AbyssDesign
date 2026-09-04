@@ -13,14 +13,15 @@
 ## AbyssCard
 
 - [ ] Tytuł + ikona tematyczna w `#header-prepend`
-- [ ] Akcje kontekstowe w `#header-append` jako `AbyssButton flat` z `size="medium"` i `aria-label`
+- [ ] Akcje kontekstowe w `#header-append` jako `AbyssButton flat` z `size="medium"` i `aria-label` (karta/dialog: promień `12px`; tabela: `6px`)
 - [ ] Footer tylko gdy uzasadniony (np. niezapisane zmiany)
 
 ## AbyssButton
 
 - [ ] W headerze/stopce karty i dialogu: wszystkie przyciski `flat`
+- [ ] W `#content` karty: `AbyssButton` `size="big"` bez `flat` i bez `embedded`
 - [ ] `flat` tylko na liście: Card header/footer, Dialog, Input prepend/append, NavHeader actions, wnętrze Switcher, komórka `AbyssTable`
-- [ ] Akcja operacyjna: `flat` + `gradient` + klucz semantyczny `gradient-colors`
+- [ ] Akcja operacyjna w chrome/dialogu: `flat` + `gradient` + klucz semantyczny; w `#content` karty: `gradient` bez `flat`
 - [ ] Anulowanie bez gradientu
 - [ ] Brak własnych tablic kolorów w `gradient-colors`
 - [ ] `theme` tylko dla globalnego CTA aplikacji
