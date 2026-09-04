@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.2.7] - 2026-09-04
+
+Przełącznik gradientów pakuje kolumny do 64px zamiast rozciągać kafelki na całą kartę.
+
+### Nowości
+
+- `AbyssGrid` `pack` — `column-size` jest maksimum toru, bez `1fr`. Przełącznik presetów: `content-rows pack column-size="64px"`, bez `max-columns`.
+
+### Poprawki
+
+- Story i test przełącznika gradientów nie utrwala już dwóch ogromnych kwadratów z domyślnego `360px`.
+
 ## [0.2.6] - 2026-09-04
 
 Promień akcji nagłówka wraca do chrome'u karty, tarball publikuje `src/utils`, box gradientu wypełnia siatkę, a submit formularza w treści karty nie jest `flat`.
