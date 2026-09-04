@@ -1,5 +1,22 @@
 # Changelog
 
+## [0.2.6] - 2026-09-04
+
+Promień akcji nagłówka wraca do chrome'u karty, tarball publikuje `src/utils`, box gradientu wypełnia siatkę, a submit formularza w treści karty nie jest `flat`.
+
+### Nowości
+
+- `AbyssGradientBox` wypełnia komórkę siatki (`width: 100%`, `aspect-ratio: 1 / 1`) zamiast sztywnego `64px`.
+
+### Zmiany
+
+- Formularz w `#content` karty używa standardowego `AbyssButton` `size="big"` — bez `flat` i bez `embedded`. `flat` zostaje w headerze/stopce karty i w dialogu.
+
+### Poprawki
+
+- `AbyssCard` i `AbyssDialog` znów nadpisują `--border-radius: 12px` na akcjach nagłówka — niski narożnik karty nie dziedziczy `6px` z tabeli.
+- Tarball publikuje `src/utils`; `debounce` jest w `dist/utils/debounce.js`. Build sprawdza względne importy SFC.
+
 ## [0.2.5] - 2026-09-03
 
 Akcje w tabeli, pełna szerokość pól i wewnętrzne etykiety z warstwy `ui.*`.
