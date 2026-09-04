@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/vue3';
-import { expect } from 'storybook/test';
+import { expect, waitFor } from 'storybook/test';
 import { ref } from 'vue';
 import AbyssGradientBox from '@/components/ui/AbyssGradientBox/AbyssGradientBox.vue';
 import AbyssButton from '@/components/ui/AbyssButton/AbyssButton.vue';
@@ -17,7 +17,7 @@ const meta: Meta<typeof AbyssGradientBox> = {
     docs: {
       description: {
         component:
-          'Kwadratowy box gradientu. Wypełnia komórkę siatki (`width: 100%`, `aspect-ratio: 1 / 1`) — nie ma sztywnego rozmiaru 64×64. W karcie ustawień układaj boxy w `AbyssGrid` `content-rows`, bez `column-size="64px"` i bez lokalnego `:deep()` na `.abyss-gradient-box`.',
+          'Kwadratowy box gradientu. Wypełnia komórkę siatki (`width: 100%`, `aspect-ratio: 1 / 1`) — nie ma sztywnego rozmiaru 64×64. Przełącznik w karcie ustawień: `AbyssGrid` `content-rows` `pack` `column-size="64px"` (`GRADIENT_BOX_COLUMN_SIZE`), bez `max-columns` i bez `:deep()` na `.abyss-gradient-box`. 64px to maksimum kolumny, nie jedyny rozmiar boxa.',
       },
     },
   },
@@ -53,7 +53,8 @@ export const Default: Story = {
   parameters: {
     docs: {
       description: {
-        story: 'Domyślny stan — kwadrat wypełnia komórkę siatki, bez sztywnego 64px.',
+        story:
+          'Domyślny stan — kwadrat wypełnia komórkę. W przełączniku komórka ma max 64px (`pack`).',
       },
     },
   },
@@ -64,7 +65,7 @@ export const Default: Story = {
     },
     template: `
       <div style="width: 240px;">
-        <AbyssGrid content-rows>
+        <AbyssGrid content-rows pack column-size="64px">
           <AbyssGradientBox v-bind="args" />
         </AbyssGrid>
       </div>
@@ -92,7 +93,7 @@ export const Active: Story = {
     },
     template: `
       <div style="width: 240px;">
-        <AbyssGrid content-rows>
+        <AbyssGrid content-rows pack column-size="64px">
           <AbyssGradientBox v-bind="args" />
         </AbyssGrid>
       </div>
@@ -106,7 +107,7 @@ export const GradientSwitcher: Story = {
     docs: {
       description: {
         story:
-          'W `#content` karty rząd `AbyssGrid` `content-rows` wypełnia szerokość; boxy dzielą ją równo i zostają kwadratami. Nie ustawiaj `column-size="64px"` i nie nadpisuj `.abyss-gradient-box` w karcie ustawień.',
+          'W `#content` karty: `AbyssGrid` `content-rows` `pack` `column-size="64px"`. 64px to maksimum kolumny przełącznika — box wypełnia komórkę, na wąskiej karcie maleje, na szerokiej przybywa kolumn. Bez `max-columns` i bez `:deep()` na `.abyss-gradient-box`.',
       },
       source: {
         code: `<AbyssCard title="Gradient aplikacji">
@@ -114,7 +115,7 @@ export const GradientSwitcher: Story = {
     <q-icon name="sym_r_gradient" />
   </template>
   <template #content>
-    <AbyssGrid content-rows>
+    <AbyssGrid content-rows pack column-size="64px">
       <AbyssGradientBox
         v-for="preset in GRADIENT_PRESETS"
         :key="preset.label"
@@ -141,7 +142,7 @@ export const GradientSwitcher: Story = {
           <q-icon name="sym_r_gradient" />
         </template>
         <template #content>
-          <AbyssGrid content-rows>
+          <AbyssGrid content-rows pack column-size="64px">
             <AbyssGradientBox
               v-for="(preset, index) in GRADIENT_PRESETS"
               :key="preset.label"
@@ -156,16 +157,53 @@ export const GradientSwitcher: Story = {
   }),
   play: async ({ canvasElement }) => {
     const grid = canvasElement.querySelector('.abyss-grid');
-    const box = canvasElement.querySelector('.abyss-gradient-box');
-    if (!(grid instanceof HTMLElement) || !(box instanceof HTMLElement)) {
-      throw new Error('Expected gradient grid and box in the story canvas');
+    if (!(grid instanceof HTMLElement)) {
+      throw new Error('Expected gradient grid in the story canvas');
     }
 
-    const gridWidth = grid.getBoundingClientRect().width;
-    const boxRect = box.getBoundingClientRect();
-    await expect(gridWidth).toBeGreaterThan(64);
-    await expect(boxRect.width).toBeGreaterThan(64);
-    await expect(Math.abs(boxRect.width - boxRect.height)).toBeLessThan(2);
+    const boxes = () =>
+      [...grid.querySelectorAll('.abyss-gradient-box')] as HTMLElement[];
+    const firstRowCount = () => {
+      const items = boxes();
+      const top = items[0]?.offsetTop ?? 0;
+      return items.filter((item) => item.offsetTop === top).length;
+    };
+    const setGridWidth = async (width: string) => {
+      grid.style.width = width;
+      grid.style.maxWidth = 'none';
+      await waitFor(() => {
+        expect(grid.getBoundingClientRect().width).toBeGreaterThan(0);
+      });
+    };
+
+    try {
+      await setGridWidth('800px');
+      const wideBox = boxes()[0];
+      if (!wideBox) {
+        throw new Error('Expected gradient box in the story canvas');
+      }
+      const wideRect = wideBox.getBoundingClientRect();
+      await expect(wideRect.width).toBeLessThanOrEqual(65);
+      await expect(Math.abs(wideRect.width - wideRect.height)).toBeLessThan(2);
+      const wideCount = firstRowCount();
+      await expect(wideCount).toBeGreaterThan(1);
+
+      await setGridWidth('400px');
+      await waitFor(() => {
+        expect(firstRowCount()).toBeLessThan(wideCount);
+      });
+
+      await setGridWidth('48px');
+      await waitFor(() => {
+        const narrowRect = boxes()[0].getBoundingClientRect();
+        expect(narrowRect.width).toBeLessThan(64);
+        expect(narrowRect.width).toBeGreaterThan(20);
+        expect(Math.abs(narrowRect.width - narrowRect.height)).toBeLessThan(2);
+      });
+    } finally {
+      grid.style.width = '';
+      grid.style.maxWidth = '';
+    }
   },
 };
 

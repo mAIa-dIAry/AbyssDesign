@@ -52,3 +52,4 @@
 - [ ] Wiersz **BRAK** (spinner, list-row, badge statusu) nie zastąpiony Quasarem
 - [ ] Propsy zgodne ze story / autodocs komponentu
 - [ ] Brak martwego kodu i nieużywanych importów
+- [ ] Przełącznik gradientów: `AbyssGrid` `content-rows` `pack` `column-size="64px"`, bez `max-columns`

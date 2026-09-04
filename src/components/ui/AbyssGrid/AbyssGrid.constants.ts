@@ -7,3 +7,5 @@ export const ABYSS_INPUT_ROW_GAP = '4px';
 /** @deprecated Użyj {@link ABYSS_INPUT_ROW_GAP}. */
 export const INPUT_GRID_FIELD_ROW_GAP = ABYSS_INPUT_ROW_GAP;
 export const WIDGET_COLUMN_SIZE = '360px';
+/** Maksymalna szerokość kolumny przełącznika presetów — łącz z `pack` i `content-rows`, bez `max-columns`. */
+export const GRADIENT_BOX_COLUMN_SIZE = '64px';

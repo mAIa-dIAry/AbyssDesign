@@ -28,7 +28,8 @@ const meta: Meta<typeof AbyssGrid> = {
       description: {
         component:
           'Uniwersalny wrapper siatki dla treści Abyss. Używa responsywnego układu jak lista peerów w panelu synchronizacji: kolumny mają minimalną szerokość z propsa `columnSize`, a poniżej dostępnej szerokości układ schodzi do jednej kolumny bez overflow. Elementy siatki prezentuj przez `AbyssTile`.\n\n' +
-          'W formularzach: `AbyssInput` i `AbyssSelect` używają wewnętrznego `AbyssGrid` z `INPUT_COLUMN_SIZE` i `INPUT_GRID_MAX_COLUMNS`. Przyciski akcji pod polami — ten sam zestaw stałych (szczegóły w dokumentacji `AbyssForm`). Nie owijaj pól ręcznie w dodatkowy `AbyssGrid`.',
+          'W formularzach: `AbyssInput` i `AbyssSelect` używają wewnętrznego `AbyssGrid` z `INPUT_COLUMN_SIZE` i `INPUT_GRID_MAX_COLUMNS`. Przyciski akcji pod polami — ten sam zestaw stałych (szczegóły w dokumentacji `AbyssForm`). Nie owijaj pól ręcznie w dodatkowy `AbyssGrid`. Nie dawaj formularzowi `pack` — `1fr` i `max-columns` mają wypełniać rząd.\n\n' +
+          'Przełącznik presetów gradientu: `pack` + `column-size="64px"` (`GRADIENT_BOX_COLUMN_SIZE`) + `content-rows`, bez `max-columns`. Wtedy `column-size` jest maksimum toru, a nie minimum.',
       },
     },
   },
@@ -51,9 +52,26 @@ const meta: Meta<typeof AbyssGrid> = {
     },
     columnSize: {
       control: 'text',
-      description: 'Minimalna szerokość kolumny.',
+      description:
+        'Minimalna szerokość kolumny. Przy `pack` — maksimum toru (kafelki nie rosną przez `1fr`).',
       table: {
         defaultValue: { summary: '360px' },
+      },
+    },
+    pack: {
+      control: 'boolean',
+      description:
+        'Pakuj tory do `column-size` jako maksimum. Reszta szerokości zostaje pusta; przy węższym kontenerze kolumna maleje. Wymagane w przełączniku gradientów. Nie używaj w siatce formularza.',
+      table: {
+        defaultValue: { summary: 'false' },
+      },
+    },
+    contentRows: {
+      control: 'boolean',
+      description:
+        'Wiersze o wysokości treści — bez rozciągania kafelków na wspólną wysokość wiersza.',
+      table: {
+        defaultValue: { summary: 'false' },
       },
     },
     columnGap: {
@@ -100,6 +118,8 @@ export const Default: Story = {
     columnGap: '8px',
     rowGap: '8px',
     rowSize: '0px',
+    pack: false,
+    contentRows: false,
   },
   parameters: {
     docs: {
@@ -353,5 +373,57 @@ export const MaxColumns: Story = {
       computedStyle.gridTemplateColumns.split(' ').filter(Boolean),
     ).toHaveLength(2);
     await expect(computedStyle.direction).toBe('rtl');
+  },
+};
+
+export const PackColumns: Story = {
+  name: 'Pakowanie kolumn (pack)',
+  args: {
+    align: 'left',
+    maxColumns: 0,
+    columnSize: '64px',
+    columnGap: '12px',
+    rowGap: '12px',
+    rowSize: '0px',
+    pack: true,
+    contentRows: true,
+  },
+  parameters: {
+    docs: {
+      description: {
+        story:
+          '`pack` ustawia `column-size` jako maksimum toru. Kafelki nie rozciągają się przez `1fr`; przy szerszym kontenerze przybywa kolumn, przy węższym pierwszy kafelek maleje. Wzorzec przełącznika gradientów — nie stosuj w siatce formularza.',
+      },
+    },
+  },
+  render: (args) => ({
+    components: { AbyssGrid },
+    setup() {
+      return { args, cells: Array.from({ length: 16 }, (_, index) => index) };
+    },
+    template: `
+      <AbyssGrid v-bind="args">
+        <div
+          v-for="cell in cells"
+          :key="cell"
+          style="width: 100%; aspect-ratio: 1 / 1; border-radius: 8px; background: hsl(200, 40%, 28%);"
+        />
+      </AbyssGrid>
+    `,
+  }),
+  play: async ({ canvasElement }) => {
+    const grid = canvasElement.querySelector('.abyss-grid');
+    if (!(grid instanceof HTMLElement)) {
+      throw new Error('Expected packed grid in the story canvas');
+    }
+
+    const firstCell = grid.querySelector(':scope > div');
+    if (!(firstCell instanceof HTMLElement)) {
+      throw new Error('Expected packed grid cell');
+    }
+
+    const cellWidth = firstCell.getBoundingClientRect().width;
+    await expect(cellWidth).toBeLessThanOrEqual(65);
+    await expect(cellWidth).toBeGreaterThan(20);
   },
 };

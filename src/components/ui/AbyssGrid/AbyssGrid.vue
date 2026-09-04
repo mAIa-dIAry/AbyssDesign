@@ -4,9 +4,10 @@
     :class="[
       `abyss-grid--align-${props.align}`,
       {
-        'abyss-grid--limited': props.maxColumns > 0,
+        'abyss-grid--limited': !props.pack && props.maxColumns > 0,
         'abyss-grid--min-row-size': hasMinRowSize,
         'abyss-grid--content-rows': props.contentRows,
+        'abyss-grid--pack': props.pack,
       },
       props.class,
     ]"
@@ -28,6 +29,12 @@ export interface AbyssGridProps {
   rowSize?: string;
   /** Wiersze o wysokości treści — bez wyrównywania wysokości między wierszami (np. etykieta + pole). */
   contentRows?: boolean;
+  /**
+   * `column-size` jest maksimum toru, nie minimum.
+   * Tory nie rozciągają się przez `1fr`; przy węższym kontenerze maleją.
+   * Przełącznik gradientów: `pack` + `column-size="64px"` + `content-rows`, bez `max-columns`.
+   */
+  pack?: boolean;
   style?: string | Record<string, string>;
   class?:
     | string
@@ -43,6 +50,7 @@ const props = withDefaults(defineProps<AbyssGridProps>(), {
   rowGap: '12px',
   rowSize: '0px',
   contentRows: false,
+  pack: false,
   style: '',
   class: '',
 });
@@ -98,6 +106,14 @@ const computedStyle = computed(() => [
 
   &--align-right {
     direction: rtl;
+  }
+
+  &--pack {
+    grid-template-columns: repeat(
+      auto-fill,
+      minmax(0, min(100%, var(--column-size)))
+    );
+    justify-content: start;
   }
 
   &--limited {

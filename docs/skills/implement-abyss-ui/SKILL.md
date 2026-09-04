@@ -102,7 +102,7 @@ Nie importuj shadow-wrapperów `AbyssTemplate`, `AbyssScrollView`, `AbyssSidebar
 | Badge subskrypcji gold / sakura / garden | `AbyssGradientBadge` | Nie status wiersza tabeli. Nie `q-badge`. |
 | Wiersz listy (klikalny rekord, dzień analizy) | **BRAK** | Nie `AbyssButton flat` poza dozwolonymi miejscami `flat`. Nie `ul` / `li` + `flat`. Zgłoś `make-component`. |
 | Tło gradientowe aplikacji | `AbyssBackground` | Nie `AbyssGradientBox` jako tło całego layoutu. |
-| Preset gradientu (box) | `AbyssGradientBox` | Nie `AbyssBackground` wewnątrz karty. Nie sztywne `64px` — box wypełnia komórkę siatki (`width: 100%`, `aspect-ratio: 1 / 1`). |
+| Preset gradientu (box) | `AbyssGradientBox` | Nie `AbyssBackground` wewnątrz karty. Przełącznik: `AbyssGrid` `content-rows` `pack` `column-size="64px"` (`GRADIENT_BOX_COLUMN_SIZE`), bez `max-columns`. Box wypełnia komórkę; 64px to max kolumny, nie sztywny rozmiar boxa. |
 | Separator wizualny | `AbyssSeparator` | Nie `hr` / własny border jako separator systemowy. |
 | Skrót klawiszowy | `AbyssKeybind` | — |
 | Strona 404 / błąd | `AbyssTemplateMain` + `AbyssButton` | Nie `q-btn` i surowy szablon Quasar `ErrorNotFound`. |
@@ -141,6 +141,7 @@ Reguły układu:
 - **Nie owijaj** `AbyssInput` / `AbyssSelect` w dodatkowy `AbyssGrid` — mają wewnętrzną siatkę.
 - Pola formularza **zawsze** w `AbyssForm` — nie natywny `<form>`, nie pola luzem w karcie.
 - Przyciski akcji pod polami: `AbyssGrid` z `align="right"`, `:column-size="INPUT_COLUMN_SIZE"`, `:max-columns="INPUT_GRID_MAX_COLUMNS"`.
+- Przełącznik gradientów: `AbyssGrid` `content-rows` `pack` `column-size="64px"` (albo `GRADIENT_BOX_COLUMN_SIZE`), bez `max-columns`. Nie dawaj `pack` siatce formularza.
 - Przyciski główne: `size="big"`, często `full-width`, **bez** `flat` i **bez** `embedded` (to chrome karty / dialog, nie `#content`).
 - Pola (`AbyssInput` / `AbyssSelect`): `size="small"` \| `"big"` (domyślnie `big`) — ta sama nazwa co przycisk.
 - Pole na pełną szerokość kontenera z widoczną etykietą: prop `full-width` (etykieta nad polem). Nie usuwaj `label` i nie nadpisuj wewnętrznej siatki pola.
@@ -206,6 +207,7 @@ Szybki test:
 - [ ] Ikonowe akcje nagłówków kart i dialogów: `size="medium"` i promień `12px`; nagłówek tabeli: `size="medium"` i promień `6px`; akcje w komórkach: `size="small"`
 - [ ] Brak tłumaczenia wewnętrznych etykiet Abyss (zamknięcie dialogu / toasta) w aplikacji
 - [ ] `AbyssDialog` ma niepusty `title` (nazwa dostępna powierzchni)
+- [ ] Przełącznik gradientów: `pack` + `column-size="64px"` + `content-rows`, bez `max-columns`
 
 ## Przykłady decyzji
 

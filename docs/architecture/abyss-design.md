@@ -111,7 +111,7 @@ Nie importuj shadow-wrapperów `AbyssTemplate`, `AbyssScrollView`, `AbyssSidebar
 | Badge subskrypcji gold / sakura / garden | `AbyssGradientBadge` | Nie status wiersza tabeli. Nie `q-badge`. |
 | Wiersz listy (klikalny rekord, dzień analizy) | **BRAK** | Nie `AbyssButton flat` poza dozwolonymi miejscami `flat`. Nie `ul` / `li` + `flat`. Zgłoś `make-component`. |
 | Tło gradientowe aplikacji | `AbyssBackground` | Nie `AbyssGradientBox` jako tło całego layoutu. |
-| Preset gradientu (box) | `AbyssGradientBox` | Nie `AbyssBackground` wewnątrz karty. Nie sztywne `64px` — box wypełnia komórkę siatki (`width: 100%`, `aspect-ratio: 1 / 1`). |
+| Preset gradientu (box) | `AbyssGradientBox` | Nie `AbyssBackground` wewnątrz karty. Przełącznik: `AbyssGrid` `content-rows` `pack` `column-size="64px"` (`GRADIENT_BOX_COLUMN_SIZE`), bez `max-columns`. Box wypełnia komórkę (`width: 100%`, `aspect-ratio: 1 / 1`); 64px to max kolumny, nie sztywny rozmiar boxa. |
 | Separator wizualny | `AbyssSeparator` | Nie `hr` / własny border jako separator systemowy. |
 | Skrót klawiszowy | `AbyssKeybind` | — |
 | Strona 404 / błąd | `AbyssTemplateMain` + `AbyssButton` | Nie `q-btn` i surowy szablon Quasar `ErrorNotFound`. |
@@ -163,7 +163,7 @@ Przykład niedozwolonego użycia: karta „Konto” w ustawieniach z `class="set
 | `AbyssButtonGroup` | zestaw akcji (toolbar, w tym pionowy) | `vertical` (lista pionowa, domyślnie 100% szerokości); dzieci: wyłącznie `AbyssButton`; nie 2–5 widoków w miejscu (to `AbyssSwitcher`) |
 | `AbyssSwitcher`    | 2–5 równorzędnych widoków w miejscu | `v-model`, `options` (`name`, `label`, opcjonalnie `icon`); wewnętrznie `AbyssButton flat` |
 | `AbyssDropdown`    | menu akcji wiersza tabeli      | dziecko aktywatora; pozycje: `AbyssButton` `flat` `full-width`                          |
-| `AbyssGrid`        | responsywna siatka             | `column-size`, `max-columns`, `column-gap`, `row-gap`, `align`, `content-rows`          |
+| `AbyssGrid`        | responsywna siatka             | `column-size`, `max-columns`, `column-gap`, `row-gap`, `align`, `content-rows`, `pack` (`column-size` jako max toru — przełącznik gradientów; nie w formularzu) |
 | `AbyssForm`        | obowiązkowy wrapper formularza | `v-model`, `sync`, `@update-form`, `@submit-form` — nie natywny `<form>`, nie pola luzem |
 | `AbyssAppLock`     | panel PIN odblokowania         | `message`, `errorMessage`, klawiatura, opcjonalna biometria; pełny ekran w `AbyssCard` wewnątrz `AbyssTemplateLogin`; klawiatura na pełną szerokość treści karty; kropki PIN wyśrodkowane ze stałym `gap` (bez `space-between`); ustawianie PIN w `AbyssDialog` `abyss-dialog--compact` |
 | `AbyssPanel`       | powierzchnia bez chrome karty  | `title`, `flush`, slot `title` — changelog / markdown; nie sekcja z nagłówkiem+ikoną (to `AbyssCard`) |
@@ -825,6 +825,7 @@ Nie renderuj szczegółów jako append, prepend ani rozwijanego bloku w treści 
 - Ustawiaj i zmieniaj PIN w `AbyssDialog` z `abyss-dialog--compact` — nie w `AbyssTemplateLogin`.
 - Na głównych podstronach zaczynaj treść od kart / paneli / kafelków zgodnie z tabelą wyboru; tytuł sekcji dawaj tylko przez `AbyssCard` `title`.
 - Na warstwie nachodzącej na treść z przezroczystym tłem ustawiaj `-webkit-backdrop-filter` i `backdrop-filter: blur(20px)` — dialog, picker daty/czasu, menu, sticky nagłówek, pływający przycisk.
+- Przełącznik presetów gradientu w karcie ustawień układaj w `AbyssGrid` `content-rows` `pack` `column-size="64px"` (`GRADIENT_BOX_COLUMN_SIZE`), bez `max-columns`. Box wypełnia komórkę i maleje na wąskiej karcie; 64px to maksimum kolumny.
 
 ### Don't
 
@@ -832,7 +833,7 @@ Nie renderuj szczegółów jako append, prepend ani rozwijanego bloku w treści 
 - Nie używaj `flat` poza headerem/stopką `AbyssCard`, `AbyssDialog`, slotami `#prepend` / `#append` w `AbyssInput`, akcjami `AbyssNavHeader`, wnętrzem `AbyssSwitcher` i komórkami `AbyssTable`.
 - Nie używaj `flat` ani `embedded` na przycisku formularza w `#content` karty — tam wyłącznie standardowy `AbyssButton` `size="big"`.
 - Nie zrównywaj promienia akcji nagłówka karty/dialogu (`12px`) z przyciskiem w top barze tabeli (`6px`) — wysokości chrome'u są różne.
-- Nie nadpisuj `.abyss-gradient-box` w karcie ustawień i nie dawaj siatce presetów `column-size="64px"` — box sam wypełnia komórkę (`width: 100%`, `aspect-ratio: 1 / 1`).
+- Nie nadpisuj `.abyss-gradient-box`. Nie układaj przełącznika presetów w domyślnej siatce 360px i nie dawaj `max-columns` — bez `pack` `column-size` jest minimum i `1fr` rozciąga kafelki.
 - Nie zdejmuj `flat` z akcji w komórce `AbyssTable` — wypełniony przycisk konkuruje z tabelą i rozjeżdża wiersz.
 - Nie dopinaj szczegółów rekordu pod listą, tabelą ani tablicą (`<Records /> <RecordDetails v-if="selectedId" />`) — to zmienia wysokość strony, przesuwa źródło kliknięcia i nie daje jednoznacznego zamknięcia ani deep linku. Rozwijanie techniczne udokumentowane w komponencie (np. `row-expand`) nie jest widokiem szczegółów rekordu.
 - Nie używaj footera `AbyssCard` w standardowym układzie.

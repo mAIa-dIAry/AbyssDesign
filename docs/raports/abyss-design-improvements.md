@@ -22,7 +22,7 @@ Statusy:
 - `UPSTREAM` — zgłoszona lub poprawiana w AbyssDesign,
 - `DONE` — kanon i odpowiednie story zostały poprawione.
 
-Aktualny pakiet aplikacji: `@maiadiary/abyss-design@0.2.5`.
+Aktualny pakiet aplikacji: `@maiadiary/abyss-design@0.2.6`.
 
 ---
 
@@ -207,7 +207,7 @@ pod listą.
 
 ## ADI-003 — Ikonowa akcja nagłówka: `size="medium"`, promień należy do pojemnika
 
-**Status:** `DONE` — przywrócone nadpisanie `--border-radius: 12px` w `#header-append` / stopce `AbyssCard` i `AbyssDialog`. Kanon rozróżnia niski narożnik karty/dialogu od wyższego top baru tabeli (`6px`).  
+**Status:** `DONE` — `@maiadiary/abyss-design@0.2.6`  
 **Ważność:** `HIGH` — błąd layoutu po niepotrzebnej zmianie kanonu
 
 ### Kontekst
@@ -264,11 +264,11 @@ Nie zrównywać promienia przycisku karty z przyciskiem tabeli. Promień akcji
 narożnej wynika z wysokości headera i chrome'u pojemnika (`AbyssCard` /
 `AbyssDialog` vs `AbyssTable`), nie z tokenu `size` przycisku.
 
-### Stan aplikacji
+### Zastosowana poprawka
 
-Aplikacja nie obchodzi tego lokalnym CSS. Czeka na przywrócenie nadpisania
-promienia w `AbyssCard` / `AbyssDialog` (wcześniej `--border-radius: 12px`
-w `.abyss-card-append`).
+Kanon 0.2.6 przywraca `--border-radius: 12px` na akcjach nagłówka
+`AbyssCard` / `AbyssDialog`. `AbyssTable` zostaje przy `6px` ze skali
+`size="medium"`. Aplikacja nadal nie nadpisuje promienia lokalnym CSS.
 
 Nadal obowiązuje:
 
@@ -276,6 +276,9 @@ Nadal obowiązuje:
 - tylko `icon`,
 - `aria-label` zamiast widocznego labela,
 - obowiązkowo `size="medium"`.
+
+Geometryczna różnica (wyższy header tabeli vs niski header karty) zostaje
+w kanonie jako uzasadnienie dwóch promieni, nie jako otwarta regresja.
 
 ### Proponowana poprawka w AbyssDesign
 
@@ -401,7 +404,7 @@ a modal zadania nie nadpisuje już `close-button-aria-label`.
 
 ## ADI-006 — Tarball 0.2.5 nie publikuje `src/utils`
 
-**Status:** `DONE` — `src/utils` jest w `files`, `debounce` jest eksportowane z `src/index.ts` (build emituje `dist/utils/debounce.js`), a `tools/check-published-sfc-imports.mjs` sprawdza względne importy SFC i obecność JS debounce.  
+**Status:** `DONE` — `@maiadiary/abyss-design@0.2.6`  
 **Ważność:** `HIGH` — błąd pakietu npm
 
 ### Problem
@@ -415,11 +418,12 @@ publikowane — jest tylko `.d.ts`.
 Konsument nie może skompilować `AbyssForm` bez ręcznego uzupełnienia tych
 plików.
 
-### Obejście w aplikacji
+### Zastosowana poprawka
 
-`tools/materialize-abyss-src-utils.mjs` kopiuje shim debounce i re-eksportuje
-pozostałe utility z `dist/utils/*.js` do `node_modules/.../src/utils`.
-Wywołanie: `postinstall`, `typecheck` i `quasar.config.ts`.
+Tarball 0.2.6 publikuje `src/utils` oraz `dist/utils/debounce.js`. Obejście
+`tools/materialize-abyss-src-utils.mjs` i shim `src/utils/abyssDebounce.ts`
+zostały usunięte — nie wolno ich przywracać, bo nadpisałyby opublikowane
+źródła.
 
 ### Proponowana poprawka w AbyssDesign
 
@@ -432,35 +436,36 @@ Wywołanie: `postinstall`, `typecheck` i `quasar.config.ts`.
 
 ## ADI-007 — `AbyssGradientBox` nie może mieć sztywnego `64px`
 
-**Status:** `DONE` — box wypełnia komórkę (`width: 100%`, `aspect-ratio: 1 / 1`); story „Przełącznik gradientów” pokazuje układ w karcie + `AbyssGrid` `content-rows`.  
-**Ważność:** `HIGH` — błąd layoutu/API komponentu  
-**Docelowa wersja:** następna po `0.2.5`
+**Status:** `DONE` — `@maiadiary/abyss-design@0.2.7`  
+**Ważność:** `HIGH` — błąd layoutu/API komponentu
 
 ### Problem
 
-`AbyssGradientBox` ma zahardkodowane `width: 64px` i `height: 64px`. Story i
-autodocs opisują go jako kwadrat 64×64. W karcie ustawień („Gradient
-aplikacji”) siatka presetów ma wypełniać **stałą szerokość kontenera**:
-rząd zajmuje całą szerokość karty, kafelki dzielą ją równo i zachowują
-proporcje kwadratu.
+`AbyssGradientBox` miał zahardkodowane `width: 64px` i `height: 64px`. Box ma
+wypełniać komórkę (`width: 100%`, `aspect-ratio: 1 / 1`) i móc **maleć** przy
+wąskiej karcie. `64px` to **maksymalny** rozmiar kolumny przełącznika
+gradientów, nie jedyny rozmiar boxa i nie domyślne `360px` siatki widgetów.
 
-Sztywne `64px` jest nieprawidłowe. Przy szerszej karcie zostaje puste miejsce
-po prawej, przy węższej kafelki nie zwężają się. Konsumenci są zmuszeni albo
-zostawić dziurę, albo nadpisywać prymityw lokalnym CSS (`width: 100%`,
-`aspect-ratio: 1 / 1`) — to obejście, nie API.
+W karcie ustawień rząd ma zmieścić tyle kafelków, ile wejdzie przy kolumnie
+≤ 64px. Puste miejsce po prawej przy `max-columns="8"` brało się z limitu
+ośmiu kolumn, nie z tego, że kafelki miały rosnąć do szerokości karty.
 
-### Pułapka
+### Pułapka 0.2.6
 
-Kanoniczny `AbyssGrid column-size="64px" :max-columns="8"` powiela ten sam
-błąd: kolumna dziedziczy sztywny rozmiar boxa zamiast rozciągać się do
-szerokości karty.
+Story „Przełącznik gradientów” każe **nie** ustawiać `column-size="64px"`
+i zostawia domyślne `360px` (`WIDGET_COLUMN_SIZE`). Box wypełnia komórkę, więc
+powstają dwa ogromne kwadraty. Test `boxRect.width > 64` utrwala ten błąd.
+
+`column-size` w `AbyssGrid` jest minimum w `minmax(..., 1fr)`, nie maksimum —
+`1fr` i tak trochę rozciąga tor. Na przełączniku i tak trzeba podać
+`column-size="64px"`; bez tego obowiązuje 360px.
 
 ### Oczekiwany wzorzec
 
 W `#content` karty:
 
 ```vue
-<AbyssGrid content-rows>
+<AbyssGrid content-rows pack column-size="64px">
   <AbyssGradientBox
     v-for="preset in GRADIENT_PRESETS"
     :key="preset.label"
@@ -471,20 +476,33 @@ W `#content` karty:
 </AbyssGrid>
 ```
 
-- rząd wypełnia szerokość karty,
-- box rośnie i maleje z kolumną,
-- kwadrat (`aspect-ratio: 1 / 1`), nie osobna wysokość `64px`,
-- bez `:deep()` na `.abyss-gradient-box` w karcie ustawień.
+- bez `:max-columns="8"` (limit zostawiał dziurę zamiast dokładanych kolumn),
+- bez `:deep()` na `.abyss-gradient-box`,
+- box kwadratowy, nie większy niż kolumna 64px (docelowo twardy max w siatce).
 
-### Proponowana poprawka w AbyssDesign (następna wersja)
+### Stan aplikacji
 
-1. Usunąć sztywne `64px` z `AbyssGradientBox` jako jedyny rozmiar.
-2. Domyślnie wypełniać komórkę siatki (szerokość `100%`, wysokość z
-   `aspect-ratio: 1 / 1`).
-3. Zaktualizować autodocs i story „Przełącznik gradientów”: układ w karcie /
-   `AbyssGrid` na pełną szerokość, nie `flex-wrap` ze stałymi 64px.
-4. Dodać test, że box w siatce rozciąga się przy zmianie szerokości
-   kontenera.
+Zakładka wyglądu używa `column-size="64px"` i `content-rows`, bez
+`max-columns`.
+
+### Proponowana poprawka w AbyssDesign
+
+1. Story i autodocs: `column-size="64px"` jest wymagane; 64px to max kolumny
+   przełącznika, nie zakaz.
+2. Nie używać domyślnego `360px` w przykładzie karty ustawień.
+3. `AbyssGrid`: `column-size` jako maksimum toru w tym wzorcu (albo osobny
+   prop), zamiast `minmax(min, 1fr)` które rozciąga ponad 64px.
+4. Test: szerokość boxa ≤ 64px przy szerokiej karcie; przy wąskiej maleje;
+   liczba kolumn rośnie z szerokością, bez `max-columns="8"`.
+
+### Zastosowana poprawka
+
+`AbyssGrid` ma prop `pack`: `column-size` jest maksimum toru
+(`minmax(0, min(100%, var(--column-size)))`), bez `1fr`. Formularze zostają
+przy dotychczasowym `minmax(..., 1fr)` i `max-columns`. Przełącznik:
+`content-rows pack column-size="64px"` (`GRADIENT_BOX_COLUMN_SIZE`), bez
+`max-columns`. Story i test: box ≤ 64px na szerokiej karcie, maleje na
+wąskiej, liczba kolumn rośnie z szerokością.
 
 ### Miejsce wykrycia
 
@@ -494,9 +512,8 @@ W `#content` karty:
 
 ## ADI-008 — W formularzu w `#content` karty tylko standardowy `AbyssButton` `size="big"`
 
-**Status:** `DONE` — kanon, skill, checklisty i story `AbyssForm` rozdzielają chrome (`flat`) od submitu w `#content` (standard, `size="big"`, bez `embedded`).  
-**Ważność:** `HIGH` — luka i sprzeczność w kanonie  
-**Docelowa wersja:** następna po `0.2.5`
+**Status:** `DONE` — `@maiadiary/abyss-design@0.2.6`  
+**Ważność:** `HIGH` — luka i sprzeczność w kanonie
 
 ### Problem
 
@@ -564,7 +581,18 @@ Nadal `flat` (zwykle `size="medium"`):
 - stopka karty,
 - stopka / akcje `AbyssDialog`.
 
-### Proponowana poprawka w AbyssDesign (następna wersja)
+### Zastosowana poprawka
+
+Kanon 0.2.6: submit formularza w `#content` karty to standardowy
+`AbyssButton` `size="big"` — bez `flat`, bez `embedded`. `gradient` bez
+`flat` zostaje dla akcji operacyjnych. `flat` zostaje w headerze/stopce
+karty oraz w dialogu.
+
+Aplikacja: `LoginForm` i zapisy w `CredentialsTab` bez `flat`. Logout w
+`SettingsAccountTab` i CTA dashboardu zostają `flat` (stopka karty). Submit
+w `TaskThreadPanel` zostaje `flat` (dialog).
+
+### Proponowana poprawka w AbyssDesign
 
 1. Rozdzielić w kanonie przyciski **chrome'u karty** (`flat`) od przycisków
    **formularza w `#content`** (standard, `size="big"`).
